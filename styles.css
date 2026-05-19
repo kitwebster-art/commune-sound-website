@@ -1,13 +1,15 @@
 :root {
-  --ink: #050505;
+  --ink: #060606;
   --paper: #fbf8f4;
-  --mist: #eef5ff;
-  --rose: #f7c9d9;
-  --peach: #ffd9bd;
-  --cyan: #9ce8f1;
-  --violet: #d8c7ff;
+  --soft-paper: #fffdf9;
+  --mist: #eef7ff;
+  --rose: #f7c5d7;
+  --peach: #ffd7b8;
+  --cyan: #94e3ed;
+  --violet: #d8c4ff;
   --line: rgba(5, 5, 5, 0.16);
-  --shadow: 0 22px 60px rgba(35, 25, 45, 0.18);
+  --line-strong: rgba(5, 5, 5, 0.32);
+  --shadow: 0 24px 70px rgba(35, 25, 45, 0.16);
 }
 
 * {
@@ -23,6 +25,7 @@ body {
   color: var(--ink);
   background: var(--paper);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-rendering: geometricPrecision;
 }
 
 a {
@@ -40,25 +43,26 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 14px clamp(18px, 4vw, 48px);
-  background: rgba(251, 248, 244, 0.84);
+  min-height: 76px;
+  padding: 14px clamp(20px, 4vw, 56px);
+  background: rgba(251, 248, 244, 0.9);
   border-bottom: 1px solid rgba(5, 5, 5, 0.1);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(22px);
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-size: 13px;
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .brand img {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -68,7 +72,7 @@ nav {
   align-items: center;
   gap: clamp(12px, 2vw, 28px);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 900;
   text-transform: uppercase;
 }
 
@@ -77,7 +81,7 @@ nav a {
 }
 
 .nav-ticket {
-  padding: 10px 14px;
+  padding: 12px 18px;
   color: var(--paper);
   background: var(--ink);
   border-radius: 999px;
@@ -85,37 +89,48 @@ nav a {
 
 .hero {
   position: relative;
-  min-height: 94svh;
+  min-height: 92svh;
   display: grid;
-  align-items: end;
+  grid-template-rows: 1fr auto;
+  align-items: center;
   overflow: hidden;
-  padding: 112px clamp(18px, 5vw, 72px) 0;
+  padding: 118px clamp(20px, 5vw, 76px) 0;
+  background: linear-gradient(110deg, var(--paper) 0%, var(--paper) 38%, rgba(251, 248, 244, 0.82) 56%, rgba(251, 248, 244, 0.28) 100%);
 }
 
 .hero-bg {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(90deg, rgba(251, 248, 244, 0.92) 0%, rgba(251, 248, 244, 0.64) 42%, rgba(251, 248, 244, 0.1) 100%),
-    url("assets/commune-wider.png");
-  background-size: cover;
-  background-position: center;
-  transform: scale(1.02);
+  background-image: url("assets/bubble-field.jpg");
+  background-repeat: no-repeat;
+  background-size: min(76vw, 1120px) auto;
+  background-position: right -4vw center;
+  opacity: 0.98;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, var(--paper) 0%, rgba(251, 248, 244, 0.98) 26%, rgba(251, 248, 244, 0.78) 49%, rgba(251, 248, 244, 0.18) 100%),
+    linear-gradient(180deg, rgba(251, 248, 244, 0.82) 0%, rgba(251, 248, 244, 0) 38%, rgba(251, 248, 244, 0.18) 100%);
+  z-index: 1;
 }
 
 .hero-content {
   position: relative;
-  z-index: 1;
-  max-width: 760px;
-  padding-bottom: clamp(72px, 11vh, 120px);
+  z-index: 2;
+  width: min(700px, 56vw);
+  padding: clamp(18px, 3.6vw, 54px) 0 clamp(24px, 4vw, 54px);
 }
 
 .kicker,
 .section-label {
-  margin: 0 0 18px;
+  margin: 0 0 20px;
   font-size: clamp(12px, 1.4vw, 16px);
   font-weight: 900;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
@@ -127,20 +142,20 @@ p {
 }
 
 h1 {
-  margin-bottom: 18px;
-  max-width: 7.7ch;
-  font-size: clamp(76px, 15vw, 184px);
-  line-height: 0.86;
+  margin-bottom: 24px;
+  max-width: 8.5ch;
+  font-size: clamp(68px, 9.2vw, 132px);
+  line-height: 0.88;
   font-weight: 950;
   text-transform: uppercase;
 }
 
 .hero-copy {
-  max-width: 620px;
-  margin-bottom: 30px;
-  font-size: clamp(21px, 3vw, 34px);
-  line-height: 1.08;
-  font-weight: 850;
+  max-width: 560px;
+  margin-bottom: 28px;
+  font-size: clamp(20px, 2.2vw, 30px);
+  line-height: 1.12;
+  font-weight: 820;
 }
 
 .hero-actions {
@@ -153,8 +168,8 @@ h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 46px;
-  padding: 14px 20px;
+  min-height: 48px;
+  padding: 14px 22px;
   border: 2px solid var(--ink);
   border-radius: 999px;
   font-size: 13px;
@@ -168,7 +183,8 @@ h1 {
 }
 
 .button.secondary {
-  background: rgba(251, 248, 244, 0.74);
+  background: rgba(251, 248, 244, 0.72);
+  backdrop-filter: blur(10px);
 }
 
 .button.wide {
@@ -181,20 +197,20 @@ h1 {
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  width: min(1120px, 100%);
+  width: min(1200px, 100%);
   margin: 0 auto;
-  background: rgba(251, 248, 244, 0.9);
-  border: 1px solid var(--line);
+  background: rgba(255, 253, 249, 0.9);
+  border: 1px solid var(--line-strong);
   border-bottom: 0;
-  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
 }
 
 .event-strip div {
-  min-height: 104px;
+  min-height: 112px;
   display: grid;
   align-content: center;
   gap: 8px;
-  padding: 22px;
+  padding: 24px clamp(18px, 3vw, 34px);
   border-right: 1px solid var(--line);
 }
 
@@ -210,7 +226,7 @@ h1 {
 }
 
 .event-strip strong {
-  font-size: clamp(22px, 3vw, 38px);
+  font-size: clamp(24px, 3vw, 42px);
   line-height: 0.95;
   text-transform: uppercase;
 }
@@ -220,15 +236,15 @@ h1 {
   display: grid;
   grid-template-columns: minmax(180px, 0.34fr) minmax(0, 0.66fr);
   gap: clamp(28px, 6vw, 84px);
-  padding: clamp(72px, 10vw, 128px) clamp(18px, 5vw, 72px);
+  padding: clamp(76px, 10vw, 132px) clamp(20px, 5vw, 76px);
 }
 
 .intro-copy h2,
 .venue-copy h2 {
   max-width: 900px;
   margin-bottom: 22px;
-  font-size: clamp(38px, 6vw, 86px);
-  line-height: 0.94;
+  font-size: clamp(40px, 5.6vw, 82px);
+  line-height: 0.96;
   text-transform: uppercase;
 }
 
@@ -244,7 +260,9 @@ h1 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   border-top: 1px solid var(--ink);
   border-bottom: 1px solid var(--ink);
-  background: linear-gradient(135deg, var(--mist), var(--peach) 42%, var(--rose) 72%, var(--cyan));
+  background:
+    linear-gradient(135deg, rgba(238, 247, 255, 0.9), rgba(255, 215, 184, 0.78) 42%, rgba(247, 197, 215, 0.76) 72%, rgba(148, 227, 237, 0.86)),
+    var(--soft-paper);
 }
 
 .rules article {
@@ -286,7 +304,7 @@ h1 {
 .venue-image img {
   display: block;
   width: min(100%, 560px);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   box-shadow: var(--shadow);
 }
 
@@ -295,14 +313,14 @@ dl {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   margin: 34px 0;
-  background: var(--line);
-  border: 1px solid var(--line);
+  background: var(--line-strong);
+  border: 1px solid var(--line-strong);
 }
 
 dl div {
   min-height: 104px;
   padding: 18px;
-  background: var(--paper);
+  background: var(--soft-paper);
 }
 
 dt {
@@ -365,15 +383,26 @@ footer div {
   }
 
   .hero {
-    min-height: 92svh;
+    min-height: 88svh;
     padding-top: 96px;
   }
 
   .hero-bg {
-    background-image:
-      linear-gradient(180deg, rgba(251, 248, 244, 0.95) 0%, rgba(251, 248, 244, 0.68) 52%, rgba(251, 248, 244, 0.2) 100%),
-      url("assets/commune-wider.png");
-    background-position: 55% center;
+    background-image: url("assets/bubble-field.jpg");
+    background-size: auto 78%;
+    background-position: right -38vw top 90px;
+    opacity: 0.78;
+  }
+
+  .hero::before {
+    background:
+      linear-gradient(180deg, rgba(251, 248, 244, 0.96) 0%, rgba(251, 248, 244, 0.86) 42%, rgba(251, 248, 244, 0.62) 100%),
+      linear-gradient(90deg, var(--paper) 0%, rgba(251, 248, 244, 0.76) 100%);
+  }
+
+  .hero-content {
+    width: min(680px, 100%);
+    padding-bottom: 54px;
   }
 
   .event-strip,
@@ -407,6 +436,8 @@ footer div {
 
   .site-header {
     position: absolute;
+    min-height: 68px;
+    padding: 12px 18px;
   }
 
   .brand span {
@@ -419,13 +450,35 @@ footer div {
 
   h1 {
     max-width: 100%;
-    font-size: clamp(58px, 18vw, 74px);
+    font-size: clamp(50px, 15.5vw, 61px);
     line-height: 0.9;
   }
 
   .hero-copy {
     font-size: 21px;
     max-width: 100%;
+  }
+
+  .hero {
+    min-height: auto;
+    padding: 92px 18px 0;
+  }
+
+  .hero-bg {
+    background-size: auto 52%;
+    background-position: right -46vw top 82px;
+    opacity: 0.56;
+  }
+
+  .kicker {
+    max-width: 290px;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .event-strip div {
+    min-height: 92px;
+    padding: 18px;
   }
 
   .button {
