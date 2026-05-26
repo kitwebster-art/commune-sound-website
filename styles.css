@@ -1,15 +1,23 @@
 :root {
   --ink: #060606;
-  --paper: #fbf8f4;
-  --soft-paper: #fffdf9;
+  --paper: #0a0b0b;
+  --soft-paper: #f3eadc;
+  --cream: #efe3d0;
+  --muted-cream: rgba(239, 227, 208, 0.72);
+  --night: #050507;
+  --night-soft: #0f1518;
+  --ember: #ff6c22;
+  --hot-pink: #fb2d8a;
+  --electric: #14dce3;
+  --acid: #c3f3e6;
   --mist: #eef7ff;
   --rose: #f7c5d7;
   --peach: #ffd7b8;
   --cyan: #94e3ed;
   --violet: #d8c4ff;
-  --line: rgba(5, 5, 5, 0.16);
-  --line-strong: rgba(5, 5, 5, 0.32);
-  --shadow: 0 24px 70px rgba(35, 25, 45, 0.16);
+  --line: rgba(239, 227, 208, 0.16);
+  --line-strong: rgba(239, 227, 208, 0.34);
+  --shadow: 0 28px 90px rgba(0, 0, 0, 0.54);
 }
 
 * {
@@ -22,10 +30,23 @@ html {
 
 body {
   margin: 0;
-  color: var(--ink);
+  color: var(--cream);
   background: var(--paper);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   text-rendering: geometricPrecision;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 3% 18%, rgba(255, 108, 34, 0.18), transparent 28%),
+    radial-gradient(circle at 98% 42%, rgba(20, 220, 227, 0.14), transparent 28%),
+    radial-gradient(circle at 54% 100%, rgba(251, 45, 138, 0.12), transparent 30%),
+    #050606;
 }
 
 a {
@@ -45,8 +66,9 @@ a {
   gap: 24px;
   min-height: 76px;
   padding: 14px clamp(20px, 4vw, 56px);
-  background: rgba(251, 248, 244, 0.9);
-  border-bottom: 1px solid rgba(5, 5, 5, 0.1);
+  color: var(--cream);
+  background: rgba(5, 6, 6, 0.82);
+  border-bottom: 1px solid rgba(239, 227, 208, 0.16);
   backdrop-filter: blur(22px);
 }
 
@@ -82,8 +104,8 @@ nav a {
 
 .nav-ticket {
   padding: 12px 18px;
-  color: var(--paper);
-  background: var(--ink);
+  color: var(--ink);
+  background: linear-gradient(90deg, var(--ember), var(--hot-pink), var(--electric));
   border-radius: 999px;
 }
 
@@ -95,19 +117,22 @@ nav a {
   align-items: end;
   overflow: hidden;
   padding: 118px clamp(20px, 5vw, 76px) 0;
+  color: var(--soft-paper);
   background:
-    linear-gradient(180deg, rgba(255, 253, 249, 0.78) 0%, rgba(251, 248, 244, 0.96) 100%),
-    linear-gradient(110deg, var(--paper) 0%, var(--paper) 33%, rgba(238, 247, 255, 0.68) 52%, rgba(255, 215, 184, 0.38) 100%);
+    radial-gradient(circle at 8% 28%, rgba(255, 108, 34, 0.22), transparent 24%),
+    radial-gradient(circle at 94% 12%, rgba(20, 220, 227, 0.18), transparent 26%),
+    linear-gradient(115deg, #030304 0%, #081012 50%, #12070e 100%);
 }
 
 .hero-bg {
   position: absolute;
   inset: 0;
-  background-image: url("assets/bubble-field.jpg");
+  background-image: url("assets/commune-18-june-banner.jpg");
   background-repeat: no-repeat;
-  background-size: min(78vw, 1180px) auto;
-  background-position: right -7vw center;
-  opacity: 1;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.56;
+  filter: saturate(1.18) contrast(1.1);
 }
 
 .hero::before {
@@ -115,8 +140,8 @@ nav a {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, var(--paper) 0%, rgba(251, 248, 244, 0.96) 27%, rgba(251, 248, 244, 0.46) 57%, rgba(251, 248, 244, 0.04) 100%),
-    repeating-linear-gradient(90deg, rgba(5, 5, 5, 0.035) 0 1px, transparent 1px 96px);
+    linear-gradient(90deg, rgba(3, 3, 4, 0.98) 0%, rgba(3, 3, 4, 0.78) 38%, rgba(3, 3, 4, 0.28) 100%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 96px);
   z-index: 1;
 }
 
@@ -127,7 +152,7 @@ nav a {
   left: -0.08em;
   bottom: 80px;
   width: 9ch;
-  color: rgba(5, 5, 5, 0.045);
+  color: rgba(239, 227, 208, 0.055);
   font-size: clamp(120px, 17vw, 260px);
   font-weight: 950;
   line-height: 0.82;
@@ -141,7 +166,7 @@ nav a {
   right: clamp(18px, 3.5vw, 54px);
   top: 96px;
   max-width: 520px;
-  color: rgba(5, 5, 5, 0.42);
+  color: rgba(239, 227, 208, 0.62);
   font-size: clamp(11px, 1vw, 14px);
   font-weight: 950;
   letter-spacing: 0.18em;
@@ -157,7 +182,8 @@ nav a {
   grid-template-columns: minmax(0, 0.54fr) minmax(420px, 0.46fr);
   align-items: end;
   gap: clamp(28px, 5vw, 72px);
-  width: 100%;
+  width: min(1240px, 100%);
+  margin: 0 auto;
 }
 
 .hero-content {
@@ -176,6 +202,11 @@ nav a {
   text-transform: uppercase;
 }
 
+.kicker {
+  color: var(--cream);
+  text-shadow: 0 0 22px rgba(255, 108, 34, 0.22);
+}
+
 h1,
 h2,
 h3,
@@ -189,6 +220,10 @@ h1 {
   font-size: clamp(78px, 10vw, 146px);
   line-height: 0.84;
   font-weight: 950;
+  color: var(--cream);
+  font-family: "Arial Narrow", "Helvetica Neue Condensed", Impact, Inter, sans-serif;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 30px rgba(255, 108, 34, 0.16);
   text-transform: uppercase;
 }
 
@@ -198,6 +233,7 @@ h1 {
   font-size: clamp(22px, 2.4vw, 34px);
   line-height: 1.04;
   font-weight: 820;
+  color: rgba(255, 249, 238, 0.94);
 }
 
 .hero-actions {
@@ -212,7 +248,7 @@ h1 {
   justify-content: center;
   min-height: 48px;
   padding: 14px 22px;
-  border: 2px solid var(--ink);
+  border: 1px solid var(--cream);
   border-radius: 999px;
   font-size: 13px;
   font-weight: 900;
@@ -220,13 +256,28 @@ h1 {
 }
 
 .button.primary {
-  color: var(--paper);
-  background: var(--ink);
+  color: var(--ink);
+  background: linear-gradient(90deg, var(--ember), var(--hot-pink) 54%, var(--electric));
+  border-color: transparent;
+  box-shadow: 0 0 28px rgba(251, 45, 138, 0.18);
+}
+
+.hero .button.primary,
+.nav-ticket {
+  color: var(--ink);
+  background: linear-gradient(90deg, var(--ember), var(--hot-pink) 54%, var(--electric));
+  border-color: transparent;
 }
 
 .button.secondary {
-  background: rgba(251, 248, 244, 0.72);
+  background: rgba(251, 248, 244, 0.08);
   backdrop-filter: blur(10px);
+}
+
+.hero .button.secondary {
+  color: var(--soft-paper);
+  background: rgba(255, 253, 249, 0.08);
+  border-color: rgba(255, 253, 249, 0.76);
 }
 
 .button.wide {
@@ -241,8 +292,11 @@ h1 {
   justify-self: end;
   width: min(520px, 100%);
   padding: clamp(24px, 3.8vw, 54px) 0 clamp(24px, 3.8vw, 54px) clamp(24px, 3.8vw, 54px);
-  border-left: 4px solid var(--ink);
+  border-left: 2px solid var(--electric);
+  border-top: 1px solid rgba(255, 108, 34, 0.58);
+  border-bottom: 1px solid rgba(20, 220, 227, 0.45);
   text-transform: uppercase;
+  text-shadow: 0 0 24px rgba(20, 220, 227, 0.24);
 }
 
 .hero-event-card p,
@@ -256,6 +310,8 @@ h1 {
   margin-bottom: 30px;
   font-size: clamp(30px, 3.6vw, 52px);
   font-weight: 950;
+  font-family: "Arial Narrow", "Helvetica Neue Condensed", Impact, Inter, sans-serif;
+  letter-spacing: 0.03em;
   line-height: 0.95;
 }
 
@@ -287,10 +343,11 @@ h1 {
 
 .fragment {
   margin: 0;
-  min-height: 146px;
+  height: clamp(128px, 12vw, 180px);
   overflow: hidden;
   border: 1px solid rgba(5, 5, 5, 0.26);
-  background: rgba(255, 253, 249, 0.72);
+  background: rgba(5, 6, 6, 0.66);
+  box-shadow: 0 0 0 1px rgba(239, 227, 208, 0.12), 0 20px 70px rgba(0, 0, 0, 0.42);
   backdrop-filter: blur(10px);
 }
 
@@ -303,11 +360,17 @@ h1 {
 }
 
 .rules-fragment img {
+  object-fit: contain;
   object-position: center;
+  filter: invert(1) grayscale(1) contrast(1.34);
+  mix-blend-mode: screen;
+  opacity: 0.88;
 }
 
 .credits-fragment img {
-  object-position: center;
+  object-fit: cover;
+  object-position: center 68%;
+  mix-blend-mode: normal;
 }
 
 .event-strip {
@@ -317,8 +380,9 @@ h1 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   width: min(1200px, 100%);
   margin: 0 auto;
-  background: rgba(255, 253, 249, 0.9);
-  border: 1px solid var(--line-strong);
+  color: var(--soft-paper);
+  background: rgba(5, 5, 7, 0.88);
+  border: 1px solid rgba(255, 253, 249, 0.24);
   border-bottom: 0;
   backdrop-filter: blur(14px);
 }
@@ -329,7 +393,7 @@ h1 {
   align-content: center;
   gap: 8px;
   padding: 24px clamp(18px, 3vw, 34px);
-  border-right: 1px solid var(--line);
+  border-right: 1px solid rgba(255, 253, 249, 0.2);
 }
 
 .event-strip div:last-child {
@@ -355,6 +419,10 @@ h1 {
   grid-template-columns: minmax(180px, 0.34fr) minmax(0, 0.66fr);
   gap: clamp(28px, 6vw, 84px);
   padding: clamp(76px, 10vw, 132px) clamp(20px, 5vw, 76px);
+  color: var(--cream);
+  background:
+    linear-gradient(180deg, rgba(5, 6, 6, 0.94), rgba(9, 10, 10, 0.98)),
+    var(--night);
 }
 
 .intro-copy h2,
@@ -363,6 +431,9 @@ h1 {
   margin-bottom: 22px;
   font-size: clamp(40px, 5.6vw, 82px);
   line-height: 0.96;
+  color: var(--cream);
+  font-family: "Arial Narrow", "Helvetica Neue Condensed", Impact, Inter, sans-serif;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
 }
 
@@ -371,22 +442,25 @@ h1 {
   max-width: 720px;
   font-size: clamp(19px, 2.2vw, 28px);
   line-height: 1.25;
+  color: var(--muted-cream);
 }
 
 .rules {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
+  color: var(--cream);
+  border-top: 1px solid rgba(255, 108, 34, 0.52);
+  border-bottom: 1px solid rgba(20, 220, 227, 0.45);
   background:
-    linear-gradient(135deg, rgba(238, 247, 255, 0.9), rgba(255, 215, 184, 0.78) 42%, rgba(247, 197, 215, 0.76) 72%, rgba(148, 227, 237, 0.86)),
-    var(--soft-paper);
+    radial-gradient(circle at 2% 0%, rgba(255, 108, 34, 0.28), transparent 28%),
+    radial-gradient(circle at 100% 100%, rgba(20, 220, 227, 0.22), transparent 28%),
+    linear-gradient(135deg, #090b0b, #120b0f 52%, #071014);
 }
 
 .rules article {
   min-height: 260px;
   padding: clamp(24px, 3vw, 42px);
-  border-right: 1px solid rgba(5, 5, 5, 0.24);
+  border-right: 1px solid rgba(239, 227, 208, 0.17);
 }
 
 .rules article:last-child {
@@ -397,12 +471,15 @@ h1 {
   display: block;
   margin-bottom: 54px;
   font-weight: 900;
+  color: var(--electric);
 }
 
 .rules h3 {
   margin-bottom: 14px;
   font-size: clamp(26px, 3.2vw, 50px);
   line-height: 0.94;
+  color: var(--cream);
+  font-family: "Arial Narrow", "Helvetica Neue Condensed", Impact, Inter, sans-serif;
   text-transform: uppercase;
 }
 
@@ -412,6 +489,7 @@ h1 {
   font-size: 17px;
   line-height: 1.3;
   font-weight: 650;
+  color: var(--muted-cream);
 }
 
 .venue {
@@ -421,7 +499,7 @@ h1 {
 
 .venue-image img {
   display: block;
-  width: min(100%, 560px);
+  width: min(100%, 660px);
   border: 1px solid var(--line-strong);
   box-shadow: var(--shadow);
 }
@@ -431,14 +509,14 @@ dl {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   margin: 34px 0;
-  background: var(--line-strong);
+  background: rgba(239, 227, 208, 0.26);
   border: 1px solid var(--line-strong);
 }
 
 dl div {
   min-height: 104px;
   padding: 18px;
-  background: var(--soft-paper);
+  background: rgba(5, 6, 6, 0.82);
 }
 
 dt {
@@ -446,6 +524,7 @@ dt {
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.14em;
+  color: var(--electric);
   text-transform: uppercase;
 }
 
@@ -454,16 +533,23 @@ dd {
   font-size: clamp(18px, 2vw, 26px);
   line-height: 1.08;
   font-weight: 900;
+  color: var(--cream);
 }
 
 .poster-section {
   padding: 0 clamp(18px, 5vw, 72px) clamp(72px, 10vw, 128px);
+  background:
+    radial-gradient(circle at 0% 50%, rgba(255, 108, 34, 0.15), transparent 30%),
+    radial-gradient(circle at 100% 50%, rgba(20, 220, 227, 0.13), transparent 30%),
+    var(--night);
 }
 
 .poster-section img {
   display: block;
   width: 100%;
-  border: 1px solid var(--line);
+  max-width: 1280px;
+  margin: 0 auto;
+  border: 1px solid rgba(239, 227, 208, 0.22);
   box-shadow: var(--shadow);
 }
 
@@ -473,8 +559,9 @@ footer {
   justify-content: space-between;
   gap: 20px;
   padding: 34px clamp(18px, 5vw, 72px);
-  color: var(--paper);
-  background: var(--ink);
+  color: var(--cream);
+  background: #020202;
+  border-top: 1px solid rgba(239, 227, 208, 0.18);
 }
 
 footer p {
@@ -506,16 +593,15 @@ footer div {
   }
 
   .hero-bg {
-    background-image: url("assets/bubble-field.jpg");
-    background-size: auto 78%;
-    background-position: right -38vw top 90px;
-    opacity: 0.78;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.28;
   }
 
   .hero::before {
     background:
-      linear-gradient(180deg, rgba(251, 248, 244, 0.96) 0%, rgba(251, 248, 244, 0.86) 42%, rgba(251, 248, 244, 0.62) 100%),
-      linear-gradient(90deg, var(--paper) 0%, rgba(251, 248, 244, 0.76) 100%);
+      linear-gradient(180deg, rgba(3, 3, 4, 0.94) 0%, rgba(3, 3, 4, 0.78) 52%, rgba(3, 3, 4, 0.94) 100%),
+      linear-gradient(90deg, rgba(3, 3, 4, 0.9) 0%, rgba(3, 3, 4, 0.58) 100%);
   }
 
   .hero-content {
@@ -600,9 +686,9 @@ footer div {
   }
 
   .hero-bg {
-    background-size: auto 60%;
-    background-position: right -62vw top 120px;
-    opacity: 0.64;
+    background-size: auto 100%;
+    background-position: center top;
+    opacity: 0.22;
   }
 
   .hero::after,
@@ -655,11 +741,11 @@ footer div {
   }
 
   .fragment {
-    min-height: 92px;
+    height: 92px;
   }
 
   .credits-fragment {
-    min-height: 110px;
+    height: 110px;
   }
 
   .button {
