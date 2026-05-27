@@ -218,15 +218,18 @@ dd {
   text-transform: uppercase;
 }
 
-.poster {
+.venue-photo {
   padding: 0 96px 136px;
 }
 
-.poster img {
+.venue-photo img {
   display: block;
   width: min(100%, 1180px);
+  aspect-ratio: 16 / 10;
   margin: 0 auto;
   border: 1px solid var(--line);
+  object-fit: cover;
+  object-position: center 46%;
 }
 
 footer {
@@ -285,7 +288,7 @@ footer div {
     font-size: 26px;
   }
 
-  .poster,
+  .venue-photo,
   footer {
     padding-left: 40px;
     padding-right: 40px;
@@ -350,9 +353,13 @@ footer div {
   }
 
   .rules,
-  .poster {
+  .venue-photo {
     padding-left: 20px;
     padding-right: 20px;
+  }
+
+  .venue-photo img {
+    aspect-ratio: 4 / 5;
   }
 
   .rules ul {
