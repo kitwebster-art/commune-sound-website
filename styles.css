@@ -84,12 +84,12 @@ nav {
 }
 
 .hero {
-  min-height: calc(100svh - 76px);
+  min-height: auto;
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
   align-items: center;
   gap: 108px;
-  padding: 124px 96px;
+  padding: 116px 96px 84px;
   background:
     radial-gradient(circle at 8% 16%, rgba(255, 108, 34, 0.18), transparent 28%),
     radial-gradient(circle at 100% 78%, rgba(98, 211, 223, 0.14), transparent 30%),
@@ -157,7 +157,7 @@ h1 {
 .event-card div {
   display: grid;
   gap: 10px;
-  padding: 24px 0;
+  padding: 22px 0;
   border-bottom: 1px solid var(--line);
 }
 
@@ -181,7 +181,7 @@ dd {
 }
 
 .venue-photo {
-  padding: 0 96px 136px;
+  padding: 0 96px 104px;
 }
 
 .venue-photo img {
@@ -253,8 +253,8 @@ footer div {
   }
 
   .hero {
-    padding-top: 88px;
-    padding-bottom: 88px;
+    padding-top: 72px;
+    padding-bottom: 64px;
   }
 
   h1 {
@@ -280,29 +280,37 @@ footer div {
 
   .hero {
     min-height: auto;
-    padding: 64px 20px 76px;
+    padding: 42px 20px 48px;
   }
 
   h1 {
     max-width: 100%;
-    font-size: 66px;
+    margin-bottom: 22px;
+    font-size: 58px;
   }
 
   .lede {
-    font-size: 22px;
+    margin-bottom: 28px;
+    font-size: 21px;
   }
 
   .button {
     width: 100%;
+    min-height: 48px;
+  }
+
+  .event-card div {
+    padding: 18px 0;
   }
 
   dd {
-    font-size: 26px;
+    font-size: 24px;
   }
 
   .venue-photo {
     padding-left: 20px;
     padding-right: 20px;
+    padding-bottom: 76px;
   }
 
   .venue-photo img {
