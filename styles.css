@@ -83,15 +83,29 @@ nav {
   border-radius: 999px;
 }
 
+.wordmark-banner {
+  padding: 42px 72px 16px;
+  background:
+    radial-gradient(circle at 22% 28%, rgba(255, 108, 34, 0.16), transparent 30%),
+    radial-gradient(circle at 78% 12%, rgba(98, 211, 223, 0.14), transparent 28%),
+    #050505;
+}
+
+.wordmark-banner img {
+  display: block;
+  width: min(100%, 1180px);
+  height: auto;
+  margin: 0 auto;
+}
+
 .hero {
   min-height: auto;
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
-  align-items: center;
+  align-items: start;
   gap: 108px;
-  padding: 116px 96px 84px;
+  padding: 54px 96px 84px;
   background:
-    radial-gradient(circle at 8% 16%, rgba(255, 108, 34, 0.18), transparent 28%),
     radial-gradient(circle at 100% 78%, rgba(98, 211, 223, 0.14), transparent 30%),
     #050505;
 }
@@ -135,13 +149,6 @@ h1 {
   font-size: 138px;
   line-height: 0.84;
   font-weight: 950;
-}
-
-.hero-wordmark {
-  display: block;
-  width: min(100%, 660px);
-  height: auto;
-  margin: 0 0 30px;
 }
 
 .lede {
@@ -333,12 +340,13 @@ footer div {
     padding-right: 40px;
   }
 
-  h1 {
-    font-size: 104px;
+  .wordmark-banner {
+    padding-left: 40px;
+    padding-right: 40px;
   }
 
-  .hero-wordmark {
-    width: min(100%, 560px);
+  h1 {
+    font-size: 104px;
   }
 
   .lede {
@@ -384,10 +392,6 @@ footer div {
     font-size: 82px;
   }
 
-  .hero-wordmark {
-    width: min(100%, 500px);
-  }
-
   .lede {
     font-size: 26px;
   }
@@ -405,20 +409,19 @@ footer div {
     display: none;
   }
 
+  .wordmark-banner {
+    padding: 24px 20px 10px;
+  }
+
   .hero {
     min-height: auto;
-    padding: 42px 20px 48px;
+    padding: 28px 20px 48px;
   }
 
   h1 {
     max-width: 100%;
     margin-bottom: 22px;
     font-size: 58px;
-  }
-
-  .hero-wordmark {
-    width: 100%;
-    margin-bottom: 24px;
   }
 
   .lede {
