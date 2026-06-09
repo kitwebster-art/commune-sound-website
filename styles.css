@@ -148,6 +148,18 @@ h1 {
   text-transform: uppercase;
 }
 
+.button.secondary {
+  color: var(--cream);
+  border: 1px solid var(--line);
+  background: rgba(241, 231, 215, 0.05);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
 .event-card {
   margin: 0;
   border-top: 1px solid var(--line);
@@ -192,6 +204,73 @@ dd {
   border: 1px solid var(--line);
   object-fit: cover;
   object-position: center 46%;
+}
+
+.join-section {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(340px, 0.7fr);
+  gap: 72px;
+  padding: 0 96px 108px;
+  align-items: start;
+}
+
+.join-copy h2 {
+  max-width: 9ch;
+  margin-bottom: 24px;
+  font-size: 76px;
+  line-height: 0.9;
+  font-weight: 950;
+}
+
+.join-copy p:not(.kicker) {
+  max-width: 620px;
+  color: rgba(241, 231, 215, 0.78);
+  font-size: 27px;
+  line-height: 1.16;
+  font-weight: 800;
+}
+
+.signup-form {
+  display: grid;
+  gap: 18px;
+  padding: 30px;
+  border: 1px solid var(--line);
+  background: rgba(241, 231, 215, 0.04);
+}
+
+.signup-form label {
+  display: grid;
+  gap: 8px;
+}
+
+.signup-form span {
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.signup-form input {
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 14px;
+  color: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: rgba(5, 5, 5, 0.72);
+  font: inherit;
+}
+
+.signup-form input:focus {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.signup-form p {
+  margin: 0;
+  color: rgba(241, 231, 215, 0.62);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 footer {
@@ -241,9 +320,23 @@ footer div {
   }
 
   .venue-photo,
+  .join-section,
   footer {
     padding-left: 40px;
     padding-right: 40px;
+  }
+
+  .join-section {
+    grid-template-columns: 1fr;
+    gap: 42px;
+  }
+
+  .join-copy h2 {
+    font-size: 58px;
+  }
+
+  .join-copy p:not(.kicker) {
+    font-size: 23px;
   }
 }
 
@@ -320,5 +413,24 @@ footer div {
   footer {
     align-items: flex-start;
     flex-direction: column;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .join-section {
+    padding: 0 20px 78px;
+  }
+
+  .join-copy h2 {
+    max-width: 100%;
+    font-size: 42px;
+  }
+
+  .join-copy p:not(.kicker) {
+    font-size: 19px;
+  }
+
+  .signup-form {
+    padding: 22px;
   }
 }

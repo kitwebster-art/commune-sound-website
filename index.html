@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Commune Sound | Melbourne's Sober Dance Movement</title>
+    <title>Commune Sound | Melbourne Listening Room Dancefloor</title>
     <meta
       name="description"
-      content="Commune Sound is a sober dance gathering in Melbourne: deep sound, low light, St Brigid's Hall, Fitzroy North."
+      content="Commune Sound is a listening-room dancefloor in Melbourne: long-form electronic music, immersive sound, St Brigid's Hall, Fitzroy North."
     >
     <meta property="og:title" content="Commune Sound">
-    <meta property="og:description" content="Melbourne's sober dance movement. Thu 18 June, St Brigid's Hall, Fitzroy.">
+    <meta property="og:description" content="A listening-room dancefloor. Thu 18 June, St Brigid's Hall, Fitzroy North.">
     <meta property="og:image" content="assets/commune-18-june-banner.jpg">
     <link rel="icon" href="assets/commune-logo.png" type="image/png">
     <link rel="stylesheet" href="styles.css">
@@ -22,6 +22,7 @@
       </a>
       <nav>
         <a href="#venue">Venue</a>
+        <a href="#join">Join list</a>
         <a class="nav-ticket" href="https://events.humanitix.com/commune1">Tickets</a>
       </nav>
     </header>
@@ -31,8 +32,11 @@
         <div class="hero-copy">
           <p class="kicker">Melbourne's sober dance movement</p>
           <h1>Commune Sound</h1>
-          <p class="lede">Deep sound. Low light.</p>
-          <a class="button primary" href="https://events.humanitix.com/commune1">Get tickets</a>
+          <p class="lede">A listening room built for movement.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="https://events.humanitix.com/commune1">Get tickets</a>
+            <a class="button secondary" href="#join">Future dates</a>
+          </div>
         </div>
 
         <dl class="event-card" aria-label="Event details">
@@ -58,12 +62,44 @@
       <section class="venue-photo" aria-label="St Brigid's Hall">
         <img src="assets/st-brigids-red-hall.jpg" alt="St Brigid's Hall lit red for Commune Sound">
       </section>
+
+      <section id="join" class="join-section" aria-label="Join Commune Sound future dates list">
+        <div class="join-copy">
+          <p class="kicker">Future dates</p>
+          <h2>Join the Commune Sound list</h2>
+          <p>
+            Get the next date, early ticket links and occasional music notes. No feed algorithm, no noise.
+          </p>
+        </div>
+
+        <form
+          class="signup-form"
+          action="https://kitwebster.us2.list-manage.com/subscribe/post"
+          method="post"
+        >
+          <input type="hidden" name="u" value="2ffca6b3b50c609d67f7c8e4a">
+          <input type="hidden" name="id" value="1b5918783a">
+          <input type="hidden" name="EMAILTYPE" value="html">
+          <input type="hidden" name="mc_signupsource" value="commune_sound_website">
+          <label>
+            <span>Email</span>
+            <input type="email" name="MERGE0" autocomplete="email" required>
+          </label>
+          <label>
+            <span>First name</span>
+            <input type="text" name="MERGE1" autocomplete="given-name">
+          </label>
+          <button class="button primary" type="submit">Join list</button>
+          <p>Future Commune Sound updates only. Unsubscribe anytime.</p>
+        </form>
+      </section>
     </main>
 
     <footer>
       <p>Commune Sound</p>
       <div>
         <a href="https://events.humanitix.com/commune1">Tickets</a>
+        <a href="#join">Join list</a>
         <a href="https://www.facebook.com/events/846335945173237/">Facebook</a>
       </div>
     </footer>
