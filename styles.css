@@ -192,6 +192,14 @@ dd {
   font-weight: 900;
 }
 
+.event-card p {
+  margin: 0;
+  color: rgba(241, 231, 215, 0.62);
+  font-size: 15px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+
 .venue-photo {
   padding: 0 96px 104px;
 }
