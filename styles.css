@@ -96,7 +96,6 @@ nav {
   width: min(100%, 1180px);
   height: auto;
   margin: 0 auto;
-  border: 1px solid var(--line);
 }
 
 .hero {
@@ -237,7 +236,6 @@ dd {
   width: min(100%, 1180px);
   aspect-ratio: 16 / 10;
   margin: 0 auto;
-  border: 1px solid var(--line);
   object-fit: cover;
   object-position: center 46%;
 }
