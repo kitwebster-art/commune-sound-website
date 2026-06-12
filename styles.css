@@ -298,6 +298,11 @@ dd {
   outline-offset: 2px;
 }
 
+.mailchimp-honeypot {
+  position: absolute;
+  left: -5000px;
+}
+
 .signup-form p {
   margin: 0;
   color: rgba(241, 231, 215, 0.62);
