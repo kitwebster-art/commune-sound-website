@@ -34,9 +34,24 @@ a {
   border: 0;
 }
 
+.wordmark-banner {
+  padding: 44px 72px 26px;
+  background:
+    radial-gradient(circle at 22% 28%, rgba(255, 108, 34, 0.16), transparent 30%),
+    radial-gradient(circle at 78% 12%, rgba(98, 211, 223, 0.14), transparent 28%),
+    #050505;
+}
+
+.wordmark-banner img {
+  display: block;
+  width: min(100%, 1180px);
+  height: auto;
+  margin: 0 auto;
+}
+
 .hero {
   min-height: auto;
-  padding: 68px 96px 50px;
+  padding: 22px 96px 50px;
   background:
     radial-gradient(circle at 100% 78%, rgba(98, 211, 223, 0.14), transparent 30%),
     #050505;
@@ -258,6 +273,11 @@ dd {
     padding-right: 40px;
   }
 
+  .wordmark-banner {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+
   h1 {
     font-size: 104px;
   }
@@ -308,7 +328,11 @@ dd {
 @media (max-width: 560px) {
   .hero {
     min-height: auto;
-    padding: 42px 20px 46px;
+    padding: 28px 20px 46px;
+  }
+
+  .wordmark-banner {
+    padding: 24px 20px 10px;
   }
 
   h1 {
