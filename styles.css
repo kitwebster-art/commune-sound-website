@@ -36,6 +36,11 @@ a {
   box-shadow: 0 12px 36px rgba(240, 59, 135, 0.14);
 }
 
+.button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .wordmark-banner {
   padding: clamp(22px, 4vw, 46px) clamp(20px, 6vw, 72px) 10px;
   background:
@@ -240,11 +245,26 @@ h1 {
 }
 
 .form-note,
-.privacy-note {
+.privacy-note,
+.form-status {
   margin: 0;
   color: rgba(241, 231, 215, 0.62);
   font-size: 13px;
   line-height: 1.45;
+}
+
+.form-status:empty {
+  display: none;
+}
+
+.form-status[data-state="success"] {
+  color: var(--cyan);
+  font-weight: 800;
+}
+
+.form-status[data-state="error"] {
+  color: #ff8a6a;
+  font-weight: 800;
 }
 
 .signup-form label {

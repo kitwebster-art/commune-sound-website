@@ -62,6 +62,7 @@
             class="signup-form"
             action="https://kitwebster.us2.list-manage.com/subscribe/post?u=2ffca6b3b50c609d67f7c8e4a&amp;id=1b5918783a&amp;f_id=0048c7e3f0"
             method="post"
+            data-mailchimp-ajax="true"
           >
             <p class="form-title">Join the list</p>
             <p class="form-note">Ticket links, future dates and occasional Commune Sound updates.</p>
@@ -80,6 +81,7 @@
               <input type="text" name="b_2ffca6b3b50c609d67f7c8e4a_1b5918783a" tabindex="-1" value="">
             </div>
             <button class="button primary" type="submit">Join Commune Sound</button>
+            <p class="form-status" role="status" aria-live="polite"></p>
             <p class="privacy-note">Unsubscribe anytime.</p>
           </form>
         </div>
@@ -89,5 +91,65 @@
         <img src="assets/st-brigids-red-hall.jpg" alt="St Brigid's Hall lit red for Commune Sound">
       </section>
     </main>
+    <script>
+      (() => {
+        const form = document.querySelector('[data-mailchimp-ajax="true"]');
+        if (!form) return;
+
+        const button = form.querySelector('button[type="submit"]');
+        const status = form.querySelector('.form-status');
+
+        const setStatus = (message, state = '') => {
+          status.textContent = message;
+          status.dataset.state = state;
+        };
+
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          setStatus('Joining...', 'loading');
+          button.disabled = true;
+
+          const callbackName = `communeMailchimp${Date.now()}`;
+          const data = new FormData(form);
+          const endpoint = form.action.replace('/post?', '/post-json?');
+          const params = new URLSearchParams(data);
+          params.set('c', callbackName);
+
+          const script = document.createElement('script');
+          let finished = false;
+
+          const cleanup = () => {
+            delete window[callbackName];
+            script.remove();
+          };
+
+          window[callbackName] = (response) => {
+            finished = true;
+            button.disabled = false;
+            cleanup();
+
+            const message = String(response.msg || '').replace(/<[^>]*>/g, ' ');
+            if (response.result === 'success' || message.toLowerCase().includes('already subscribed')) {
+              form.reset();
+              setStatus("You're on the Commune Sound list.", 'success');
+              return;
+            }
+
+            setStatus(message || 'Something went wrong. Please try again.', 'error');
+          };
+
+          script.onerror = () => {
+            if (finished) return;
+            finished = true;
+            button.disabled = false;
+            cleanup();
+            setStatus('Signup failed. Please try again.', 'error');
+          };
+
+          script.src = `${endpoint}&${params.toString()}`;
+          document.body.appendChild(script);
+        });
+      })();
+    </script>
   </body>
 </html>
