@@ -200,32 +200,55 @@ dd {
 
 .join-copy p:not(.kicker) {
   max-width: 720px;
-  margin-bottom: 22px;
+  margin-bottom: 16px;
   color: rgba(241, 231, 215, 0.78);
-  font-size: 23px;
-  line-height: 1.12;
+  font-size: 22px;
+  line-height: 1.18;
   font-weight: 800;
 }
 
-.vibe-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  max-width: 650px;
+.event-details {
+  margin: 30px 0 22px;
+}
+
+.event-details p {
+  margin-bottom: 12px;
+  color: var(--cyan);
+  font-size: 14px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.event-details ul {
+  display: grid;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.vibe-list li {
-  padding: 9px 12px;
-  color: rgba(241, 231, 215, 0.86);
-  border: 1px solid rgba(241, 231, 215, 0.14);
-  background: rgba(241, 231, 215, 0.045);
-  font-size: 12px;
-  font-weight: 950;
-  line-height: 1;
-  text-transform: uppercase;
+.event-details li {
+  color: rgba(241, 231, 215, 0.9);
+  font-size: 21px;
+  line-height: 1.12;
+  font-weight: 900;
+}
+
+.event-details li::before {
+  content: "✦";
+  margin-right: 10px;
+  color: var(--pink);
+}
+
+.link-line {
+  overflow-wrap: anywhere;
+}
+
+.link-line a {
+  color: var(--cyan);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
 }
 
 .signup-form {
@@ -383,13 +406,12 @@ dd {
     line-height: 1.18;
   }
 
-  .vibe-list {
-    gap: 8px;
+  .event-details {
+    margin: 26px 0 20px;
   }
 
-  .vibe-list li {
-    padding: 8px 9px;
-    font-size: 11px;
+  .event-details li {
+    font-size: 17px;
   }
 
   .signup-form {
