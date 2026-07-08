@@ -147,6 +147,35 @@ h1 {
   text-transform: uppercase;
 }
 
+.event-intro {
+  display: grid;
+  gap: 18px;
+  width: min(100%, 760px);
+  text-align: center;
+}
+
+.event-intro .section-label {
+  margin: 0;
+  color: var(--cyan);
+}
+
+.event-intro h2 {
+  margin: 0;
+  color: var(--cream);
+  font-size: clamp(42px, 8vw, 92px);
+  line-height: 0.88;
+  font-weight: 950;
+}
+
+.event-intro p:not(.section-label) {
+  max-width: 640px;
+  margin: 0 auto;
+  color: rgba(241, 231, 215, 0.78);
+  font-size: clamp(17px, 2.1vw, 22px);
+  line-height: 1.28;
+  font-weight: 750;
+}
+
 .event-card ul {
   display: grid;
   gap: 14px;
