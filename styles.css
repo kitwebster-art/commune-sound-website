@@ -62,7 +62,7 @@ a {
   gap: clamp(28px, 5vw, 54px);
   max-width: 980px;
   margin: 0 auto;
-  padding: clamp(30px, 5vw, 70px) clamp(20px, 6vw, 72px) clamp(54px, 8vw, 96px);
+  padding: clamp(24px, 4vw, 52px) clamp(20px, 6vw, 72px) clamp(54px, 8vw, 96px);
   text-align: center;
   background:
     linear-gradient(90deg, rgba(255, 108, 34, 0.1), transparent 38%),
@@ -162,8 +162,8 @@ h1 {
 .event-intro h2 {
   margin: 0;
   color: var(--cream);
-  font-size: clamp(42px, 8vw, 92px);
-  line-height: 0.88;
+  font-size: clamp(40px, 7.4vw, 86px);
+  line-height: 0.9;
   font-weight: 950;
 }
 
@@ -202,7 +202,10 @@ h1 {
 }
 
 .venue-photo {
-  padding: 0 clamp(20px, 6vw, 72px) clamp(70px, 8vw, 104px);
+  padding: clamp(18px, 3vw, 36px) clamp(20px, 6vw, 72px) 0;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(255, 108, 34, 0.14), transparent 28%),
+    radial-gradient(circle at 82% 92%, rgba(98, 211, 223, 0.12), transparent 30%);
 }
 
 .venue-photo img {
