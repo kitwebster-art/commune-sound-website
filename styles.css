@@ -163,6 +163,17 @@ h1 {
   font-weight: 750;
 }
 
+.event-intro {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+}
+
+.event-intro p:first-child {
+  color: var(--cream);
+  font-size: clamp(19px, 2.6vw, 26px);
+}
+
 .event-letter a {
   color: var(--cyan);
   overflow-wrap: anywhere;
