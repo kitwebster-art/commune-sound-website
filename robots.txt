@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://communesound.com.au/sitemap.xml
