@@ -154,11 +154,6 @@ h1 {
   font-weight: 950;
 }
 
-.event-letter .dates-heading {
-  margin-top: 12px;
-  font-size: clamp(30px, 5vw, 58px);
-}
-
 .event-letter p {
   max-width: 640px;
   margin: 0 auto;
