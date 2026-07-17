@@ -28,7 +28,7 @@
     >
     <meta name="twitter:image" content="https://communesound.com.au/assets/hall-photo-cleaned.jpg">
     <link rel="icon" href="assets/commune-logo.png" type="image/png">
-    <link rel="stylesheet" href="styles-20260716-all-seams.css">
+    <link rel="stylesheet" href="styles-20260717-pricing.css">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -42,37 +42,6 @@
             "sameAs": [
               "https://www.instagram.com/communesound/"
             ]
-          },
-          {
-            "@type": "Event",
-            "name": "Commune Sound, 16 July 2026",
-            "description": "A sober rave and conscious dance experience in Melbourne, blending electronic music with somatic and free-form movement.",
-            "startDate": "2026-07-16T19:30:00+10:00",
-            "endDate": "2026-07-16T21:30:00+10:00",
-            "eventStatus": "https://schema.org/EventScheduled",
-            "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-            "image": "https://communesound.com.au/assets/hall-photo-cleaned.jpg",
-            "location": {
-              "@type": "Place",
-              "name": "St Brigid's Hall",
-              "address": {
-                "@type": "PostalAddress",
-                "streetAddress": "378 Nicholson Street",
-                "addressLocality": "Fitzroy North",
-                "addressRegion": "VIC",
-                "postalCode": "3068",
-                "addressCountry": "AU"
-              }
-            },
-            "organizer": {
-              "@id": "https://communesound.com.au/#organization"
-            },
-            "offers": {
-              "@type": "Offer",
-              "url": "https://events.humanitix.com/commune-sound-16-july/tickets",
-              "availability": "https://schema.org/InStock",
-              "validFrom": "2026-07-01T00:00:00+10:00"
-            }
           },
           {
             "@type": "Event",
@@ -99,8 +68,12 @@
               "@id": "https://communesound.com.au/#organization"
             },
             "offers": {
-              "@type": "Offer",
+              "@type": "AggregateOffer",
               "url": "https://events.humanitix.com/commune-sound-16-july/tickets",
+              "priceCurrency": "AUD",
+              "lowPrice": "25",
+              "highPrice": "40",
+              "offerCount": "2",
               "availability": "https://schema.org/InStock",
               "validFrom": "2026-07-01T00:00:00+10:00"
             }
@@ -130,8 +103,12 @@
               "@id": "https://communesound.com.au/#organization"
             },
             "offers": {
-              "@type": "Offer",
+              "@type": "AggregateOffer",
               "url": "https://events.humanitix.com/commune-sound-16-july/tickets",
+              "priceCurrency": "AUD",
+              "lowPrice": "25",
+              "highPrice": "40",
+              "offerCount": "2",
               "availability": "https://schema.org/InStock",
               "validFrom": "2026-07-01T00:00:00+10:00"
             }
@@ -189,20 +166,20 @@
           <div class="event-dates" aria-label="Upcoming Commune Sound events">
             <article class="event-date">
               <p class="event-date-label">Next event</p>
-              <h3>Thursday 16 July</h3>
-              <p>7:30pm - 9:30pm</p>
-            </article>
-            <article class="event-date">
-              <p class="event-date-label">Following event</p>
               <h3>Thursday 30 July</h3>
               <p>7:30pm - 9:30pm</p>
             </article>
             <article class="event-date">
-              <p class="event-date-label">August event</p>
+              <p class="event-date-label">Following event</p>
               <h3>Thursday 13 August</h3>
               <p>7:30pm - 9:30pm</p>
             </article>
           </div>
+
+          <p class="ticket-pricing">
+            <span>General admission <strong>$25</strong></span>
+            <span>Two dancers <strong>$40</strong></span>
+          </p>
 
           <a class="button primary date-picker-button" href="https://events.humanitix.com/commune-sound-16-july/tickets">Choose a date and tickets</a>
 
