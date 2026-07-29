@@ -7,14 +7,14 @@
   --orange: #ff6c22;
   --pink: #f03b87;
   --cyan: #62d3df;
-  --logo-image-opacity: 0.08;
+  --logo-image-opacity: 0;
   --logo-flux-x: 0px;
   --logo-flux-y: 0px;
   --logo-flux-scale: 1;
   --logo-flux-blur: 0px;
   --logo-flux-saturate: 1;
   --logo-flux-contrast: 1;
-  --venue-image-opacity: 1;
+  --venue-image-opacity: 0;
   --venue-flux-x: 0px;
   --venue-flux-y: 0px;
   --venue-flux-scale: 1;

@@ -387,6 +387,7 @@
   const venueParticles = [];
   const ambient = [];
   const gestureTrail = [];
+  const particleDesigns = [];
   const targetPoints = [];
   const venueTargetPoints = [];
   const pointer = {
@@ -414,9 +415,13 @@
   let resizeFrame = 0;
   let lastFluxSoundUpdate = 0;
   let fluxBurst = 0;
+  let imageSuppression = 0;
+  let imageSuppressionHoldUntil = 0;
   let performanceFrames = 0;
   let performanceTime = 0;
   let quality = window.innerWidth < 700 ? 0.68 : 1;
+  const imageCycleSeconds = 10;
+  canvas.dataset.imageCycleSeconds = String(imageCycleSeconds);
 
   const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
   const smoothstep = (minimum, maximum, value) => {
@@ -750,6 +755,40 @@
     if (gestureTrail.length > (width < 700 ? 75 : 150)) gestureTrail.shift();
   }
 
+  function createParticleDesign(x, y) {
+    const compact = width < 700;
+    const count = compact ? 78 : Math.max(108, Math.round(144 * quality));
+    const arms = 5 + Math.floor(Math.random() * 4);
+    const spin = Math.random() > 0.5 ? 1 : -1;
+    const radius = compact ? 112 : 178;
+    const hue = palette[Math.floor(Math.random() * palette.length)];
+    const points = [];
+
+    for (let index = 0; index < count; index += 1) {
+      const phase = index / count * Math.PI * 2;
+      const layer = index % 3;
+      points.push({
+        phase,
+        layer,
+        radius: radius * (0.3 + Math.pow(Math.random(), 0.68) * 0.7),
+        seed: Math.random() * Math.PI * 2,
+        hue: (hue + layer * 42 + Math.random() * 24) % 360,
+        size: 0.26 + Math.random() * 0.58,
+      });
+    }
+
+    particleDesigns.push({
+      x,
+      y,
+      born: performance.now(),
+      arms,
+      spin,
+      points,
+    });
+    if (particleDesigns.length > (compact ? 2 : 3)) particleDesigns.shift();
+    canvas.dataset.particleDesigns = String(particleDesigns.length);
+  }
+
   function onPointerMove(event) {
     pointer.velocityX = event.clientX - pointer.x;
     pointer.velocityY = event.clientY - pointer.y;
@@ -773,8 +812,11 @@
     pointer.y = event.clientY;
     pointer.burst = 1;
     fluxBurst = 1;
+    imageSuppression = 1;
+    imageSuppressionHoldUntil = performance.now() + 4200;
     pointer.active = 1;
     addGesturePoint(event.clientX, event.clientY, true);
+    createParticleDesign(event.clientX, event.clientY);
   }
 
   function onPointerUp() {
@@ -903,23 +945,101 @@
     context.restore();
   }
 
+  function drawParticleDesigns(now) {
+    const lifetime = 4400;
+    const previousCount = particleDesigns.length;
+    const activeDesigns = particleDesigns.filter((design) => now - design.born < lifetime);
+    particleDesigns.length = 0;
+    particleDesigns.push(...activeDesigns);
+    if (activeDesigns.length !== previousCount) {
+      canvas.dataset.particleDesigns = String(activeDesigns.length);
+    }
+    if (activeDesigns.length === 0) return;
+
+    context.save();
+    context.globalCompositeOperation = 'lighter';
+    activeDesigns.forEach((design) => {
+      const age = (now - design.born) / 1000;
+      const life = clamp(1 - smoothstep(0.5, 1, age / (lifetime / 1000)), 0, 1);
+      const growth = smoothstep(0, 1, Math.min(age / 1.35, 1));
+
+      design.points.forEach((point, index) => {
+        const layerSpeed = 0.46 + point.layer * 0.13;
+        const theta = point.phase
+          + design.spin * age * layerSpeed
+          + Math.sin(age * 1.4 + point.seed) * 0.12;
+        const rose = Math.cos(design.arms * theta + age * 0.82 + point.layer * 1.7);
+        const ripple = Math.sin(age * 3.1 - point.radius * 0.035 + point.seed);
+        const radius = point.radius
+          * growth
+          * (0.68 + rose * 0.23)
+          + ripple * (4 + point.layer * 2.4)
+          + age * (1.4 + point.layer * 1.1);
+        const curl = age * design.spin * (0.18 + point.layer * 0.04);
+        const x = design.x
+          + Math.cos(theta + curl) * radius
+          + Math.cos(theta * 3 - age + point.seed) * 5.5 * life;
+        const y = design.y
+          + Math.sin(theta + curl) * radius
+          + Math.sin(theta * 2 + age * 0.7 + point.seed) * 5.5 * life;
+        const previousAge = Math.max(0, age - 0.035);
+        const previousTheta = point.phase
+          + design.spin * previousAge * layerSpeed
+          + Math.sin(previousAge * 1.4 + point.seed) * 0.12;
+        const previousRose = Math.cos(
+          design.arms * previousTheta + previousAge * 0.82 + point.layer * 1.7,
+        );
+        const previousRipple = Math.sin(
+          previousAge * 3.1 - point.radius * 0.035 + point.seed,
+        );
+        const previousRadius = point.radius
+          * smoothstep(0, 1, Math.min(previousAge / 1.35, 1))
+          * (0.68 + previousRose * 0.23)
+          + previousRipple * (4 + point.layer * 2.4)
+          + previousAge * (1.4 + point.layer * 1.1);
+        const previousCurl = previousAge * design.spin * (0.18 + point.layer * 0.04);
+        const previousX = design.x
+          + Math.cos(previousTheta + previousCurl) * previousRadius
+          + Math.cos(previousTheta * 3 - previousAge + point.seed) * 5.5 * life;
+        const previousY = design.y
+          + Math.sin(previousTheta + previousCurl) * previousRadius
+          + Math.sin(previousTheta * 2 + previousAge * 0.7 + point.seed) * 5.5 * life;
+        const shimmer = 0.55 + Math.sin(age * 5.2 + point.seed + index * 0.19) * 0.45;
+        const alpha = life * (0.22 + shimmer * 0.5);
+        const hue = (point.hue + age * 18 + rose * 34 + 360) % 360;
+
+        context.strokeStyle = `hsla(${hue}, 100%, 72%, ${alpha * 0.42})`;
+        context.lineWidth = 0.28 + point.size * 0.32;
+        context.beginPath();
+        context.moveTo(previousX, previousY);
+        context.lineTo(x, y);
+        context.stroke();
+        context.fillStyle = `hsla(${hue}, 100%, ${72 + shimmer * 16}%, ${alpha})`;
+        context.beginPath();
+        context.arc(x, y, point.size * (0.72 + shimmer * 0.45), 0, Math.PI * 2);
+        context.fill();
+
+        if ((index + Math.floor(age * 12)) % 23 === 0) {
+          context.fillStyle = `rgba(255, 249, 238, ${alpha * 0.78})`;
+          context.beginPath();
+          context.arc(x, y, 0.7 + shimmer * 0.55, 0, Math.PI * 2);
+          context.fill();
+        }
+      });
+    });
+    context.restore();
+  }
+
   function calculateFluxState(time) {
     const slowBreath = 0.5 + Math.sin(time * 0.43 - 0.8) * 0.5;
     const soundBreath = 0.5 + Math.sin(time * Math.PI * 2 * (75 / 60)) * 0.5;
-    const logoWave = Math.sin(time * 0.205 - 0.9)
-      + Math.sin(time * 0.071 + 1.4) * 0.38;
-    const venueWave = Math.sin(time * 0.137 + 0.65)
-      + Math.cos(time * 0.049 - 0.4) * 0.42;
-    const logoPresence = clamp(
-      smoothstep(-0.58, 0.62, logoWave) + (soundBreath - 0.5) * 0.035,
-      0,
-      1,
-    );
-    const venuePresence = clamp(
-      smoothstep(-0.64, 0.58, venueWave) + (slowBreath - 0.5) * 0.08,
-      0,
-      1,
-    );
+    const imageWave = 0.5 - Math.cos(time / imageCycleSeconds * Math.PI * 2) * 0.5;
+    const imagePresence = smoothstep(0.035, 0.965, imageWave);
+    const interactionVisibility = time * 1000 < imageSuppressionHoldUntil
+      ? 0
+      : 1 - imageSuppression;
+    const logoPresence = imagePresence * interactionVisibility;
+    const venuePresence = imagePresence * interactionVisibility;
     return {
       logoPresence,
       venuePresence,
@@ -930,12 +1050,13 @@
 
   function updateImageFluxStyles(time, flux) {
     const rootStyle = document.documentElement.style;
-    const logoDistortion = 1 - flux.logoPresence + fluxBurst * 0.7;
-    const venueDistortion = 1 - flux.venuePresence + fluxBurst * 0.46;
-    const logoOpacity = 0.035 + flux.logoPresence * 0.92;
-    const venueOpacity = 0.11 + flux.venuePresence * 0.87;
+    const logoDistortion = 1 - flux.logoPresence;
+    const venueDistortion = 1 - flux.venuePresence;
+    const logoOpacity = flux.logoPresence;
+    const venueOpacity = flux.venuePresence;
 
     rootStyle.setProperty('--logo-image-opacity', logoOpacity.toFixed(3));
+    if (frame % 6 === 0) canvas.dataset.logoImageOpacity = logoOpacity.toFixed(3);
     rootStyle.setProperty(
       '--logo-flux-x',
       `${(Math.sin(time * 1.13) * logoDistortion * 4.8).toFixed(2)}px`,
@@ -959,6 +1080,7 @@
     );
 
     rootStyle.setProperty('--venue-image-opacity', venueOpacity.toFixed(3));
+    if (frame % 6 === 0) canvas.dataset.venueImageOpacity = venueOpacity.toFixed(3);
     rootStyle.setProperty(
       '--venue-flux-x',
       `${(Math.sin(time * 0.71 + 1.3) * venueDistortion * 4.4).toFixed(2)}px`,
@@ -1005,15 +1127,15 @@
       3
       + particleReality * (mode === 'venue' ? 14 : 19)
       + transition * 9
-      + fluxBurst * 18
     );
     const sliceHeight = rect.height / sliceCount;
     const sourceSliceHeight = crop.height / sliceCount;
     const fragmentAlpha = clamp(
-      0.035 + transition * 0.18 + particleReality * 0.1 + fluxBurst * 0.08,
+      transition * 0.22 * (1 - imageSuppression),
       0,
-      0.34,
+      0.24,
     );
+    if (fragmentAlpha < 0.004) return;
 
     context.save();
     context.globalCompositeOperation = 'screen';
@@ -1126,8 +1248,15 @@
       particle.velocityY += deltaY * spring * frameStep;
       particle.velocityX += tangentX * interaction * (pointer.down ? 0.66 : 0.28) * frameStep;
       particle.velocityY += tangentY * interaction * (pointer.down ? 0.66 : 0.28) * frameStep;
-      particle.velocityX += radialX * interaction * pointer.burst * 4.2;
-      particle.velocityY += radialY * interaction * pointer.burst * 4.2;
+      const burstPattern = Math.sin(Math.atan2(radialY, radialX) * 7 + time * 4.2);
+      particle.velocityX += (
+        radialX * 3.6
+        + tangentX * burstPattern * 3.1
+      ) * interaction * pointer.burst;
+      particle.velocityY += (
+        radialY * 3.6
+        + tangentY * burstPattern * 3.1
+      ) * interaction * pointer.burst;
       particle.velocityX *= Math.pow(0.922, frameStep);
       particle.velocityY *= Math.pow(0.922, frameStep);
       particle.x += particle.velocityX * frameStep;
@@ -1281,8 +1410,15 @@
       particle.velocityY += tangentY * interaction * (pointer.down ? 0.82 : 0.42) * frameStep;
       particle.velocityX += pointer.velocityX * interaction * 0.012;
       particle.velocityY += pointer.velocityY * interaction * 0.012;
-      particle.velocityX += radialX * interaction * pointer.burst * 5.4;
-      particle.velocityY += radialY * interaction * pointer.burst * 5.4;
+      const burstPattern = Math.sin(Math.atan2(radialY, radialX) * 7 + time * 4.8);
+      particle.velocityX += (
+        radialX * 4.4
+        + tangentX * burstPattern * 3.8
+      ) * interaction * pointer.burst;
+      particle.velocityY += (
+        radialY * 4.4
+        + tangentY * burstPattern * 3.8
+      ) * interaction * pointer.burst;
 
       const flow = Math.sin(particle.targetY * 0.013 + time * 0.7 + particle.phase)
         + Math.cos(particle.targetX * 0.008 - time * 0.43);
@@ -1382,6 +1518,10 @@
     pointer.velocityY *= 0.82;
     pointer.burst *= 0.91;
     fluxBurst *= 0.94;
+    if (now >= imageSuppressionHoldUntil) {
+      imageSuppression *= Math.pow(0.978, frameStep);
+      if (imageSuppression < 0.002) imageSuppression = 0;
+    }
     scrollEnergy *= 0.94;
 
     const fragmentInterval = quality < 0.72 ? 3 : 2;
@@ -1399,6 +1539,7 @@
     drawVenueParticles(time, frameStep, flux);
     drawTargetParticles(time, frameStep, flux);
     drawGestureTrails(now);
+    drawParticleDesigns(now);
   }
 
   window.addEventListener('pointermove', onPointerMove, { passive: true });
