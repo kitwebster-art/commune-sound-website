@@ -450,6 +450,7 @@
   let imageSuppressionHoldUntil = 0;
   let performanceFrames = 0;
   let performanceTime = 0;
+  let simulationFrame = 0;
   let quality = window.innerWidth < 700 ? 0.68 : 1;
   let formTitleDpr = 1;
   let formTitleWidth = 1;
@@ -459,6 +460,9 @@
   canvas.dataset.imageCycleSeconds = String(imageCycleSeconds);
   canvas.dataset.imageOpacityFloor = String(imageOpacityFloor);
   canvas.dataset.glitchMode = 'structural-blocks';
+  canvas.dataset.simulationMode = 'staggered';
+  canvas.dataset.trailFade = '0.10';
+  canvas.dataset.fragmentCadence = 'interleaved';
 
   const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
   const smoothstep = (minimum, maximum, value) => {
@@ -510,7 +514,7 @@
     width = window.innerWidth;
     height = window.innerHeight;
     const compact = width < 700 || window.matchMedia('(pointer: coarse)').matches;
-    dpr = Math.min(window.devicePixelRatio || 1, compact ? 1 : 1.35);
+    dpr = Math.min(window.devicePixelRatio || 1, compact ? 1 : 1.1);
     maskScale = compact ? 0.42 : 0.5;
     canvas.width = Math.max(1, Math.round(width * dpr));
     canvas.height = Math.max(1, Math.round(height * dpr));
@@ -548,7 +552,7 @@
     const rect = formTitle.getBoundingClientRect();
     formTitleWidth = Math.max(1, Math.round(rect.width));
     formTitleHeight = Math.max(1, Math.round(rect.height + 16));
-    formTitleDpr = Math.min(window.devicePixelRatio || 1, compact ? 1.25 : 1.6);
+    formTitleDpr = Math.min(window.devicePixelRatio || 1, compact ? 1.1 : 1.25);
     formTitleCanvas.width = Math.max(1, Math.round(formTitleWidth * formTitleDpr));
     formTitleCanvas.height = Math.max(1, Math.round(formTitleHeight * formTitleDpr));
     formTitleCanvas.style.width = `${formTitleWidth}px`;
@@ -598,7 +602,7 @@
       }
     }
     candidates.sort((first, second) => second.rank - first.rank);
-    const maximum = compact ? 820 : 1450;
+    const maximum = compact ? 560 : 980;
     const targets = candidates.slice(0, maximum);
     const initial = formTitleParticles.length === 0;
     targets.forEach((target, index) => {
@@ -740,8 +744,8 @@
     canvas.dataset.logoMaskSource = 'source-pixels';
     canvas.dataset.logoMaskCandidates = String(candidates.length);
     const maximum = compact
-      ? Math.max(1050, Math.round(1800 * quality))
-      : Math.max(3800, Math.round(5000 * quality));
+      ? Math.max(900, Math.round(1250 * quality))
+      : Math.max(2800, Math.round(3600 * quality));
     candidates.sort((first, second) => second.rank - first.rank);
     targetPoints.length = 0;
     for (let index = 0; index < candidates.length && targetPoints.length < maximum; index += 1) {
@@ -854,8 +858,8 @@
     }
 
     const maximum = compact
-      ? Math.max(650, Math.round(900 * quality))
-      : Math.max(1400, Math.round(1800 * quality));
+      ? Math.max(480, Math.round(620 * quality))
+      : Math.max(850, Math.round(1200 * quality));
     candidates.sort((first, second) => second.rank - first.rank);
     venueTargetPoints.length = 0;
     for (
@@ -1302,7 +1306,7 @@
       0,
       1.6,
     );
-    const sliceCount = compact ? 13 : mode === 'venue' ? 24 : 19;
+    const sliceCount = compact ? 10 : mode === 'venue' ? 15 : 13;
     const crop = mode === 'venue'
       ? objectFitCoverCrop(image, rect)
       : {
@@ -1331,7 +1335,7 @@
     context.save();
     context.globalCompositeOperation = 'screen';
     context.globalAlpha = fragmentAlpha * (0.46 + glitchEnergy * 0.32);
-    context.filter = `saturate(${1.05 + particleReality * 0.6}) contrast(${1.08 + particleReality * 0.35}) blur(${particleReality * 0.42}px)`;
+    context.filter = 'none';
     context.beginPath();
     context.rect(rect.left, rect.top, rect.width, rect.height);
     context.clip();
@@ -1358,13 +1362,13 @@
     }
 
     const columnStops = mode === 'venue'
-      ? [0, 0.12, 0.27, 0.43, 0.57, 0.73, 0.88, 1]
-      : [0, 0.1, 0.21, 0.32, 0.43, 0.55, 0.67, 0.79, 0.9, 1];
+      ? [0, 0.16, 0.32, 0.5, 0.68, 0.84, 1]
+      : [0, 0.14, 0.29, 0.43, 0.57, 0.71, 0.86, 1];
     const rowStops = mode === 'venue'
-      ? [0, 0.07, 0.15, 0.25, 0.37, 0.5, 0.66, 0.83, 1]
-      : [0, 0.18, 0.38, 0.61, 0.8, 1];
+      ? [0, 0.1, 0.22, 0.37, 0.54, 0.75, 1]
+      : [0, 0.22, 0.46, 0.72, 1];
     let activeBlocks = 0;
-    context.filter = `saturate(${1.2 + glitchEnergy * 0.28}) contrast(${1.08 + glitchEnergy * 0.2})`;
+    context.filter = 'none';
 
     for (let row = 0; row < rowStops.length - 1; row += 1) {
       const v0 = rowStops[row];
@@ -1441,7 +1445,7 @@
           destinationHeight + 0.8,
         );
 
-        if (activation > 0.78 && (row + column) % 3 === 0) {
+        if (activation > 0.88 && (row + column) % 4 === 0) {
           context.globalAlpha = blockAlpha * 0.22;
           context.filter = 'saturate(2.1) hue-rotate(152deg) contrast(1.24)';
           context.drawImage(
@@ -1458,7 +1462,7 @@
         }
         context.restore();
 
-        const edgeParticleCount = compact ? 1 : 2;
+        const edgeParticleCount = 1;
         const edgeHue = mode === 'venue'
           ? (centreU < 0.48 ? 24 + depth * 10 : 194 - depth * 12)
           : palette[(row + column) % palette.length];
@@ -1500,14 +1504,16 @@
     const centreX = rect.left + rect.width * 0.5;
     const vanishingY = rect.top + rect.height * 0.55;
     const particleReality = 1 - flux.venuePresence;
-    const renderStride = quality < 0.68 ? 3 : quality < 0.9 ? 2 : 1;
-    const renderPhase = Math.floor(time * 60) % renderStride;
+    const renderStride = quality < 0.72 ? 4 : quality < 0.9 ? 3 : 2;
+    const renderPhase = simulationFrame % renderStride;
+    const simulationStep = Math.min(frameStep * renderStride, 3.2);
     const perspectiveBreath = (
       Math.sin(time * 0.54) * 0.5
       + Math.sin(time * 0.19 + 1.4) * 0.5
     ) * (0.004 + particleReality * 0.012);
 
     venueParticles.forEach((particle, index) => {
+      if (index % renderStride !== renderPhase) return;
       particle.previousX = particle.x;
       particle.previousY = particle.y;
       const depth = clamp(particle.v, 0, 1);
@@ -1547,10 +1553,10 @@
       }
 
       const spring = 0.019 + particle.edge * 0.008;
-      particle.velocityX += deltaX * spring * frameStep;
-      particle.velocityY += deltaY * spring * frameStep;
-      particle.velocityX += tangentX * interaction * (pointer.down ? 0.66 : 0.28) * frameStep;
-      particle.velocityY += tangentY * interaction * (pointer.down ? 0.66 : 0.28) * frameStep;
+      particle.velocityX += deltaX * spring * simulationStep;
+      particle.velocityY += deltaY * spring * simulationStep;
+      particle.velocityX += tangentX * interaction * (pointer.down ? 0.66 : 0.28) * simulationStep;
+      particle.velocityY += tangentY * interaction * (pointer.down ? 0.66 : 0.28) * simulationStep;
       const burstPattern = Math.sin(Math.atan2(radialY, radialX) * 7 + time * 4.2);
       particle.velocityX += (
         radialX * 3.6
@@ -1560,10 +1566,10 @@
         radialY * 3.6
         + tangentY * burstPattern * 3.1
       ) * interaction * pointer.burst;
-      particle.velocityX *= Math.pow(0.922, frameStep);
-      particle.velocityY *= Math.pow(0.922, frameStep);
-      particle.x += particle.velocityX * frameStep;
-      particle.y += particle.velocityY * frameStep;
+      particle.velocityX *= Math.pow(0.922, simulationStep);
+      particle.velocityY *= Math.pow(0.922, simulationStep);
+      particle.x += particle.velocityX * simulationStep;
+      particle.y += particle.velocityY * simulationStep;
 
       const speed = Math.hypot(particle.velocityX, particle.velocityY);
       const pulse = 0.5 + Math.sin(time * 1.03 + particle.phase + depth * 5.2) * 0.5;
@@ -1578,8 +1584,6 @@
         0.02,
         0.82,
       );
-      if (index % renderStride !== renderPhase) return;
-
       context.strokeStyle = `hsla(${hue}, 96%, ${56 + particle.brightness * 28}%, ${alpha * 0.38})`;
       context.lineWidth = 0.25 + particle.edge * 0.46 + Math.min(speed, 3) * 0.08;
       context.beginPath();
@@ -1667,10 +1671,12 @@
     const sweepA = width * (0.5 + Math.sin(time * 0.34 + Math.sin(time * 0.09) * 2.1) * 0.56);
     const sweepB = width * (0.5 + Math.sin(time * 0.23 + 2.4) * 0.58);
     const sweepWidth = Math.max(54, width * 0.09);
-    const renderStride = quality < 0.68 ? 3 : quality < 0.9 ? 2 : 1;
-    const renderPhase = Math.floor(time * 60) % renderStride;
+    const renderStride = quality < 0.72 ? 4 : quality < 0.9 ? 3 : 2;
+    const renderPhase = simulationFrame % renderStride;
+    const simulationStep = Math.min(frameStep * renderStride, 3.2);
 
     particles.forEach((particle, index) => {
+      if (index % renderStride !== renderPhase) return;
       particle.previousX = particle.x;
       particle.previousY = particle.y;
       const waveA = Math.exp(-Math.pow((particle.targetX - sweepA) / sweepWidth, 2));
@@ -1707,10 +1713,10 @@
       }
 
       const spring = (0.034 + shimmer * 0.01) * (1 - interaction * 0.72);
-      particle.velocityX += deltaX * spring * frameStep;
-      particle.velocityY += deltaY * spring * frameStep;
-      particle.velocityX += tangentX * interaction * (pointer.down ? 0.82 : 0.42) * frameStep;
-      particle.velocityY += tangentY * interaction * (pointer.down ? 0.82 : 0.42) * frameStep;
+      particle.velocityX += deltaX * spring * simulationStep;
+      particle.velocityY += deltaY * spring * simulationStep;
+      particle.velocityX += tangentX * interaction * (pointer.down ? 0.82 : 0.42) * simulationStep;
+      particle.velocityY += tangentY * interaction * (pointer.down ? 0.82 : 0.42) * simulationStep;
       particle.velocityX += pointer.velocityX * interaction * 0.012;
       particle.velocityY += pointer.velocityY * interaction * 0.012;
       const burstPattern = Math.sin(Math.atan2(radialY, radialX) * 7 + time * 4.8);
@@ -1727,15 +1733,15 @@
         + Math.cos(particle.targetX * 0.008 - time * 0.43);
       particle.velocityX += Math.cos(flow) * (0.004 + shimmer * 0.009);
       particle.velocityY += Math.sin(flow) * (0.004 + shimmer * 0.009);
-      particle.velocityX *= Math.pow(0.905, frameStep);
-      particle.velocityY *= Math.pow(0.905, frameStep);
+      particle.velocityX *= Math.pow(0.905, simulationStep);
+      particle.velocityY *= Math.pow(0.905, simulationStep);
       const speed = Math.hypot(particle.velocityX, particle.velocityY);
       if (speed > 13) {
         particle.velocityX = particle.velocityX / speed * 13;
         particle.velocityY = particle.velocityY / speed * 13;
       }
-      particle.x += particle.velocityX * frameStep;
-      particle.y += particle.velocityY * frameStep;
+      particle.x += particle.velocityX * simulationStep;
+      particle.y += particle.velocityY * simulationStep;
 
       const formation = 0.48
         + shimmer * 0.42
@@ -1752,8 +1758,6 @@
         0.05,
         0.92,
       );
-      if (index % renderStride !== renderPhase) return;
-
       context.strokeStyle = `hsla(${hue}, 100%, ${68 + shimmer * 13}%, ${alpha * 0.48})`;
       context.lineWidth = 0.28 + particle.size * 0.28 + Math.min(speed, 3) * 0.1;
       context.beginPath();
@@ -1795,7 +1799,7 @@
       0,
     );
     formTitleContext.globalCompositeOperation = 'destination-out';
-    formTitleContext.fillStyle = 'rgba(0, 0, 0, 0.31)';
+    formTitleContext.fillStyle = 'rgba(0, 0, 0, 0.20)';
     formTitleContext.fillRect(0, 0, formTitleWidth, formTitleHeight);
     formTitleContext.globalCompositeOperation = 'lighter';
     formTitleContext.lineCap = 'round';
@@ -1812,8 +1816,12 @@
       + Math.sin(time * 0.46 + Math.sin(time * 0.11) * 1.7) * 0.54
     );
     const sweepWidth = Math.max(34, formTitleWidth * 0.12);
+    const renderStride = quality < 0.72 ? 4 : quality < 0.9 ? 3 : 2;
+    const renderPhase = simulationFrame % renderStride;
+    const simulationStep = Math.min(frameStep * renderStride, 3.2);
 
     formTitleParticles.forEach((particle, index) => {
+      if (index % renderStride !== renderPhase) return;
       particle.previousX = particle.x;
       particle.previousY = particle.y;
       const sweepPulse = Math.exp(-Math.pow((particle.targetX - sweep) / sweepWidth, 2));
@@ -1850,23 +1858,23 @@
       }
 
       const spring = 0.058 * (1 - interaction * 0.78);
-      particle.velocityX += (animatedX - particle.x) * spring * frameStep;
-      particle.velocityY += (animatedY - particle.y) * spring * frameStep;
-      particle.velocityX += tangentX * interaction * (pointer.down ? 0.72 : 0.28) * frameStep;
-      particle.velocityY += tangentY * interaction * (pointer.down ? 0.72 : 0.28) * frameStep;
+      particle.velocityX += (animatedX - particle.x) * spring * simulationStep;
+      particle.velocityY += (animatedY - particle.y) * spring * simulationStep;
+      particle.velocityX += tangentX * interaction * (pointer.down ? 0.72 : 0.28) * simulationStep;
+      particle.velocityY += tangentY * interaction * (pointer.down ? 0.72 : 0.28) * simulationStep;
       particle.velocityX += radialX * interaction * pointer.burst * 3.2;
       particle.velocityY += radialY * interaction * pointer.burst * 3.2;
       particle.velocityX += pointer.velocityX * interaction * 0.01;
       particle.velocityY += pointer.velocityY * interaction * 0.01;
-      particle.velocityX *= Math.pow(0.88, frameStep);
-      particle.velocityY *= Math.pow(0.88, frameStep);
+      particle.velocityX *= Math.pow(0.88, simulationStep);
+      particle.velocityY *= Math.pow(0.88, simulationStep);
       const speed = Math.hypot(particle.velocityX, particle.velocityY);
       if (speed > 10) {
         particle.velocityX = particle.velocityX / speed * 10;
         particle.velocityY = particle.velocityY / speed * 10;
       }
-      particle.x += particle.velocityX * frameStep;
-      particle.y += particle.velocityY * frameStep;
+      particle.x += particle.velocityX * simulationStep;
+      particle.y += particle.velocityY * simulationStep;
 
       const hue = (particle.hue + shimmer * 28 + interaction * 72 + time * 3) % 360;
       const alpha = clamp(0.34 + shimmer * 0.38 + interaction * 0.22, 0.28, 0.94);
@@ -1905,6 +1913,7 @@
       previousTime = now;
       return;
     }
+    simulationFrame += 1;
     const rawFrameTime = Math.max(0.1, now - previousTime);
     const frameTime = clamp(rawFrameTime, 8, 40);
     previousTime = now;
@@ -1929,7 +1938,7 @@
 
     context.setTransform(dpr, 0, 0, dpr, 0, 0);
     context.globalCompositeOperation = 'destination-out';
-    context.fillStyle = 'rgba(0, 0, 0, 0.19)';
+    context.fillStyle = 'rgba(0, 0, 0, 0.10)';
     context.fillRect(0, 0, width, height);
     context.globalCompositeOperation = 'lighter';
     context.lineCap = 'round';
@@ -1946,9 +1955,12 @@
     }
     scrollEnergy *= 0.94;
 
-    const fragmentInterval = quality < 0.72 ? 3 : 2;
-    if (frame % fragmentInterval === 0) {
+    const fragmentInterval = quality < 0.72 ? 4 : 2;
+    const fragmentPhase = simulationFrame % fragmentInterval;
+    if (fragmentPhase === 0) {
       drawFluxImage(logo, logo.getBoundingClientRect(), time, flux.logoPresence, 'logo');
+    }
+    if (fragmentPhase === Math.floor(fragmentInterval * 0.5)) {
       drawFluxImage(
         venueImage,
         venueImage.getBoundingClientRect(),
