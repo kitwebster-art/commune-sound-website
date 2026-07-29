@@ -28,7 +28,8 @@
     >
     <meta name="twitter:image" content="https://communesound.com.au/assets/hall-photo-cleaned.jpg">
     <link rel="icon" href="assets/commune-logo.png" type="image/png">
-    <link rel="stylesheet" href="styles-20260717-pricing.css?v=20260721-three-dates">
+    <link rel="stylesheet" href="styles-20260717-pricing.css?v=20260729-realtime">
+    <script src="commune-realtime.js?v=20260729-realtime" defer></script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -118,10 +119,17 @@
     </script>
   </head>
   <body>
+    <canvas class="commune-realtime-field" data-commune-realtime aria-hidden="true"></canvas>
+    <div class="commune-realtime-vignette" aria-hidden="true"></div>
     <main id="top">
-      <section class="wordmark-banner" aria-label="Commune Sound">
+      <section class="wordmark-banner" aria-label="Commune Sound" data-particle-region="wordmark">
         <h1 class="sr-only">Commune Sound, sober rave and conscious dance in Melbourne</h1>
-        <img src="assets/commune-wordmark-cropped.jpeg" alt="Commune Sound">
+        <img
+          src="assets/commune-wordmark-cropped.jpeg"
+          alt="Commune Sound"
+          data-particle-logo
+        >
+        <p class="wordmark-signal">Sound, movement and light in shared space</p>
       </section>
 
       <section id="venue" class="venue-photo" aria-label="St Brigid's Hall">
@@ -135,7 +143,7 @@
           method="post"
           data-mailchimp-ajax="true"
         >
-          <p class="form-title">Join the list</p>
+          <p class="form-title" data-particle-heading>Join the list</p>
           <p class="form-note">Ticket links, future dates and occasional Commune Sound updates.</p>
           <input type="hidden" name="EMAILTYPE" value="html">
           <input type="hidden" name="mc_signupsource" value="commune_sound_website">
@@ -166,12 +174,12 @@
           <div class="event-dates" aria-label="Upcoming Commune Sound events">
             <article class="event-date">
               <p class="event-date-label">Next event</p>
-              <h3>Thursday 27 August</h3>
+              <h3 data-particle-heading>Thursday 27 August</h3>
               <p>7:30pm - 9:30pm</p>
             </article>
             <article class="event-date">
               <p class="event-date-label">Following event</p>
-              <h3>Thursday 24 September</h3>
+              <h3 data-particle-heading>Thursday 24 September</h3>
               <p>7:30pm - 9:30pm</p>
             </article>
           </div>
