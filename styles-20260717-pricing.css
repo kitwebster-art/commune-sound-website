@@ -7,6 +7,20 @@
   --orange: #ff6c22;
   --pink: #f03b87;
   --cyan: #62d3df;
+  --logo-image-opacity: 0.08;
+  --logo-flux-x: 0px;
+  --logo-flux-y: 0px;
+  --logo-flux-scale: 1;
+  --logo-flux-blur: 0px;
+  --logo-flux-saturate: 1;
+  --logo-flux-contrast: 1;
+  --venue-image-opacity: 1;
+  --venue-flux-x: 0px;
+  --venue-flux-y: 0px;
+  --venue-flux-scale: 1;
+  --venue-flux-blur: 0px;
+  --venue-flux-saturate: 1;
+  --venue-flux-contrast: 1;
 }
 
 * {
@@ -194,12 +208,20 @@ a {
     linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%),
     linear-gradient(to bottom, transparent 0, #000 10%, #000 90%, transparent 100%);
   mask-composite: intersect;
-  opacity: 1;
-  transition: opacity 520ms ease;
+  opacity: var(--logo-image-opacity);
+  filter:
+    saturate(var(--logo-flux-saturate))
+    contrast(var(--logo-flux-contrast))
+    blur(var(--logo-flux-blur));
+  transform:
+    translate3d(var(--logo-flux-x), var(--logo-flux-y), 0)
+    scale(var(--logo-flux-scale));
+  transform-origin: 50% 50%;
+  will-change: opacity, filter, transform;
 }
 
 .realtime-ready .wordmark-banner img {
-  opacity: 0;
+  opacity: var(--logo-image-opacity);
 }
 
 .wordmark-signal {
@@ -281,7 +303,7 @@ h1 {
     linear-gradient(to bottom, transparent 68%, var(--ink) 100%),
     radial-gradient(circle at 18% 8%, rgba(255, 108, 34, 0.14), transparent 28%),
     radial-gradient(circle at 82% 92%, rgba(98, 211, 223, 0.12), transparent 30%),
-    rgba(5, 5, 5, 0.44);
+    rgba(5, 5, 5, 0.22);
 }
 
 .venue-photo img {
@@ -299,6 +321,16 @@ h1 {
     linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%),
     linear-gradient(to bottom, transparent 0, #000 6%, #000 94%, transparent 100%);
   mask-composite: intersect;
+  opacity: var(--venue-image-opacity);
+  filter:
+    saturate(var(--venue-flux-saturate))
+    contrast(var(--venue-flux-contrast))
+    blur(var(--venue-flux-blur));
+  transform:
+    translate3d(var(--venue-flux-x), var(--venue-flux-y), 0)
+    scale(var(--venue-flux-scale));
+  transform-origin: 50% 42%;
+  will-change: opacity, filter, transform;
 }
 
 .signup-form {
@@ -486,6 +518,14 @@ h1 {
 
   .realtime-ready .wordmark-banner img {
     opacity: 1;
+    filter: none;
+    transform: none;
+  }
+
+  .venue-photo img {
+    opacity: 1;
+    filter: none;
+    transform: none;
   }
 
   .soundscape-toggle[data-state="on"] .soundscape-icon span {
