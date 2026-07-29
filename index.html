@@ -28,8 +28,8 @@
     >
     <meta name="twitter:image" content="https://communesound.com.au/assets/hall-photo-cleaned.jpg">
     <link rel="icon" href="assets/commune-logo.png" type="image/png">
-    <link rel="stylesheet" href="styles-20260717-pricing.css?v=20260729-realtime">
-    <script src="commune-realtime.js?v=20260729-realtime" defer></script>
+    <link rel="stylesheet" href="styles-20260717-pricing.css?v=20260729-soundscape">
+    <script src="commune-realtime.js?v=20260729-soundscape" defer></script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -121,6 +121,19 @@
   <body>
     <canvas class="commune-realtime-field" data-commune-realtime aria-hidden="true"></canvas>
     <div class="commune-realtime-vignette" aria-hidden="true"></div>
+    <button
+      class="soundscape-toggle"
+      type="button"
+      data-soundscape-toggle
+      data-state="off"
+      aria-pressed="false"
+      aria-label="Start generative soundscape"
+    >
+      <span class="soundscape-icon" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+      </span>
+      <span data-soundscape-label>Sound off</span>
+    </button>
     <main id="top">
       <section class="wordmark-banner" aria-label="Commune Sound" data-particle-region="wordmark">
         <h1 class="sr-only">Commune Sound, sober rave and conscious dance in Melbourne</h1>

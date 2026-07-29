@@ -1,8 +1,339 @@
 (() => {
   const canvas = document.querySelector('[data-commune-realtime]');
   const logo = document.querySelector('[data-particle-logo]');
+  const soundToggle = document.querySelector('[data-soundscape-toggle]');
+  const soundLabel = soundToggle?.querySelector('[data-soundscape-label]');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (!(canvas instanceof HTMLCanvasElement) || !(logo instanceof HTMLImageElement)) return;
+
+  const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+  let soundscape = null;
+  let soundscapeEnabled = false;
+  let toneTimer = 0;
+  let suspendTimer = 0;
+  let soundPointerX = window.innerWidth * 0.5;
+  let soundPointerY = window.innerHeight * 0.5;
+  let soundPointerTime = performance.now();
+
+  const soundClamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
+
+  function connectWithPan(source, destination, pan = 0) {
+    if (!soundscape || typeof soundscape.audio.createStereoPanner !== 'function') {
+      source.connect(destination);
+      return null;
+    }
+    const panner = soundscape.audio.createStereoPanner();
+    panner.pan.value = soundClamp(pan, -0.9, 0.9);
+    source.connect(panner);
+    panner.connect(destination);
+    return panner;
+  }
+
+  function createReverbImpulse(audio, duration = 3.8, decay = 3.2) {
+    const length = Math.floor(audio.sampleRate * duration);
+    const impulse = audio.createBuffer(2, length, audio.sampleRate);
+    for (let channel = 0; channel < impulse.numberOfChannels; channel += 1) {
+      const data = impulse.getChannelData(channel);
+      let previous = 0;
+      for (let index = 0; index < length; index += 1) {
+        const envelope = Math.pow(1 - index / length, decay);
+        const noise = Math.random() * 2 - 1;
+        previous = previous * 0.34 + noise * 0.66;
+        data[index] = previous * envelope * (channel === 0 ? 0.72 : 0.68);
+      }
+    }
+    return impulse;
+  }
+
+  function createAirBuffer(audio, duration = 5) {
+    const length = Math.floor(audio.sampleRate * duration);
+    const buffer = audio.createBuffer(1, length, audio.sampleRate);
+    const data = buffer.getChannelData(0);
+    let brown = 0;
+    for (let index = 0; index < length; index += 1) {
+      const white = Math.random() * 2 - 1;
+      brown = (brown + 0.018 * white) / 1.018;
+      data[index] = brown * 2.4;
+    }
+    return buffer;
+  }
+
+  function createSoundscape() {
+    if (soundscape || !AudioContextConstructor) return soundscape;
+    const audio = new AudioContextConstructor({ latencyHint: 'interactive' });
+    const master = audio.createGain();
+    const compressor = audio.createDynamicsCompressor();
+    const bus = audio.createGain();
+    const dry = audio.createGain();
+    const wet = audio.createGain();
+    const reverb = audio.createConvolver();
+    const droneFilter = audio.createBiquadFilter();
+    const droneGain = audio.createGain();
+    const airFilter = audio.createBiquadFilter();
+    const airGain = audio.createGain();
+
+    master.gain.value = 0;
+    compressor.threshold.value = -30;
+    compressor.knee.value = 18;
+    compressor.ratio.value = 3;
+    compressor.attack.value = 0.025;
+    compressor.release.value = 0.7;
+    dry.gain.value = 0.58;
+    wet.gain.value = 0.72;
+    reverb.buffer = createReverbImpulse(audio);
+
+    bus.connect(dry);
+    dry.connect(master);
+    bus.connect(reverb);
+    reverb.connect(wet);
+    wet.connect(master);
+    master.connect(compressor);
+    compressor.connect(audio.destination);
+
+    droneFilter.type = 'lowpass';
+    droneFilter.frequency.value = 440;
+    droneFilter.Q.value = 3.4;
+    droneGain.gain.value = 0.026;
+    droneFilter.connect(droneGain);
+    droneGain.connect(bus);
+
+    const droneNotes = [
+      { frequency: 82.41, type: 'sine', gain: 0.42, detune: -7 },
+      { frequency: 123.47, type: 'sine', gain: 0.2, detune: 5 },
+      { frequency: 164.81, type: 'triangle', gain: 0.06, detune: -3 },
+    ];
+    const droneOscillators = droneNotes.map((note) => {
+      const oscillator = audio.createOscillator();
+      const gain = audio.createGain();
+      oscillator.type = note.type;
+      oscillator.frequency.value = note.frequency;
+      oscillator.detune.value = note.detune;
+      gain.gain.value = note.gain;
+      oscillator.connect(gain);
+      gain.connect(droneFilter);
+      oscillator.start();
+      return oscillator;
+    });
+
+    const breathLfo = audio.createOscillator();
+    const breathDepth = audio.createGain();
+    breathLfo.type = 'sine';
+    breathLfo.frequency.value = 75 / 60;
+    breathDepth.gain.value = 0.0075;
+    breathLfo.connect(breathDepth);
+    breathDepth.connect(droneGain.gain);
+    breathLfo.start();
+
+    const driftLfo = audio.createOscillator();
+    const driftDepth = audio.createGain();
+    driftLfo.type = 'sine';
+    driftLfo.frequency.value = 0.037;
+    driftDepth.gain.value = 190;
+    driftLfo.connect(driftDepth);
+    driftDepth.connect(droneFilter.frequency);
+    driftLfo.start();
+
+    const airSource = audio.createBufferSource();
+    airSource.buffer = createAirBuffer(audio);
+    airSource.loop = true;
+    airFilter.type = 'bandpass';
+    airFilter.frequency.value = 740;
+    airFilter.Q.value = 0.46;
+    airGain.gain.value = 0.012;
+    airSource.connect(airFilter);
+    airFilter.connect(airGain);
+    const airPanner = connectWithPan(airGain, bus, 0);
+    airSource.start();
+
+    soundscape = {
+      audio,
+      master,
+      bus,
+      droneFilter,
+      droneGain,
+      airFilter,
+      airGain,
+      airPanner,
+      droneOscillators,
+      breathLfo,
+      driftLfo,
+      airSource,
+    };
+    if (soundToggle) soundToggle.dataset.context = audio.state;
+    return soundscape;
+  }
+
+  function playTone(intensity = 0.5, horizontal = 0.5, bright = false) {
+    if (!soundscapeEnabled || !soundscape) return;
+    const { audio, bus } = soundscape;
+    if (audio.state !== 'running') return;
+    const now = audio.currentTime;
+    const scale = [164.81, 196, 220, 246.94, 293.66, 329.63, 392];
+    const frequency = scale[Math.floor(Math.random() * scale.length)];
+    const duration = 3.4 + Math.random() * 2.8;
+    const level = soundClamp(intensity, 0.16, 1);
+    const envelope = audio.createGain();
+    const filter = audio.createBiquadFilter();
+    const fundamental = audio.createOscillator();
+    const overtone = audio.createOscillator();
+    const overtoneGain = audio.createGain();
+
+    fundamental.type = 'sine';
+    fundamental.frequency.setValueAtTime(frequency, now);
+    fundamental.detune.setValueAtTime((Math.random() - 0.5) * 9, now);
+    overtone.type = 'triangle';
+    overtone.frequency.setValueAtTime(frequency * 2, now);
+    overtone.detune.setValueAtTime((Math.random() - 0.5) * 13, now);
+    overtoneGain.gain.value = bright ? 0.09 : 0.035;
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(bright ? 2800 : 1450, now);
+    filter.frequency.exponentialRampToValueAtTime(520, now + duration);
+    filter.Q.value = 1.8;
+    envelope.gain.setValueAtTime(0.0001, now);
+    envelope.gain.exponentialRampToValueAtTime(0.042 * level, now + 0.08);
+    envelope.gain.exponentialRampToValueAtTime(0.011 * level, now + 0.72);
+    envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    fundamental.connect(envelope);
+    overtone.connect(overtoneGain);
+    overtoneGain.connect(envelope);
+    envelope.connect(filter);
+    connectWithPan(filter, bus, horizontal * 1.8 - 0.9);
+    fundamental.start(now);
+    overtone.start(now);
+    fundamental.stop(now + duration + 0.08);
+    overtone.stop(now + duration + 0.08);
+  }
+
+  function scheduleTone() {
+    window.clearTimeout(toneTimer);
+    if (!soundscapeEnabled) return;
+    const delay = 3300 + Math.random() * 4700;
+    toneTimer = window.setTimeout(() => {
+      playTone(0.22 + Math.random() * 0.22, Math.random(), Math.random() > 0.78);
+      scheduleTone();
+    }, delay);
+  }
+
+  function updateSoundscape(horizontal, vertical, speed = 0, isDown = false, scroll = 0) {
+    if (!soundscapeEnabled || !soundscape || soundscape.audio.state !== 'running') return;
+    const { audio, droneFilter, droneGain, airFilter, airGain, airPanner } = soundscape;
+    const now = audio.currentTime;
+    const x = soundClamp(horizontal / Math.max(window.innerWidth, 1), 0, 1);
+    const y = soundClamp(vertical / Math.max(window.innerHeight, 1), 0, 1);
+    const motion = soundClamp(speed / 85, 0, 1);
+    const scrollLift = soundClamp(scroll, 0, 1);
+    droneFilter.frequency.setTargetAtTime(300 + x * 520 + motion * 260 + scrollLift * 130, now, 0.18);
+    droneFilter.Q.setTargetAtTime(2.2 + (1 - y) * 3.6, now, 0.2);
+    droneGain.gain.setTargetAtTime(0.025 + motion * 0.005 + (isDown ? 0.004 : 0), now, 0.24);
+    airFilter.frequency.setTargetAtTime(430 + (1 - y) * 1150 + motion * 720, now, 0.14);
+    airGain.gain.setTargetAtTime(
+      0.009 + motion * 0.014 + (isDown ? 0.008 : 0) + scrollLift * 0.005,
+      now,
+      0.16,
+    );
+    if (airPanner) airPanner.pan.setTargetAtTime(x * 1.5 - 0.75, now, 0.2);
+  }
+
+  async function enableSoundscape() {
+    const engine = createSoundscape();
+    if (!engine) return;
+    try {
+      window.clearTimeout(suspendTimer);
+      await engine.audio.resume();
+      soundscapeEnabled = true;
+      const now = engine.audio.currentTime;
+      engine.master.gain.cancelScheduledValues(now);
+      engine.master.gain.setValueAtTime(engine.master.gain.value, now);
+      engine.master.gain.linearRampToValueAtTime(0.34, now + 1.35);
+      if (soundToggle) {
+        soundToggle.dataset.state = 'on';
+        soundToggle.dataset.context = engine.audio.state;
+        soundToggle.setAttribute('aria-pressed', 'true');
+        soundToggle.setAttribute('aria-label', 'Pause generative soundscape');
+      }
+      if (soundLabel) soundLabel.textContent = 'Sound on';
+      playTone(0.38, 0.5);
+      scheduleTone();
+    } catch {
+      soundscapeEnabled = false;
+      soundToggle.dataset.state = 'unavailable';
+      soundToggle.dataset.context = engine.audio.state;
+      soundToggle.setAttribute('aria-pressed', 'false');
+      soundToggle.setAttribute('aria-label', 'Soundscape could not start');
+      if (soundLabel) soundLabel.textContent = 'Sound unavailable';
+    }
+  }
+
+  function disableSoundscape() {
+    if (!soundscape) return;
+    soundscapeEnabled = false;
+    window.clearTimeout(toneTimer);
+    const now = soundscape.audio.currentTime;
+    soundscape.master.gain.cancelScheduledValues(now);
+    soundscape.master.gain.setValueAtTime(soundscape.master.gain.value, now);
+    soundscape.master.gain.linearRampToValueAtTime(0, now + 0.65);
+    if (soundToggle) {
+      soundToggle.dataset.state = 'off';
+      soundToggle.setAttribute('aria-pressed', 'false');
+      soundToggle.setAttribute('aria-label', 'Start generative soundscape');
+    }
+    if (soundLabel) soundLabel.textContent = 'Sound off';
+    suspendTimer = window.setTimeout(async () => {
+      if (!soundscapeEnabled && soundscape?.audio.state === 'running') {
+        await soundscape.audio.suspend();
+        if (soundToggle) soundToggle.dataset.context = soundscape.audio.state;
+      }
+    }, 780);
+  }
+
+  if (!(soundToggle instanceof HTMLButtonElement) || !AudioContextConstructor) {
+    if (soundToggle) {
+      soundToggle.disabled = true;
+      soundToggle.dataset.state = 'unavailable';
+      soundToggle.setAttribute('aria-label', 'Soundscape unavailable');
+    }
+    if (soundLabel) soundLabel.textContent = 'Sound unavailable';
+  } else {
+    soundToggle.addEventListener('click', () => {
+      if (soundscapeEnabled) disableSoundscape();
+      else enableSoundscape();
+    });
+
+    window.addEventListener('pointermove', (event) => {
+      const now = performance.now();
+      const elapsed = Math.max(12, now - soundPointerTime);
+      const distance = Math.hypot(event.clientX - soundPointerX, event.clientY - soundPointerY);
+      const speed = distance / elapsed * 16.67;
+      soundPointerX = event.clientX;
+      soundPointerY = event.clientY;
+      soundPointerTime = now;
+      updateSoundscape(event.clientX, event.clientY, speed, event.buttons > 0);
+    }, { passive: true });
+
+    window.addEventListener('pointerdown', (event) => {
+      if (!event.isPrimary || soundToggle.contains(event.target)) return;
+      playTone(0.48, event.clientX / Math.max(window.innerWidth, 1), true);
+      updateSoundscape(event.clientX, event.clientY, 32, true);
+    }, { passive: true });
+
+    window.addEventListener('scroll', () => {
+      const scroll = soundClamp(Math.abs(window.scrollY - (soundscape?.lastScroll || 0)) / 260, 0, 1);
+      if (soundscape) soundscape.lastScroll = window.scrollY;
+      updateSoundscape(soundPointerX, soundPointerY, 0, false, scroll);
+    }, { passive: true });
+
+    document.addEventListener('visibilitychange', async () => {
+      if (!soundscape) return;
+      if (document.hidden && soundscape.audio.state === 'running') {
+        await soundscape.audio.suspend();
+      } else if (!document.hidden && soundscapeEnabled) {
+        await soundscape.audio.resume();
+      }
+      soundToggle.dataset.context = soundscape.audio.state;
+    });
+  }
+
   if (reducedMotion.matches) {
     document.documentElement.classList.add('realtime-ready');
     return;
