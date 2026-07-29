@@ -11,17 +11,19 @@
     || !(venueImage instanceof HTMLImageElement)
   ) return;
 
-  const wordmarkRegion = logo.closest('[data-particle-region="wordmark"]');
-  const preventNativeLogoGesture = (event) => event.preventDefault();
-  logo.addEventListener('dragstart', preventNativeLogoGesture);
-  logo.addEventListener('selectstart', preventNativeLogoGesture);
-  if (wordmarkRegion instanceof HTMLElement) {
-    wordmarkRegion.addEventListener('dragstart', preventNativeLogoGesture);
-    wordmarkRegion.addEventListener('selectstart', preventNativeLogoGesture);
-    wordmarkRegion.addEventListener('pointerdown', (event) => {
+  const preventNativeImageGesture = (event) => event.preventDefault();
+  const lockImageRegion = (image, region) => {
+    image.addEventListener('dragstart', preventNativeImageGesture);
+    image.addEventListener('selectstart', preventNativeImageGesture);
+    if (!(region instanceof HTMLElement)) return;
+    region.addEventListener('dragstart', preventNativeImageGesture);
+    region.addEventListener('selectstart', preventNativeImageGesture);
+    region.addEventListener('pointerdown', (event) => {
       if (event.isPrimary && event.button === 0) event.preventDefault();
     }, { passive: false });
-  }
+  };
+  lockImageRegion(logo, logo.closest('[data-particle-region="wordmark"]'));
+  lockImageRegion(venueImage, venueImage.closest('[data-particle-region="venue"]'));
 
   const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
   let soundscape = null;
@@ -390,9 +392,11 @@
   const context = canvas.getContext('2d', { alpha: true });
   const maskCanvas = document.createElement('canvas');
   const maskContext = maskCanvas.getContext('2d', { willReadFrequently: true });
+  const logoAnalysisCanvas = document.createElement('canvas');
+  const logoAnalysisContext = logoAnalysisCanvas.getContext('2d', { willReadFrequently: true });
   const venueAnalysisCanvas = document.createElement('canvas');
   const venueAnalysisContext = venueAnalysisCanvas.getContext('2d', { willReadFrequently: true });
-  if (!context || !maskContext || !venueAnalysisContext) return;
+  if (!context || !maskContext || !logoAnalysisContext || !venueAnalysisContext) return;
 
   const palette = [18, 34, 178, 194, 310, 328];
   const particles = [];
@@ -523,18 +527,6 @@
     maskContext.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
     maskContext.setTransform(maskScale, 0, 0, maskScale, 0, 0);
 
-    const logoRect = logo.getBoundingClientRect();
-    if (logoRect.bottom > -100 && logoRect.top < height + 100) {
-      maskContext.globalAlpha = 1;
-      maskContext.drawImage(
-        logo,
-        logoRect.left,
-        logoRect.top,
-        logoRect.width,
-        logoRect.height,
-      );
-    }
-
     document.querySelectorAll('[data-particle-heading]').forEach((heading) => {
       const rect = heading.getBoundingClientRect();
       if (rect.bottom < -80 || rect.top > height + 80) return;
@@ -556,39 +548,88 @@
 
   function rebuildTargets() {
     if (!logo.complete || !logo.naturalWidth) return;
-    drawMask();
-    const image = maskContext.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
     const compact = width < 700;
-    const sampleStep = 2;
     const candidates = [];
+    const logoRect = logo.getBoundingClientRect();
 
-    for (let y = 0; y < maskCanvas.height; y += sampleStep) {
-      for (let x = 0; x < maskCanvas.width; x += sampleStep) {
+    if (inExpandedViewport(logoRect, 120)) {
+      const analysisWidth = compact ? 420 : 720;
+      const analysisHeight = Math.max(
+        1,
+        Math.round(analysisWidth * logo.naturalHeight / logo.naturalWidth),
+      );
+      logoAnalysisCanvas.width = analysisWidth;
+      logoAnalysisCanvas.height = analysisHeight;
+      logoAnalysisContext.clearRect(0, 0, analysisWidth, analysisHeight);
+      logoAnalysisContext.drawImage(logo, 0, 0, analysisWidth, analysisHeight);
+      const logoImage = logoAnalysisContext.getImageData(0, 0, analysisWidth, analysisHeight);
+      const sampleStep = 2;
+
+      for (let y = 0; y < analysisHeight; y += sampleStep) {
+        const normalizedY = (y + 0.5) / analysisHeight;
+        const insideLetterRows = (
+          (normalizedY > 0.105 && normalizedY < 0.47)
+          || (normalizedY > 0.525 && normalizedY < 0.925)
+        );
+        if (!insideLetterRows) continue;
+
+        for (let x = 0; x < analysisWidth; x += sampleStep) {
+          const offset = (y * analysisWidth + x) * 4;
+          const red = logoImage.data[offset];
+          const green = logoImage.data[offset + 1];
+          const blue = logoImage.data[offset + 2];
+          const alpha = logoImage.data[offset + 3];
+          const brightness = red * 0.299 + green * 0.587 + blue * 0.114;
+          const channelFloor = Math.min(red, green, blue);
+          const channelCeiling = Math.max(red, green, blue);
+          const channelSpread = channelCeiling - channelFloor;
+          const creamGeometry = brightness > 128
+            && channelFloor > 68
+            && channelSpread < 102
+            && red > blue * 0.88;
+          if (alpha < 80 || !creamGeometry) continue;
+
+          const normalizedX = (x + 0.5) / analysisWidth;
+          const cssX = logoRect.left + normalizedX * logoRect.width;
+          const cssY = logoRect.top + normalizedY * logoRect.height;
+          const fallbackHue = palette[
+            (Math.floor(normalizedX * 8) + Math.floor(normalizedY * 5)) % palette.length
+          ];
+          candidates.push({
+            x: cssX,
+            y: cssY,
+            hue: colourHue(red, green, blue, fallbackHue),
+            brightness: brightness / 255,
+            rank: hashNoise(x, y),
+          });
+        }
+      }
+    }
+
+    drawMask();
+    const headingImage = maskContext.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
+    for (let y = 0; y < maskCanvas.height; y += 2) {
+      for (let x = 0; x < maskCanvas.width; x += 2) {
         const offset = (y * maskCanvas.width + x) * 4;
-        const red = image.data[offset];
-        const green = image.data[offset + 1];
-        const blue = image.data[offset + 2];
-        const alpha = image.data[offset + 3];
-        const brightness = red * 0.299 + green * 0.587 + blue * 0.114;
-        const channelFloor = Math.min(red, green, blue);
-        const channelCeiling = Math.max(red, green, blue);
-        const creamGeometry = brightness > 142
-          && channelFloor > 96
-          && channelCeiling - channelFloor < 138;
-        if (alpha < 48 || !creamGeometry) continue;
+        const alpha = headingImage.data[offset + 3];
+        if (alpha < 80) continue;
         const cssX = x / maskScale;
         const cssY = y / maskScale;
-        const fallbackHue = palette[(Math.floor(cssX / 90) + Math.floor(cssY / 70)) % palette.length];
+        const fallbackHue = palette[
+          (Math.floor(cssX / 90) + Math.floor(cssY / 70)) % palette.length
+        ];
         candidates.push({
           x: cssX,
           y: cssY,
-          hue: colourHue(red, green, blue, fallbackHue),
-          brightness: brightness / 255,
+          hue: fallbackHue,
+          brightness: 0.94,
           rank: hashNoise(cssX, cssY),
         });
       }
     }
 
+    canvas.dataset.logoMaskSource = 'source-pixels';
+    canvas.dataset.logoMaskCandidates = String(candidates.length);
     const maximum = compact
       ? Math.max(720, Math.round(1250 * quality))
       : Math.max(1900, Math.round(3600 * quality));
@@ -608,7 +649,7 @@
         particle.brightness = target.brightness;
         return;
       }
-      const spread = initial ? 8 : 28;
+      const spread = initial ? 1.5 : 18;
       particles.push({
         x: target.x + (Math.random() - 0.5) * spread,
         y: target.y + (Math.random() - 0.5) * spread,
@@ -815,6 +856,13 @@
     if (pointer.down || Math.hypot(pointer.velocityX, pointer.velocityY) > 13) {
       addGesturePoint(event.clientX, event.clientY);
     }
+    if (pointer.down) {
+      imageSuppression = 1;
+      imageSuppressionHoldUntil = Math.max(
+        imageSuppressionHoldUntil,
+        performance.now() + 520,
+      );
+    }
   }
 
   function onPointerDown(event) {
@@ -825,7 +873,7 @@
     pointer.burst = 1;
     fluxBurst = 1;
     imageSuppression = 1;
-    imageSuppressionHoldUntil = performance.now() + 4200;
+    imageSuppressionHoldUntil = performance.now() + 6000;
     pointer.active = 1;
     addGesturePoint(event.clientX, event.clientY, true);
     createParticleDesign(event.clientX, event.clientY);
@@ -833,6 +881,11 @@
 
   function onPointerUp() {
     pointer.down = false;
+    imageSuppression = 1;
+    imageSuppressionHoldUntil = Math.max(
+      imageSuppressionHoldUntil,
+      performance.now() + 2400,
+    );
   }
 
   function onScroll() {
@@ -1047,7 +1100,7 @@
     const soundBreath = 0.5 + Math.sin(time * Math.PI * 2 * (75 / 60)) * 0.5;
     const imageWave = 0.5 - Math.cos(time / imageCycleSeconds * Math.PI * 2) * 0.5;
     const imagePresence = smoothstep(0.035, 0.965, imageWave);
-    const interactionVisibility = time * 1000 < imageSuppressionHoldUntil
+    const interactionVisibility = pointer.down || time * 1000 < imageSuppressionHoldUntil
       ? 0
       : 1 - imageSuppression;
     const logoPresence = imagePresence * interactionVisibility;
@@ -1071,15 +1124,15 @@
     if (frame % 6 === 0) canvas.dataset.logoImageOpacity = logoOpacity.toFixed(3);
     rootStyle.setProperty(
       '--logo-flux-x',
-      `${(Math.sin(time * 1.13) * logoDistortion * 4.8).toFixed(2)}px`,
+      '0px',
     );
     rootStyle.setProperty(
       '--logo-flux-y',
-      `${(Math.cos(time * 0.79) * logoDistortion * 2.6).toFixed(2)}px`,
+      '0px',
     );
     rootStyle.setProperty(
       '--logo-flux-scale',
-      (1 + logoDistortion * 0.008 + flux.slowBreath * 0.002).toFixed(4),
+      '1',
     );
     rootStyle.setProperty('--logo-flux-blur', `${(logoDistortion * 0.72).toFixed(2)}px`);
     rootStyle.setProperty(
@@ -1095,20 +1148,15 @@
     if (frame % 6 === 0) canvas.dataset.venueImageOpacity = venueOpacity.toFixed(3);
     rootStyle.setProperty(
       '--venue-flux-x',
-      `${(Math.sin(time * 0.71 + 1.3) * venueDistortion * 4.4).toFixed(2)}px`,
+      '0px',
     );
     rootStyle.setProperty(
       '--venue-flux-y',
-      `${(Math.cos(time * 0.53 - 0.7) * venueDistortion * 3.2).toFixed(2)}px`,
+      '0px',
     );
     rootStyle.setProperty(
       '--venue-flux-scale',
-      (
-        1
-        + flux.slowBreath * 0.004
-        + venueDistortion * 0.008
-        + flux.soundBreath * 0.0012
-      ).toFixed(4),
+      '1',
     );
     rootStyle.setProperty('--venue-flux-blur', `${(venueDistortion * 0.82).toFixed(2)}px`);
     rootStyle.setProperty(
@@ -1387,10 +1435,10 @@
       const shimmer = clamp(waveA + waveB * 0.74, 0, 1.4);
       const breath = 0.5 + Math.sin(time * 0.74 + particle.phase + particle.targetY * 0.009) * 0.5;
       const particleReality = 1 - flux.logoPresence;
-      const displacement = 1.2
-        + breath * 2
-        + shimmer * 3.2
-        + particleReality * 4.6
+      const displacement = 0.35
+        + breath * 0.6
+        + shimmer
+        + particleReality * 0.45
         + fluxBurst * 5.8;
       const animatedX = particle.targetX
         + Math.sin(time * 0.55 + particle.targetY * 0.011 + particle.phase) * displacement;
@@ -1415,7 +1463,7 @@
         tangentY = radialX;
       }
 
-      const spring = (0.022 + shimmer * 0.006) * (1 - interaction * 0.72);
+      const spring = (0.034 + shimmer * 0.01) * (1 - interaction * 0.72);
       particle.velocityX += deltaX * spring * frameStep;
       particle.velocityY += deltaY * spring * frameStep;
       particle.velocityX += tangentX * interaction * (pointer.down ? 0.82 : 0.42) * frameStep;
@@ -1434,10 +1482,10 @@
 
       const flow = Math.sin(particle.targetY * 0.013 + time * 0.7 + particle.phase)
         + Math.cos(particle.targetX * 0.008 - time * 0.43);
-      particle.velocityX += Math.cos(flow) * (0.008 + shimmer * 0.018);
-      particle.velocityY += Math.sin(flow) * (0.008 + shimmer * 0.018);
-      particle.velocityX *= Math.pow(0.928, frameStep);
-      particle.velocityY *= Math.pow(0.928, frameStep);
+      particle.velocityX += Math.cos(flow) * (0.004 + shimmer * 0.009);
+      particle.velocityY += Math.sin(flow) * (0.004 + shimmer * 0.009);
+      particle.velocityX *= Math.pow(0.905, frameStep);
+      particle.velocityY *= Math.pow(0.905, frameStep);
       const speed = Math.hypot(particle.velocityX, particle.velocityY);
       if (speed > 13) {
         particle.velocityX = particle.velocityX / speed * 13;
