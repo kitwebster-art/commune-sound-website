@@ -11,6 +11,18 @@
     || !(venueImage instanceof HTMLImageElement)
   ) return;
 
+  const wordmarkRegion = logo.closest('[data-particle-region="wordmark"]');
+  const preventNativeLogoGesture = (event) => event.preventDefault();
+  logo.addEventListener('dragstart', preventNativeLogoGesture);
+  logo.addEventListener('selectstart', preventNativeLogoGesture);
+  if (wordmarkRegion instanceof HTMLElement) {
+    wordmarkRegion.addEventListener('dragstart', preventNativeLogoGesture);
+    wordmarkRegion.addEventListener('selectstart', preventNativeLogoGesture);
+    wordmarkRegion.addEventListener('pointerdown', (event) => {
+      if (event.isPrimary && event.button === 0) event.preventDefault();
+    }, { passive: false });
+  }
+
   const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
   let soundscape = null;
   let soundscapeEnabled = false;

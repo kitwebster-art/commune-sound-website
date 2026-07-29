@@ -188,6 +188,9 @@ a {
   position: relative;
   min-height: clamp(290px, 37vw, 510px);
   padding: clamp(22px, 4vw, 46px) clamp(20px, 6vw, 72px) clamp(16px, 2.4vw, 28px);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
   background:
     linear-gradient(to bottom, transparent 62%, var(--ink) 100%),
     radial-gradient(circle at 22% 28%, rgba(255, 108, 34, 0.2), transparent 30%),
