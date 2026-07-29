@@ -370,7 +370,17 @@ h1 {
   z-index: 2;
 }
 
+.form-title-field {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: clamp(38px, 6.8vw, 56px);
+  isolation: isolate;
+}
+
 .form-title {
+  grid-area: 1 / 1;
+  width: 100%;
   margin: 0;
   color: var(--cream);
   font-family: Futura, "Century Gothic", Avenir, Montserrat, sans-serif;
@@ -379,6 +389,25 @@ h1 {
   font-weight: 900;
   letter-spacing: -0.055em;
   text-transform: uppercase;
+}
+
+.form-title-particle-canvas {
+  position: absolute;
+  z-index: 1;
+  inset: -8px 0;
+  width: 100%;
+  height: calc(100% + 16px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.form-title-particles-ready .form-title {
+  color: transparent;
+}
+
+.form-title-particles-ready .form-title-particle-canvas {
+  opacity: 1;
 }
 
 .form-note,
@@ -528,8 +557,13 @@ h1 {
   }
 
   .commune-realtime-field,
-  .commune-realtime-vignette {
+  .commune-realtime-vignette,
+  .form-title-particle-canvas {
     display: none;
+  }
+
+  .form-title-particles-ready .form-title {
+    color: var(--cream);
   }
 
   .realtime-ready .wordmark-banner img {

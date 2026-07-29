@@ -2,6 +2,8 @@
   const canvas = document.querySelector('[data-commune-realtime]');
   const logo = document.querySelector('[data-particle-logo]');
   const venueImage = document.querySelector('[data-particle-venue]');
+  const formTitle = document.querySelector('[data-particle-form-title]');
+  const formTitleCanvas = document.querySelector('[data-form-title-particles]');
   const soundToggle = document.querySelector('[data-soundscape-toggle]');
   const soundLabel = soundToggle?.querySelector('[data-soundscape-label]');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -9,6 +11,8 @@
     !(canvas instanceof HTMLCanvasElement)
     || !(logo instanceof HTMLImageElement)
     || !(venueImage instanceof HTMLImageElement)
+    || !(formTitle instanceof HTMLElement)
+    || !(formTitleCanvas instanceof HTMLCanvasElement)
   ) return;
 
   const preventNativeImageGesture = (event) => event.preventDefault();
@@ -396,7 +400,17 @@
   const logoAnalysisContext = logoAnalysisCanvas.getContext('2d', { willReadFrequently: true });
   const venueAnalysisCanvas = document.createElement('canvas');
   const venueAnalysisContext = venueAnalysisCanvas.getContext('2d', { willReadFrequently: true });
-  if (!context || !maskContext || !logoAnalysisContext || !venueAnalysisContext) return;
+  const formTitleContext = formTitleCanvas.getContext('2d', { alpha: true });
+  const formTitleMaskCanvas = document.createElement('canvas');
+  const formTitleMaskContext = formTitleMaskCanvas.getContext('2d', { willReadFrequently: true });
+  if (
+    !context
+    || !maskContext
+    || !logoAnalysisContext
+    || !venueAnalysisContext
+    || !formTitleContext
+    || !formTitleMaskContext
+  ) return;
 
   const palette = [18, 34, 178, 194, 310, 328];
   const particles = [];
@@ -406,6 +420,7 @@
   const particleDesigns = [];
   const targetPoints = [];
   const venueTargetPoints = [];
+  const formTitleParticles = [];
   const pointer = {
     x: window.innerWidth * 0.5,
     y: window.innerHeight * 0.34,
@@ -436,6 +451,9 @@
   let performanceFrames = 0;
   let performanceTime = 0;
   let quality = window.innerWidth < 700 ? 0.68 : 1;
+  let formTitleDpr = 1;
+  let formTitleWidth = 1;
+  let formTitleHeight = 1;
   const imageCycleSeconds = 10;
   canvas.dataset.imageCycleSeconds = String(imageCycleSeconds);
 
@@ -500,6 +518,7 @@
     maskCanvas.width = Math.max(1, Math.round(width * maskScale));
     maskCanvas.height = Math.max(1, Math.round(height * maskScale));
     rebuildAmbient(compact);
+    rebuildFormTitleParticles(compact);
     rebuildTargets();
     rebuildVenueTargets();
   }
@@ -520,6 +539,93 @@
         hue: palette[index % palette.length] + Math.random() * 16,
       });
     }
+  }
+
+  function rebuildFormTitleParticles(compact = width < 700) {
+    const rect = formTitle.getBoundingClientRect();
+    formTitleWidth = Math.max(1, Math.round(rect.width));
+    formTitleHeight = Math.max(1, Math.round(rect.height + 16));
+    formTitleDpr = Math.min(window.devicePixelRatio || 1, compact ? 1.25 : 1.6);
+    formTitleCanvas.width = Math.max(1, Math.round(formTitleWidth * formTitleDpr));
+    formTitleCanvas.height = Math.max(1, Math.round(formTitleHeight * formTitleDpr));
+    formTitleCanvas.style.width = `${formTitleWidth}px`;
+    formTitleCanvas.style.height = `${formTitleHeight}px`;
+
+    const sampleScale = compact ? 0.78 : 0.9;
+    formTitleMaskCanvas.width = Math.max(1, Math.round(formTitleWidth * sampleScale));
+    formTitleMaskCanvas.height = Math.max(1, Math.round(formTitleHeight * sampleScale));
+    formTitleMaskContext.setTransform(1, 0, 0, 1, 0, 0);
+    formTitleMaskContext.clearRect(
+      0,
+      0,
+      formTitleMaskCanvas.width,
+      formTitleMaskCanvas.height,
+    );
+    formTitleMaskContext.setTransform(sampleScale, 0, 0, sampleScale, 0, 0);
+    const titleText = formTitle.querySelector('.form-title');
+    const style = titleText ? window.getComputedStyle(titleText) : null;
+    if (!titleText || !style) return;
+    formTitleMaskContext.fillStyle = '#fff';
+    formTitleMaskContext.font = style.font;
+    formTitleMaskContext.textAlign = 'center';
+    formTitleMaskContext.textBaseline = 'middle';
+    formTitleMaskContext.fillText(
+      titleText.textContent || '',
+      formTitleWidth * 0.5,
+      formTitleHeight * 0.5,
+      formTitleWidth,
+    );
+
+    const mask = formTitleMaskContext.getImageData(
+      0,
+      0,
+      formTitleMaskCanvas.width,
+      formTitleMaskCanvas.height,
+    );
+    const candidates = [];
+    for (let y = 0; y < formTitleMaskCanvas.height; y += 1) {
+      for (let x = 0; x < formTitleMaskCanvas.width; x += 1) {
+        const alpha = mask.data[(y * formTitleMaskCanvas.width + x) * 4 + 3];
+        if (alpha < 110) continue;
+        candidates.push({
+          x: (x + 0.5) / sampleScale,
+          y: (y + 0.5) / sampleScale,
+          rank: hashNoise(x + 91, y + 37),
+        });
+      }
+    }
+    candidates.sort((first, second) => second.rank - first.rank);
+    const maximum = compact ? 820 : 1450;
+    const targets = candidates.slice(0, maximum);
+    const initial = formTitleParticles.length === 0;
+    targets.forEach((target, index) => {
+      const particle = formTitleParticles[index];
+      if (particle) {
+        particle.targetX = target.x;
+        particle.targetY = target.y;
+        return;
+      }
+      const spread = initial ? 1.2 : 9;
+      formTitleParticles.push({
+        x: target.x + (Math.random() - 0.5) * spread,
+        y: target.y + (Math.random() - 0.5) * spread,
+        previousX: target.x,
+        previousY: target.y,
+        targetX: target.x,
+        targetY: target.y,
+        velocityX: (Math.random() - 0.5) * 0.18,
+        velocityY: (Math.random() - 0.5) * 0.18,
+        phase: Math.random() * Math.PI * 2,
+        hue: palette[index % palette.length],
+        size: 0.3 + Math.random() * 0.58,
+      });
+    });
+    formTitleParticles.length = targets.length;
+    formTitleCanvas.dataset.maskCandidates = String(candidates.length);
+    formTitleCanvas.dataset.particles = String(formTitleParticles.length);
+    const ready = formTitleParticles.length > 80;
+    formTitleCanvas.dataset.ready = String(ready);
+    document.documentElement.classList.toggle('form-title-particles-ready', ready);
   }
 
   function drawMask() {
@@ -1537,6 +1643,125 @@
     });
   }
 
+  function drawFormTitleParticles(time, frameStep) {
+    const rect = formTitleCanvas.getBoundingClientRect();
+    if (rect.bottom < -24 || rect.top > height + 24 || formTitleParticles.length === 0) {
+      return;
+    }
+
+    formTitleContext.setTransform(
+      formTitleDpr,
+      0,
+      0,
+      formTitleDpr,
+      0,
+      0,
+    );
+    formTitleContext.globalCompositeOperation = 'destination-out';
+    formTitleContext.fillStyle = 'rgba(0, 0, 0, 0.31)';
+    formTitleContext.fillRect(0, 0, formTitleWidth, formTitleHeight);
+    formTitleContext.globalCompositeOperation = 'lighter';
+    formTitleContext.lineCap = 'round';
+
+    const pointerX = pointer.x - rect.left;
+    const pointerY = pointer.y - rect.top;
+    const pointerNear = pointer.active > 0.015
+      && pointerX > -150
+      && pointerX < rect.width + 150
+      && pointerY > -130
+      && pointerY < rect.height + 130;
+    const sweep = formTitleWidth * (
+      0.5
+      + Math.sin(time * 0.46 + Math.sin(time * 0.11) * 1.7) * 0.54
+    );
+    const sweepWidth = Math.max(34, formTitleWidth * 0.12);
+
+    formTitleParticles.forEach((particle, index) => {
+      particle.previousX = particle.x;
+      particle.previousY = particle.y;
+      const sweepPulse = Math.exp(-Math.pow((particle.targetX - sweep) / sweepWidth, 2));
+      const shimmer = clamp(
+        0.5
+          + Math.sin(time * 0.82 + particle.phase + particle.targetX * 0.018) * 0.34
+          + sweepPulse * 0.56,
+        0,
+        1.35,
+      );
+      const displacement = 0.28 + shimmer * 0.78 + fluxBurst * 2.8;
+      const animatedX = particle.targetX
+        + Math.sin(time * 0.62 + particle.targetY * 0.048 + particle.phase) * displacement;
+      const animatedY = particle.targetY
+        + Math.cos(time * 0.54 + particle.targetX * 0.022 - particle.phase) * displacement * 0.58;
+
+      let interaction = 0;
+      let radialX = 0;
+      let radialY = 0;
+      let tangentX = 0;
+      let tangentY = 0;
+      if (pointerNear) {
+        const deltaPointerX = particle.x - pointerX;
+        const deltaPointerY = particle.y - pointerY;
+        const pointerDistance = Math.hypot(deltaPointerX, deltaPointerY) + 0.001;
+        interaction = Math.max(
+          0,
+          1 - pointerDistance / (pointer.down ? 150 : 105),
+        ) * pointer.active;
+        radialX = deltaPointerX / pointerDistance;
+        radialY = deltaPointerY / pointerDistance;
+        tangentX = -radialY;
+        tangentY = radialX;
+      }
+
+      const spring = 0.058 * (1 - interaction * 0.78);
+      particle.velocityX += (animatedX - particle.x) * spring * frameStep;
+      particle.velocityY += (animatedY - particle.y) * spring * frameStep;
+      particle.velocityX += tangentX * interaction * (pointer.down ? 0.72 : 0.28) * frameStep;
+      particle.velocityY += tangentY * interaction * (pointer.down ? 0.72 : 0.28) * frameStep;
+      particle.velocityX += radialX * interaction * pointer.burst * 3.2;
+      particle.velocityY += radialY * interaction * pointer.burst * 3.2;
+      particle.velocityX += pointer.velocityX * interaction * 0.01;
+      particle.velocityY += pointer.velocityY * interaction * 0.01;
+      particle.velocityX *= Math.pow(0.88, frameStep);
+      particle.velocityY *= Math.pow(0.88, frameStep);
+      const speed = Math.hypot(particle.velocityX, particle.velocityY);
+      if (speed > 10) {
+        particle.velocityX = particle.velocityX / speed * 10;
+        particle.velocityY = particle.velocityY / speed * 10;
+      }
+      particle.x += particle.velocityX * frameStep;
+      particle.y += particle.velocityY * frameStep;
+
+      const hue = (particle.hue + shimmer * 28 + interaction * 72 + time * 3) % 360;
+      const alpha = clamp(0.34 + shimmer * 0.38 + interaction * 0.22, 0.28, 0.94);
+      if (index % 3 === 0) {
+        formTitleContext.strokeStyle = `hsla(${hue}, 100%, 76%, ${alpha * 0.3})`;
+        formTitleContext.lineWidth = 0.3 + particle.size * 0.24;
+        formTitleContext.beginPath();
+        formTitleContext.moveTo(particle.previousX, particle.previousY);
+        formTitleContext.lineTo(particle.x, particle.y);
+        formTitleContext.stroke();
+      }
+      formTitleContext.fillStyle = `hsla(${hue}, 100%, ${74 + shimmer * 10}%, ${alpha})`;
+      formTitleContext.beginPath();
+      formTitleContext.arc(
+        particle.x,
+        particle.y,
+        0.3 + particle.size * 0.42 + shimmer * 0.16,
+        0,
+        Math.PI * 2,
+      );
+      formTitleContext.fill();
+
+      if ((index + Math.floor(time * 12)) % 31 === 0) {
+        formTitleContext.fillStyle = `rgba(255, 250, 238, ${alpha * 0.82})`;
+        formTitleContext.beginPath();
+        formTitleContext.arc(particle.x, particle.y, 0.62 + shimmer * 0.28, 0, Math.PI * 2);
+        formTitleContext.fill();
+      }
+    });
+    formTitleCanvas.dataset.rendering = 'true';
+  }
+
   function animate(now) {
     frame = window.requestAnimationFrame(animate);
     if (document.hidden) {
@@ -1600,6 +1825,7 @@
     drawTargetParticles(time, frameStep, flux);
     drawGestureTrails(now);
     drawParticleDesigns(now);
+    drawFormTitleParticles(time, frameStep);
   }
 
   window.addEventListener('pointermove', onPointerMove, { passive: true });
