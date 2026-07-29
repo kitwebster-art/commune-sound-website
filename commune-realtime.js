@@ -455,7 +455,10 @@
   let formTitleWidth = 1;
   let formTitleHeight = 1;
   const imageCycleSeconds = 10;
+  const imageOpacityFloor = 0.075;
   canvas.dataset.imageCycleSeconds = String(imageCycleSeconds);
+  canvas.dataset.imageOpacityFloor = String(imageOpacityFloor);
+  canvas.dataset.glitchMode = 'structural-blocks';
 
   const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
   const smoothstep = (minimum, maximum, value) => {
@@ -737,8 +740,8 @@
     canvas.dataset.logoMaskSource = 'source-pixels';
     canvas.dataset.logoMaskCandidates = String(candidates.length);
     const maximum = compact
-      ? Math.max(720, Math.round(1250 * quality))
-      : Math.max(1900, Math.round(3600 * quality));
+      ? Math.max(1050, Math.round(1800 * quality))
+      : Math.max(3800, Math.round(5000 * quality));
     candidates.sort((first, second) => second.rank - first.rank);
     targetPoints.length = 0;
     for (let index = 0; index < candidates.length && targetPoints.length < maximum; index += 1) {
@@ -765,7 +768,7 @@
         targetY: target.y,
         velocityX: (Math.random() - 0.5) * 0.5,
         velocityY: (Math.random() - 0.5) * 0.5,
-        size: 0.38 + Math.random() * 0.88,
+        size: 0.28 + Math.random() * 0.72,
         phase: Math.random() * Math.PI * 2,
         hue: target.hue,
         brightness: target.brightness,
@@ -787,10 +790,10 @@
     }
 
     const compact = width < 700;
-    const analysisWidth = compact ? 176 : 264;
+    const analysisWidth = compact ? 196 : 300;
     const analysisHeight = Math.max(
       1,
-      Math.min(compact ? 300 : 410, Math.round(analysisWidth * rect.height / rect.width)),
+      Math.min(compact ? 330 : 450, Math.round(analysisWidth * rect.height / rect.width)),
     );
     venueAnalysisCanvas.width = analysisWidth;
     venueAnalysisCanvas.height = analysisHeight;
@@ -851,8 +854,8 @@
     }
 
     const maximum = compact
-      ? Math.max(380, Math.round(620 * quality))
-      : Math.max(760, Math.round(1250 * quality));
+      ? Math.max(650, Math.round(900 * quality))
+      : Math.max(1400, Math.round(1800 * quality));
     candidates.sort((first, second) => second.rank - first.rank);
     venueTargetPoints.length = 0;
     for (
@@ -876,7 +879,7 @@
         particle.hue += (target.hue - particle.hue) * 0.26;
         return;
       }
-      const spread = initial ? 18 : 54;
+      const spread = initial ? 9 : 32;
       venueParticles.push({
         x: target.x + (Math.random() - 0.5) * spread,
         y: target.y + (Math.random() - 0.5) * spread,
@@ -892,7 +895,7 @@
         brightness: target.brightness,
         hue: target.hue,
         phase: Math.random() * Math.PI * 2,
-        size: 0.32 + Math.random() * 0.82,
+        size: 0.26 + Math.random() * 0.64,
       });
     });
     venueParticles.length = venueTargetPoints.length;
@@ -1209,8 +1212,9 @@
     const interactionVisibility = pointer.down || time * 1000 < imageSuppressionHoldUntil
       ? 0
       : 1 - imageSuppression;
-    const logoPresence = imagePresence * interactionVisibility;
-    const venuePresence = imagePresence * interactionVisibility;
+    const visiblePresence = imagePresence * interactionVisibility;
+    const logoPresence = imageOpacityFloor + visiblePresence * (1 - imageOpacityFloor);
+    const venuePresence = imageOpacityFloor + visiblePresence * (1 - imageOpacityFloor);
     return {
       logoPresence,
       venuePresence,
@@ -1280,6 +1284,24 @@
     const compact = width < 700;
     const transition = 1 - Math.abs(presence - 0.5) * 2;
     const particleReality = 1 - presence;
+    const interactionGlitch = clamp(
+      imageSuppression * 0.84
+        + fluxBurst * 0.9
+        + (pointer.down ? 0.46 : 0),
+      0,
+      1,
+    );
+    const slowGlitch = 0.5
+      + Math.sin(time * 0.31 + (mode === 'venue' ? 1.7 : 0.4)) * 0.5;
+    const glitchEnergy = clamp(
+      0.12
+        + transition * 0.5
+        + particleReality * 0.24
+        + interactionGlitch * 0.92
+        + slowGlitch * 0.1,
+      0,
+      1.6,
+    );
     const sliceCount = compact ? 13 : mode === 'venue' ? 24 : 19;
     const crop = mode === 'venue'
       ? objectFitCoverCrop(image, rect)
@@ -1293,19 +1315,22 @@
       3
       + particleReality * (mode === 'venue' ? 14 : 19)
       + transition * 9
+      + interactionGlitch * (mode === 'venue' ? 18 : 22)
     );
     const sliceHeight = rect.height / sliceCount;
     const sourceSliceHeight = crop.height / sliceCount;
     const fragmentAlpha = clamp(
-      transition * 0.22 * (1 - imageSuppression),
-      0,
-      0.24,
+      0.018
+        + transition * 0.12
+        + particleReality * 0.055
+        + interactionGlitch * 0.18,
+      0.018,
+      0.31,
     );
-    if (fragmentAlpha < 0.004) return;
 
     context.save();
     context.globalCompositeOperation = 'screen';
-    context.globalAlpha = fragmentAlpha;
+    context.globalAlpha = fragmentAlpha * (0.46 + glitchEnergy * 0.32);
     context.filter = `saturate(${1.05 + particleReality * 0.6}) contrast(${1.08 + particleReality * 0.35}) blur(${particleReality * 0.42}px)`;
     context.beginPath();
     context.rect(rect.left, rect.top, rect.width, rect.height);
@@ -1332,27 +1357,139 @@
       );
     }
 
-    const shardCount = compact ? 3 : 5;
-    context.globalAlpha = fragmentAlpha * 0.44;
-    context.filter = `saturate(1.55) contrast(1.28) blur(${particleReality * 0.24}px)`;
-    for (let shard = 0; shard < shardCount; shard += 1) {
-      const u = (shard + 0.55) / shardCount;
-      const sourceX = crop.x + crop.width * u;
-      const sourceWidth = crop.width * (0.018 + particleReality * 0.016);
-      const destinationWidth = rect.width * (0.02 + particleReality * 0.018);
-      const offset = Math.sin(time * 0.83 + shard * 1.91) * amplitude * 1.3;
-      context.drawImage(
-        image,
-        sourceX,
-        crop.y,
-        sourceWidth,
-        crop.height,
-        rect.left + rect.width * u + offset,
-        rect.top,
-        destinationWidth,
-        rect.height,
-      );
+    const columnStops = mode === 'venue'
+      ? [0, 0.12, 0.27, 0.43, 0.57, 0.73, 0.88, 1]
+      : [0, 0.1, 0.21, 0.32, 0.43, 0.55, 0.67, 0.79, 0.9, 1];
+    const rowStops = mode === 'venue'
+      ? [0, 0.07, 0.15, 0.25, 0.37, 0.5, 0.66, 0.83, 1]
+      : [0, 0.18, 0.38, 0.61, 0.8, 1];
+    let activeBlocks = 0;
+    context.filter = `saturate(${1.2 + glitchEnergy * 0.28}) contrast(${1.08 + glitchEnergy * 0.2})`;
+
+    for (let row = 0; row < rowStops.length - 1; row += 1) {
+      const v0 = rowStops[row];
+      const v1 = rowStops[row + 1];
+      const depth = (v0 + v1) * 0.5;
+      for (let column = 0; column < columnStops.length - 1; column += 1) {
+        const u0 = columnStops[column];
+        const u1 = columnStops[column + 1];
+        const centreU = (u0 + u1) * 0.5;
+        const seed = hashNoise(
+          column + (mode === 'venue' ? 47 : 13),
+          row + (mode === 'venue' ? 89 : 29),
+        );
+        const blockWave = 0.5
+          + Math.sin(
+            time * (0.42 + seed * 0.34)
+              + seed * 18.7
+              + row * 0.61
+              - column * 0.37,
+          ) * 0.5;
+        const activation = smoothstep(
+          0.42,
+          0.98,
+          blockWave
+            + glitchEnergy * 0.37
+            + interactionGlitch * 0.24
+            - seed * 0.12,
+        );
+        if (activation < 0.035) continue;
+
+        const sourceX = crop.x + crop.width * u0;
+        const sourceY = crop.y + crop.height * v0;
+        const sourceWidth = crop.width * (u1 - u0);
+        const sourceHeight = crop.height * (v1 - v0);
+        const destinationX = rect.left + rect.width * u0;
+        const destinationY = rect.top + rect.height * v0;
+        const destinationWidth = rect.width * (u1 - u0);
+        const destinationHeight = rect.height * (v1 - v0);
+        const perspective = mode === 'venue' ? 0.38 + depth * 0.9 : 0.82;
+        const centreBias = Math.abs(centreU - 0.5) * 2;
+        const offsetX = (
+          Math.sin(time * 0.73 + seed * 15.3 + row)
+          * amplitude
+          * activation
+          * perspective
+          * (0.62 + centreBias * 0.52)
+        );
+        const offsetY = (
+          Math.cos(time * 0.51 - seed * 12.8 + column * 0.43)
+          * amplitude
+          * activation
+          * (mode === 'venue' ? 0.18 + depth * 0.34 : 0.28)
+        );
+        const skewX = Math.sin(time * 0.39 + seed * 9.2) * activation * 0.018;
+        const skewY = Math.cos(time * 0.33 - seed * 8.1) * activation * 0.012;
+        const blockAlpha = fragmentAlpha * (0.18 + activation * 0.62);
+
+        context.save();
+        context.globalAlpha = blockAlpha;
+        context.translate(
+          destinationX + destinationWidth * 0.5 + offsetX,
+          destinationY + destinationHeight * 0.5 + offsetY,
+        );
+        context.transform(1, skewY, skewX, 1, 0, 0);
+        context.drawImage(
+          image,
+          sourceX,
+          sourceY,
+          sourceWidth,
+          sourceHeight,
+          -destinationWidth * 0.5,
+          -destinationHeight * 0.5,
+          destinationWidth + 0.8,
+          destinationHeight + 0.8,
+        );
+
+        if (activation > 0.78 && (row + column) % 3 === 0) {
+          context.globalAlpha = blockAlpha * 0.22;
+          context.filter = 'saturate(2.1) hue-rotate(152deg) contrast(1.24)';
+          context.drawImage(
+            image,
+            sourceX,
+            sourceY,
+            sourceWidth,
+            sourceHeight,
+            -destinationWidth * 0.5 + amplitude * 0.13,
+            -destinationHeight * 0.5,
+            destinationWidth + 0.8,
+            destinationHeight + 0.8,
+          );
+        }
+        context.restore();
+
+        const edgeParticleCount = compact ? 1 : 2;
+        const edgeHue = mode === 'venue'
+          ? (centreU < 0.48 ? 24 + depth * 10 : 194 - depth * 12)
+          : palette[(row + column) % palette.length];
+        for (let edgeParticle = 0; edgeParticle < edgeParticleCount; edgeParticle += 1) {
+          const edgeSeed = hashNoise(
+            column * 17 + edgeParticle * 5,
+            row * 23 + edgeParticle * 7,
+          );
+          const edgeX = destinationX
+            + destinationWidth * edgeSeed
+            + offsetX * 1.08;
+          const edgeY = edgeParticle % 2 === 0
+            ? destinationY + offsetY
+            : destinationY + destinationHeight + offsetY;
+          context.fillStyle = `hsla(${edgeHue}, 100%, 76%, ${blockAlpha * 1.8})`;
+          context.beginPath();
+          context.arc(
+            edgeX,
+            edgeY,
+            0.32 + activation * 0.58,
+            0,
+            Math.PI * 2,
+          );
+          context.fill();
+        }
+        activeBlocks += 1;
+      }
     }
+    canvas.dataset[mode === 'venue' ? 'venueGlitchBlocks' : 'logoGlitchBlocks'] = String(
+      activeBlocks,
+    );
     context.restore();
   }
 
