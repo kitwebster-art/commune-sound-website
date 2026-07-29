@@ -273,126 +273,6 @@ h1 {
   text-transform: uppercase;
 }
 
-.button.secondary {
-  color: var(--cream);
-  border: 1px solid var(--line);
-  background: rgba(241, 231, 215, 0.05);
-}
-
-.link-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 20px 0;
-}
-
-.link-actions .button {
-  flex: 1 1 120px;
-}
-
-.event-letter {
-  display: grid;
-  gap: 20px;
-  width: min(100%, 760px);
-  text-align: center;
-}
-
-.event-letter h2 {
-  margin: 0;
-  color: var(--cream);
-  font-size: clamp(40px, 7.4vw, 86px);
-  line-height: 0.9;
-  font-weight: 950;
-}
-
-.event-letter p {
-  max-width: 640px;
-  margin: 0 auto;
-  color: rgba(241, 231, 215, 0.78);
-  font-size: clamp(16px, 2vw, 20px);
-  line-height: 1.36;
-  font-weight: 750;
-}
-
-.event-intro {
-  display: grid;
-  gap: 14px;
-  width: 100%;
-}
-
-.event-intro p:first-child {
-  color: var(--cream);
-  font-size: clamp(19px, 2.6vw, 26px);
-}
-
-.event-letter a {
-  color: var(--cyan);
-  overflow-wrap: anywhere;
-}
-
-.event-dates {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  width: 100%;
-}
-
-.event-date {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  gap: 12px;
-  min-width: 0;
-  padding: clamp(22px, 4vw, 30px);
-  border: 1px solid var(--line);
-  background:
-    linear-gradient(135deg, rgba(255, 108, 34, 0.08), transparent 50%),
-    rgba(241, 231, 215, 0.035);
-}
-
-.event-date h3 {
-  position: relative;
-  z-index: 1;
-  margin: 0;
-  color: var(--cream);
-  font-family: "Arial Narrow", "Helvetica Neue Condensed", Impact, Inter, sans-serif;
-  font-size: clamp(28px, 4vw, 42px);
-  line-height: 0.95;
-  text-transform: uppercase;
-}
-
-.event-date .event-date-label {
-  color: var(--cyan);
-  font-size: 11px;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.date-picker-button {
-  width: min(100%, 480px);
-  margin: 2px auto 0;
-}
-
-.ticket-pricing {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px 24px;
-  color: var(--cream) !important;
-}
-
-.ticket-pricing strong {
-  color: var(--cyan);
-}
-
-.venue-address {
-  padding-top: 6px;
-}
-
-.social-actions {
-  margin-bottom: 0;
-}
-
 .venue-photo {
   position: relative;
   padding: 0 clamp(20px, 6vw, 72px);
@@ -434,7 +314,6 @@ h1 {
     rgba(5, 5, 5, 0.72);
 }
 
-.event-letter,
 .site-footer {
   position: relative;
   z-index: 2;
@@ -581,19 +460,6 @@ h1 {
     gap: 28px;
   }
 
-  .event-dates {
-    grid-template-columns: 1fr;
-  }
-
-  .social-actions {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .social-actions .button {
-    width: 100%;
-  }
-
   .button {
     width: 100%;
     min-height: 48px;
@@ -601,10 +467,6 @@ h1 {
 
   .venue-photo img {
     aspect-ratio: 4 / 5;
-  }
-
-  .event-letter {
-    gap: 18px;
   }
 
   .signup-form {
