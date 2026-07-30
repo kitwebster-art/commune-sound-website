@@ -61,12 +61,28 @@
         + a_uv.x * 8.0
         + a_uv.y * 5.0
       );
+      float luminance_wave = clamp(
+        0.5
+          + sin(
+            a_uv.x * 11.0
+            - u_time * 0.48
+            + sin(a_uv.y * 7.0 + u_time * 0.24) * 1.25
+          ) * 0.32
+          + cos(
+            (a_uv.x + a_uv.y) * 7.0
+            + u_time * 0.31
+            + sin(a_uv.x * 5.0 - u_time * 0.19)
+          ) * 0.18,
+        0.0,
+        1.0
+      );
       vec2 position = base;
       vec2 flock_position = base;
       float perspective = 1.0;
       float flow_glow = 0.0;
       float flow_progress = 0.0;
       float flow_variation = 0.0;
+      float gesture_definition = 0.0;
 
       if (u_mode > 0.5) {
         float floor_presence = smoothstep(0.34, 0.96, a_uv.y);
@@ -124,18 +140,31 @@
           + flock_phase
           + gesture_t * 4.2
         );
+        vec2 upright = vec2(0.0, -1.0);
+        vec2 lateral = vec2(1.0, 0.0);
+        vec2 gesture_uv = flock_uv;
         if (gesture_role < 2.0) {
           float arm_side = gesture_role < 1.0 ? -1.0 : 1.0;
-          float arm_reach = 0.026 + gesture_t * 0.068;
-          flock_uv += normal
+          float arm_reach = 0.014
+            + gesture_t * (0.074 + flock_random * 0.024);
+          float open_lift = 0.024
+            + sin(gesture_t * 3.14159) * (0.024 + gesture_wave * 0.01);
+          gesture_uv = leader
+            + upright * open_lift
+            + lateral * arm_side * arm_reach;
+          gesture_uv += upright
+            * sin(
+              u_time * 0.86
+              + arm_side * 1.4
+              + gesture_t * 3.14159
+            )
+            * 0.012
+            * gesture_t;
+          gesture_uv += lateral
             * arm_side
-            * arm_reach
-            * (0.82 + gesture_wave * 0.18);
-          flock_uv += direction
-            * (
-              (gesture_t - 0.5) * 0.034
-              + sin(u_time * 1.08 + gesture_t * 5.0) * 0.01
-            );
+            * cos(u_time * 1.24 + gesture_t * 5.2 + flock_phase)
+            * 0.007
+            * pow(gesture_t, 1.7);
         } else if (gesture_role < 4.0) {
           float leg_side = gesture_role < 3.0 ? -1.0 : 1.0;
           float stride = sin(
@@ -143,17 +172,35 @@
             + flock_phase
             + leg_side * 1.35
           );
-          flock_uv -= direction * (0.024 + gesture_t * 0.052);
-          flock_uv += normal
+          gesture_uv = leader
+            - upright * (0.008 + gesture_t * (0.064 + flock_random * 0.018))
+            + lateral
+              * leg_side
+              * (
+                0.008
+                + gesture_t * (0.026 + abs(stride) * 0.024)
+              );
+          gesture_uv += upright
+            * sin(gesture_t * 3.14159)
+            * 0.012;
+          gesture_uv += lateral
             * leg_side
-            * (0.018 + gesture_t * 0.044)
-            * (0.72 + stride * 0.28);
+            * stride
+            * 0.008
+            * gesture_t;
         } else {
-          flock_uv += direction * (gesture_t - 0.5) * 0.026;
-          flock_uv += normal
-            * sin(u_time * 0.84 + gesture_t * 6.0 + flock_phase)
-            * 0.007;
+          gesture_uv = leader
+            + upright * (gesture_t * 0.078 - 0.012)
+            + lateral
+              * (flow_variation - 0.5)
+              * (0.012 + gesture_t * 0.016);
+          gesture_uv += lateral
+            * sin(u_time * 0.54 + gesture_t * 4.0 + flock_phase)
+            * (0.005 + gesture_t * 0.006);
         }
+        gesture_uv += turbulent_noise * (0.003 + flow_variation * 0.004);
+        flock_uv = mix(flock_uv, gesture_uv, 0.79);
+        gesture_definition = 0.72 + gesture_t * 0.28;
         flock_position = u_rect.xy + flock_uv * u_rect.zw;
         float flock_mix = (
           u_morph
@@ -262,6 +309,25 @@
         trail_shift *= 38.0 / trail_shift_length;
       }
       position += trail_shift * (0.48 + freedom * 0.52);
+      float spatial_luminance_wave = clamp(
+        0.5
+          + sin(
+            position.x * 0.012
+            - u_time * 0.46
+            + sin(position.y * 0.01 + u_time * 0.22) * 1.2
+          ) * 0.34
+          + cos(
+            (position.x - position.y) * 0.007
+            + u_time * 0.27
+          ) * 0.16,
+        0.0,
+        1.0
+      );
+      luminance_wave = mix(
+        luminance_wave,
+        spatial_luminance_wave,
+        mix(0.35, 0.62, u_mode)
+      );
 
       vec2 clip = vec2(
         position.x / u_resolution.x * 2.0 - 1.0,
@@ -277,7 +343,8 @@
           + u_morph * 0.38
           + gravity * 0.46
           + trail_energy * 0.5
-          + u_flock_pass * 0.24
+          + u_flock_pass * 0.1
+          + gesture_definition * u_flock_pass * 0.07
         );
 
       float edge_fade = smoothstep(0.0, 0.055, a_uv.x)
@@ -291,6 +358,7 @@
         + gravity * 0.12
         + trail_energy * 0.18
         + flow_glow * 0.08
+        + luminance_wave * u_morph * 0.04
       );
       v_alpha = clamp(particle_alpha * edge_fade, 0.0, 0.98);
       vec3 lifted_colour = pow(
@@ -305,32 +373,52 @@
       lifted_colour += vec3(0.035 + u_morph * 0.055);
       vec3 image_colour = lifted_colour * (
         1.04
-        + pulse * 0.18
+        + pulse * 0.1
         + u_morph * 0.16
         + gravity * 0.14
         + flow_glow * 0.18
       );
-      vec3 flock_warm = vec3(0.831, 0.31, 0.141);
+      image_colour *= (
+        0.94
+        + luminance_wave * mix(0.09, 0.18, u_morph)
+      );
+      vec3 flock_warm = vec3(0.894, 0.427, 0.271);
+      vec3 flock_apricot = vec3(0.941, 0.631, 0.424);
       vec3 flock_cream = vec3(0.961, 0.871, 0.761);
       vec3 flock_blue = vec3(0.133, 0.282, 0.431);
       vec3 flock_colour = mix(
         flock_warm,
+        flock_apricot,
+        smoothstep(0.04, 0.52, flow_progress)
+      );
+      flock_colour = mix(
+        flock_colour,
         flock_cream,
-        smoothstep(0.0, 0.58, flow_progress)
+        smoothstep(0.3, 0.96, flow_progress)
       );
       flock_colour = mix(
         flock_colour,
         flock_blue,
-        smoothstep(0.46, 1.0, flow_progress) * (0.48 + flow_variation * 0.24)
+        smoothstep(0.76, 1.0, flow_progress) * 0.16
       );
-      flock_colour *= 0.84 + pulse * 0.15 + gravity * 0.1;
-      v_colour = mix(image_colour, flock_colour, u_flock_pass * 0.74);
+      flock_colour *= (
+        0.94
+        + luminance_wave * 0.18
+        + pulse * 0.1
+        + gravity * 0.08
+      );
+      v_colour = mix(image_colour, flock_colour, u_flock_pass * 0.82);
       v_colour = mix(v_colour, flock_cream, trail_energy * 0.24);
       if (u_flock_pass > 0.5) {
         v_alpha = clamp(
-          smoothstep(0.12, 0.56, u_morph) * (0.48 + pulse * 0.12),
+          smoothstep(0.12, 0.56, u_morph)
+            * (
+              0.53
+              + pulse * 0.08
+              + luminance_wave * 0.08
+            ),
           0.0,
-          0.62
+          0.72
         );
       }
     }
@@ -776,6 +864,8 @@
   canvas.dataset.engine = 'webgl-flocking-organism';
   canvas.dataset.interactionMode = 'particle-trail-attractors';
   canvas.dataset.particleTrailFadeSeconds = '10';
+  canvas.dataset.brightnessMode = 'fluid-wave-amplitude';
+  canvas.dataset.figureMode = 'open-gesture-ribbons';
   canvas.dataset.imageCycleSeconds = String(cycleSeconds);
   canvas.dataset.particleHoldSeconds = String(particleHoldSeconds);
   canvas.dataset.webglStatus = 'initializing';
