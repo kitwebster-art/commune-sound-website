@@ -29,6 +29,12 @@
   };
   lockImageRegion(logo, logo.closest('[data-particle-region="wordmark"]'));
   lockImageRegion(venueImage, venueImage.closest('[data-particle-region="venue"]'));
+  formTitle.addEventListener('dragstart', preventNativeImageGesture);
+  formTitle.addEventListener('selectstart', preventNativeImageGesture);
+  formTitle.addEventListener('pointerdown', (event) => {
+    if (event.isPrimary && event.button === 0) event.preventDefault();
+  }, { passive: false });
+  formTitle.dataset.nativeSelection = 'locked';
 
   const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
   let soundscape = null;
@@ -422,6 +428,7 @@
     { hue: 201, saturation: 22, lightness: 43 },
     { hue: 210, saturation: 53, lightness: 28 },
   ];
+  const compactTitlePalette = [1, 1, 2, 0, 1, 4];
   const particles = [];
   const venueParticles = [];
   const ambient = [];
@@ -475,6 +482,7 @@
   canvas.dataset.trailFade = '0.10';
   canvas.dataset.fragmentCadence = 'interleaved';
   canvas.dataset.pointerTrailMode = 'particle-attraction';
+  canvas.dataset.pointerTrailFadeSeconds = '10';
 
   const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
   const smoothstep = (minimum, maximum, value) => {
@@ -571,13 +579,13 @@
     const rect = formTitle.getBoundingClientRect();
     formTitleWidth = Math.max(1, Math.round(rect.width));
     formTitleHeight = Math.max(1, Math.round(rect.height + 16));
-    formTitleDpr = Math.min(window.devicePixelRatio || 1, compact ? 1.1 : 1.25);
+    formTitleDpr = Math.min(window.devicePixelRatio || 1, 1.25);
     formTitleCanvas.width = Math.max(1, Math.round(formTitleWidth * formTitleDpr));
     formTitleCanvas.height = Math.max(1, Math.round(formTitleHeight * formTitleDpr));
     formTitleCanvas.style.width = `${formTitleWidth}px`;
     formTitleCanvas.style.height = `${formTitleHeight}px`;
 
-    const sampleScale = compact ? 0.78 : 0.9;
+    const sampleScale = compact ? 0.94 : 0.9;
     formTitleMaskCanvas.width = Math.max(1, Math.round(formTitleWidth * sampleScale));
     formTitleMaskCanvas.height = Math.max(1, Math.round(formTitleHeight * sampleScale));
     formTitleMaskContext.setTransform(1, 0, 0, 1, 0, 0);
@@ -621,12 +629,15 @@
       }
     }
     candidates.sort((first, second) => second.rank - first.rank);
-    const maximum = compact ? 560 : 980;
+    const maximum = compact ? 1040 : 980;
     const targets = candidates.slice(0, maximum);
     const initial = formTitleParticles.length === 0;
     targets.forEach((target, index) => {
       const particle = formTitleParticles[index];
-      const swatch = bannerParticlePalette[index % bannerParticlePalette.length];
+      const swatchIndex = compact
+        ? compactTitlePalette[index % compactTitlePalette.length]
+        : index % bannerParticlePalette.length;
+      const swatch = bannerParticlePalette[swatchIndex];
       if (particle) {
         particle.targetX = target.x;
         particle.targetY = target.y;
@@ -649,7 +660,9 @@
         hue: swatch.hue,
         saturation: swatch.saturation,
         lightness: swatch.lightness,
-        size: 0.3 + Math.random() * 0.58,
+        size: compact
+          ? 0.4 + Math.random() * 0.68
+          : 0.3 + Math.random() * 0.58,
       });
     });
     formTitleParticles.length = targets.length;
@@ -1055,7 +1068,7 @@
   }
 
   function drawParticleTrail(now) {
-    const livePoints = particleTrail.filter((point) => now - point.born < 2200);
+    const livePoints = particleTrail.filter((point) => now - point.born < 10000);
     particleTrail.length = 0;
     particleTrail.push(...livePoints);
     if (livePoints.length === 0) return;
@@ -1064,7 +1077,7 @@
     context.globalCompositeOperation = 'lighter';
     livePoints.forEach((point, index) => {
       const age = now - point.born;
-      const life = clamp(1 - age / 2200, 0, 1);
+      const life = Math.pow(clamp(1 - age / 10000, 0, 1), 0.82);
       const particleCount = 3 + Math.round(point.strength * 5);
       for (let particle = 0; particle < particleCount; particle += 1) {
         const seed = index * 2.399 + particle * 4.17;
@@ -1771,7 +1784,10 @@
       0,
     );
     formTitleContext.globalCompositeOperation = 'destination-out';
-    formTitleContext.fillStyle = 'rgba(0, 0, 0, 0.20)';
+    const compactTitle = width < 700;
+    formTitleContext.fillStyle = compactTitle
+      ? 'rgba(0, 0, 0, 0.24)'
+      : 'rgba(0, 0, 0, 0.20)';
     formTitleContext.fillRect(0, 0, formTitleWidth, formTitleHeight);
     formTitleContext.globalCompositeOperation = 'lighter';
     formTitleContext.lineCap = 'round';
@@ -1788,7 +1804,9 @@
       + Math.sin(time * 0.46 + Math.sin(time * 0.11) * 1.7) * 0.54
     );
     const sweepWidth = Math.max(34, formTitleWidth * 0.12);
-    const renderStride = quality < 0.72 ? 4 : quality < 0.9 ? 3 : 2;
+    const renderStride = compactTitle
+      ? 1
+      : quality < 0.72 ? 4 : quality < 0.9 ? 3 : 2;
     const renderPhase = simulationFrame % renderStride;
     const simulationStep = Math.min(frameStep * renderStride, 3.2);
 
@@ -1804,7 +1822,9 @@
         0,
         1.35,
       );
-      const displacement = 0.28 + shimmer * 0.78 + fluxBurst * 2.8;
+      const displacement = (
+        0.28 + shimmer * 0.78 + fluxBurst * 2.8
+      ) * (compactTitle ? 0.5 : 1);
       const animatedX = particle.targetX
         + Math.sin(time * 0.62 + particle.targetY * 0.048 + particle.phase) * displacement;
       const animatedY = particle.targetY
@@ -1849,9 +1869,19 @@
       particle.y += particle.velocityY * simulationStep;
 
       const hue = (particle.hue + shimmer * 6 + interaction * 18 + time * 0.4) % 360;
-      const alpha = clamp(0.34 + shimmer * 0.38 + interaction * 0.22, 0.28, 0.94);
-      const lightness = clamp(particle.lightness + shimmer * 7, 42, 91);
-      if (index % 3 === 0) {
+      const alpha = clamp(
+        (compactTitle ? 0.5 : 0.34)
+          + shimmer * (compactTitle ? 0.32 : 0.38)
+          + interaction * 0.22,
+        compactTitle ? 0.48 : 0.28,
+        0.94,
+      );
+      const lightness = clamp(
+        particle.lightness + shimmer * 7,
+        compactTitle ? 58 : 42,
+        91,
+      );
+      if (!compactTitle && index % 3 === 0) {
         formTitleContext.strokeStyle = `hsla(${hue}, ${particle.saturation}%, ${Math.min(94, lightness + 8)}%, ${alpha * 0.3})`;
         formTitleContext.lineWidth = 0.3 + particle.size * 0.24;
         formTitleContext.beginPath();
@@ -1864,7 +1894,9 @@
       formTitleContext.arc(
         particle.x,
         particle.y,
-        0.3 + particle.size * 0.42 + shimmer * 0.16,
+        (compactTitle ? 0.42 : 0.3)
+          + particle.size * (compactTitle ? 0.48 : 0.42)
+          + shimmer * 0.16,
         0,
         Math.PI * 2,
       );

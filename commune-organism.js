@@ -35,8 +35,8 @@
     uniform vec4 u_rect;
     uniform vec2 u_pointer;
     uniform vec2 u_pointer_velocity;
-    uniform vec2 u_trail_points[8];
-    uniform float u_trail_weights[8];
+    uniform vec2 u_trail_points[24];
+    uniform float u_trail_weights[24];
     uniform float u_pointer_active;
     uniform float u_pointer_down;
     uniform float u_time;
@@ -117,6 +117,43 @@
         flock_uv += turbulent_noise * (
           0.006 + flow_variation * 0.014
         );
+        float gesture_role = floor(hash(a_seed * 59.0 + 11.0) * 6.0);
+        float gesture_t = hash(a_seed * 83.0 + 7.0);
+        float gesture_wave = sin(
+          u_time * (0.72 + flock_random * 0.18)
+          + flock_phase
+          + gesture_t * 4.2
+        );
+        if (gesture_role < 2.0) {
+          float arm_side = gesture_role < 1.0 ? -1.0 : 1.0;
+          float arm_reach = 0.026 + gesture_t * 0.068;
+          flock_uv += normal
+            * arm_side
+            * arm_reach
+            * (0.82 + gesture_wave * 0.18);
+          flock_uv += direction
+            * (
+              (gesture_t - 0.5) * 0.034
+              + sin(u_time * 1.08 + gesture_t * 5.0) * 0.01
+            );
+        } else if (gesture_role < 4.0) {
+          float leg_side = gesture_role < 3.0 ? -1.0 : 1.0;
+          float stride = sin(
+            u_time * (0.62 + flock_random * 0.16)
+            + flock_phase
+            + leg_side * 1.35
+          );
+          flock_uv -= direction * (0.024 + gesture_t * 0.052);
+          flock_uv += normal
+            * leg_side
+            * (0.018 + gesture_t * 0.044)
+            * (0.72 + stride * 0.28);
+        } else {
+          flock_uv += direction * (gesture_t - 0.5) * 0.026;
+          flock_uv += normal
+            * sin(u_time * 0.84 + gesture_t * 6.0 + flock_phase)
+            * 0.007;
+        }
         flock_position = u_rect.xy + flock_uv * u_rect.zw;
         float flock_mix = (
           u_morph
@@ -203,7 +240,7 @@
 
       float trail_energy = 0.0;
       vec2 trail_shift = vec2(0.0);
-      for (int trail_index = 0; trail_index < 8; trail_index++) {
+      for (int trail_index = 0; trail_index < 24; trail_index++) {
         vec2 trail_delta = position - u_trail_points[trail_index];
         float trail_distance = length(trail_delta) + 0.001;
         float trail_influence = (
@@ -219,6 +256,10 @@
           * sin(a_seed * 21.0 + u_time * 1.5)
           * 3.8;
         trail_energy = max(trail_energy, trail_influence);
+      }
+      float trail_shift_length = length(trail_shift);
+      if (trail_shift_length > 38.0) {
+        trail_shift *= 38.0 / trail_shift_length;
       }
       position += trail_shift * (0.48 + freedom * 0.52);
 
@@ -380,8 +421,8 @@
     lastMove: 0,
   };
   const pointerTrail = [];
-  const trailCoordinates = new Float32Array(16);
-  const trailWeights = new Float32Array(8);
+  const trailCoordinates = new Float32Array(48);
+  const trailWeights = new Float32Array(24);
   const analysisCanvas = document.createElement('canvas');
   const analysisContext = analysisCanvas.getContext('2d', { willReadFrequently: true });
   if (!analysisContext) {
@@ -623,14 +664,14 @@
     if (
       !force
       && previous
-      && Math.hypot(x - previous.x, y - previous.y) < 22
+      && Math.hypot(x - previous.x, y - previous.y) < 26
     ) return;
     pointerTrail.push({ x, y, born: performance.now() });
-    if (pointerTrail.length > 8) pointerTrail.shift();
+    if (pointerTrail.length > 24) pointerTrail.shift();
   }
 
   function updateTrail(now) {
-    const livePoints = pointerTrail.filter((point) => now - point.born < 1900);
+    const livePoints = pointerTrail.filter((point) => now - point.born < 10000);
     pointerTrail.length = 0;
     pointerTrail.push(...livePoints);
     trailCoordinates.fill(-1000);
@@ -640,8 +681,8 @@
       trailCoordinates[index * 2] = point.x;
       trailCoordinates[index * 2 + 1] = point.y;
       trailWeights[index] = Math.pow(
-        Math.max(0, 1 - age / 1900),
-        0.72,
+        Math.max(0, 1 - age / 10000),
+        0.82,
       );
     });
     canvas.dataset.particleTrailPoints = String(livePoints.length);
@@ -734,6 +775,7 @@
   gl.disable(gl.CULL_FACE);
   canvas.dataset.engine = 'webgl-flocking-organism';
   canvas.dataset.interactionMode = 'particle-trail-attractors';
+  canvas.dataset.particleTrailFadeSeconds = '10';
   canvas.dataset.imageCycleSeconds = String(cycleSeconds);
   canvas.dataset.particleHoldSeconds = String(particleHoldSeconds);
   canvas.dataset.webglStatus = 'initializing';
