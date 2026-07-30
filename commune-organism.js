@@ -614,6 +614,13 @@
     down: false,
     lastMove: 0,
   };
+  const touchTap = {
+    pointerId: -1,
+    startX: 0,
+    startY: 0,
+    startedAt: 0,
+    moved: false,
+  };
   const pointerTrail = [];
   const trailCoordinates = new Float32Array(48);
   const trailWeights = new Float32Array(24);
@@ -932,7 +939,27 @@
     }
   }
 
+  function activatePointer(x, y) {
+    pointer.down = true;
+    pointer.x = x;
+    pointer.y = y;
+    pointer.active = 1;
+    pointer.lastMove = performance.now();
+    pointerTrail.length = 0;
+    addTrailPoint(x, y, true);
+  }
+
   function onPointerMove(event) {
+    if (event.pointerType === 'touch') {
+      if (
+        event.pointerId === touchTap.pointerId
+        && Math.hypot(
+          event.clientX - touchTap.startX,
+          event.clientY - touchTap.startY,
+        ) > 12
+      ) touchTap.moved = true;
+      return;
+    }
     pointer.velocityX = event.clientX - pointer.x;
     pointer.velocityY = event.clientY - pointer.y;
     pointer.x = event.clientX;
@@ -944,23 +971,45 @@
 
   function onPointerDown(event) {
     if (!event.isPrimary) return;
-    pointer.down = true;
-    pointer.x = event.clientX;
-    pointer.y = event.clientY;
-    pointer.active = 1;
-    pointer.lastMove = performance.now();
-    pointerTrail.length = 0;
-    addTrailPoint(event.clientX, event.clientY, true);
+    if (event.pointerType === 'touch') {
+      touchTap.pointerId = event.pointerId;
+      touchTap.startX = event.clientX;
+      touchTap.startY = event.clientY;
+      touchTap.startedAt = performance.now();
+      touchTap.moved = false;
+      pointer.down = false;
+      return;
+    }
+    activatePointer(event.clientX, event.clientY);
   }
 
-  function onPointerUp() {
+  function onPointerUp(event) {
+    if (event.pointerType === 'touch') {
+      if (
+        event.pointerId === touchTap.pointerId
+        && !touchTap.moved
+        && performance.now() - touchTap.startedAt < 650
+      ) {
+        activatePointer(event.clientX, event.clientY);
+      }
+      touchTap.pointerId = -1;
+      pointer.down = false;
+      return;
+    }
+    pointer.down = false;
+  }
+
+  function onPointerCancel(event) {
+    if (event.pointerType === 'touch' && event.pointerId === touchTap.pointerId) {
+      touchTap.pointerId = -1;
+    }
     pointer.down = false;
   }
 
   window.addEventListener('pointermove', onPointerMove, { passive: true });
   window.addEventListener('pointerdown', onPointerDown, { passive: true });
   window.addEventListener('pointerup', onPointerUp, { passive: true });
-  window.addEventListener('pointercancel', onPointerUp, { passive: true });
+  window.addEventListener('pointercancel', onPointerCancel, { passive: true });
   window.addEventListener('resize', () => {
     window.clearTimeout(rebuildTimer);
     rebuildTimer = window.setTimeout(resize, 180);
@@ -978,6 +1027,7 @@
   canvas.dataset.interactionMode = 'particle-trail-attractors';
   canvas.dataset.particleTrailHoldSeconds = '6';
   canvas.dataset.particleTrailFadeSeconds = '6';
+  canvas.dataset.mobileTouchMode = 'tap-particles-pan-scroll';
   canvas.dataset.brightnessMode = 'fluid-wave-amplitude';
   canvas.dataset.figureMode = 'articulated-dance-ribbons';
   canvas.dataset.imageCycleSeconds = String(cycleSeconds);

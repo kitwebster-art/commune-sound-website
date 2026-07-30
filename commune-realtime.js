@@ -12,8 +12,6 @@
     !(canvas instanceof HTMLCanvasElement)
     || !(logo instanceof HTMLImageElement)
     || !(venueImage instanceof HTMLImageElement)
-    || !(formTitle instanceof HTMLElement)
-    || !(formTitleCanvas instanceof HTMLCanvasElement)
   ) return;
 
   const preventNativeImageGesture = (event) => event.preventDefault();
@@ -24,17 +22,27 @@
     region.addEventListener('dragstart', preventNativeImageGesture);
     region.addEventListener('selectstart', preventNativeImageGesture);
     region.addEventListener('pointerdown', (event) => {
-      if (event.isPrimary && event.button === 0) event.preventDefault();
+      if (
+        event.pointerType === 'mouse'
+        && event.isPrimary
+        && event.button === 0
+      ) event.preventDefault();
     }, { passive: false });
   };
   lockImageRegion(logo, logo.closest('[data-particle-region="wordmark"]'));
   lockImageRegion(venueImage, venueImage.closest('[data-particle-region="venue"]'));
-  formTitle.addEventListener('dragstart', preventNativeImageGesture);
-  formTitle.addEventListener('selectstart', preventNativeImageGesture);
-  formTitle.addEventListener('pointerdown', (event) => {
-    if (event.isPrimary && event.button === 0) event.preventDefault();
-  }, { passive: false });
-  formTitle.dataset.nativeSelection = 'locked';
+  if (formTitle instanceof HTMLElement) {
+    formTitle.addEventListener('dragstart', preventNativeImageGesture);
+    formTitle.addEventListener('selectstart', preventNativeImageGesture);
+    formTitle.addEventListener('pointerdown', (event) => {
+      if (
+        event.pointerType === 'mouse'
+        && event.isPrimary
+        && event.button === 0
+      ) event.preventDefault();
+    }, { passive: false });
+    formTitle.dataset.nativeSelection = 'locked';
+  }
 
   const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
   let soundscape = null;
@@ -362,6 +370,7 @@
     });
 
     window.addEventListener('pointermove', (event) => {
+      if (event.pointerType === 'touch') return;
       const now = performance.now();
       const elapsed = Math.max(12, now - soundPointerTime);
       const distance = Math.hypot(event.clientX - soundPointerX, event.clientY - soundPointerY);
@@ -373,7 +382,11 @@
     }, { passive: true });
 
     window.addEventListener('pointerdown', (event) => {
-      if (!event.isPrimary || soundToggle.contains(event.target)) return;
+      if (
+        !event.isPrimary
+        || event.pointerType === 'touch'
+        || soundToggle.contains(event.target)
+      ) return;
       playTone(0.48, event.clientX / Math.max(window.innerWidth, 1), true);
       updateSoundscape(event.clientX, event.clientY, 32, true);
     }, { passive: true });
@@ -407,7 +420,9 @@
   const logoAnalysisContext = logoAnalysisCanvas.getContext('2d', { willReadFrequently: true });
   const venueAnalysisCanvas = document.createElement('canvas');
   const venueAnalysisContext = venueAnalysisCanvas.getContext('2d', { willReadFrequently: true });
-  const formTitleContext = formTitleCanvas.getContext('2d', { alpha: true });
+  const formTitleContext = formTitleCanvas instanceof HTMLCanvasElement
+    ? formTitleCanvas.getContext('2d', { alpha: true })
+    : null;
   const formTitleMaskCanvas = document.createElement('canvas');
   const formTitleMaskContext = formTitleMaskCanvas.getContext('2d', { willReadFrequently: true });
   if (
@@ -415,7 +430,6 @@
     || !maskContext
     || !logoAnalysisContext
     || !venueAnalysisContext
-    || !formTitleContext
     || !formTitleMaskContext
   ) return;
 
@@ -448,6 +462,13 @@
     down: false,
     burst: 0,
     lastMove: 0,
+  };
+  const touchTap = {
+    pointerId: -1,
+    startX: 0,
+    startY: 0,
+    startedAt: 0,
+    moved: false,
   };
 
   let width = window.innerWidth;
@@ -484,6 +505,7 @@
   canvas.dataset.pointerTrailMode = 'particle-attraction';
   canvas.dataset.pointerTrailHoldSeconds = '6';
   canvas.dataset.pointerTrailFadeSeconds = '6';
+  canvas.dataset.mobileTouchMode = 'tap-particles-pan-scroll';
 
   const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
   const smoothstep = (minimum, maximum, value) => {
@@ -577,6 +599,15 @@
   }
 
   function rebuildFormTitleParticles(compact = width < 700) {
+    if (
+      !(formTitle instanceof HTMLElement)
+      || !(formTitleCanvas instanceof HTMLCanvasElement)
+      || !formTitleContext
+    ) {
+      formTitleParticles.length = 0;
+      document.documentElement.classList.remove('form-title-particles-ready');
+      return;
+    }
     const rect = formTitle.getBoundingClientRect();
     formTitleWidth = Math.max(1, Math.round(rect.width));
     formTitleHeight = Math.max(1, Math.round(rect.height + 16));
@@ -996,7 +1027,32 @@
     canvas.dataset.particleDesigns = String(particleDesigns.length);
   }
 
+  function activateParticlePointer(x, y) {
+    pointer.down = true;
+    pointer.x = x;
+    pointer.y = y;
+    pointer.burst = 1;
+    fluxBurst = 1;
+    imageSuppression = 1;
+    imageSuppressionHoldUntil = performance.now() + 6000;
+    pointer.active = 1;
+    addParticleTrailPoint(x, y, true);
+    if (organismCanvas?.dataset.webglReady !== 'true') {
+      createParticleDesign(x, y);
+    }
+  }
+
   function onPointerMove(event) {
+    if (event.pointerType === 'touch') {
+      if (
+        event.pointerId === touchTap.pointerId
+        && Math.hypot(
+          event.clientX - touchTap.startX,
+          event.clientY - touchTap.startY,
+        ) > 12
+      ) touchTap.moved = true;
+      return;
+    }
     pointer.velocityX = event.clientX - pointer.x;
     pointer.velocityY = event.clientY - pointer.y;
     pointer.previousX = pointer.x;
@@ -1021,27 +1077,47 @@
 
   function onPointerDown(event) {
     if (!event.isPrimary) return;
-    pointer.down = true;
-    pointer.x = event.clientX;
-    pointer.y = event.clientY;
-    pointer.burst = 1;
-    fluxBurst = 1;
-    imageSuppression = 1;
-    imageSuppressionHoldUntil = performance.now() + 6000;
-    pointer.active = 1;
-    addParticleTrailPoint(event.clientX, event.clientY, true);
-    if (organismCanvas?.dataset.webglReady !== 'true') {
-      createParticleDesign(event.clientX, event.clientY);
+    if (event.pointerType === 'touch') {
+      touchTap.pointerId = event.pointerId;
+      touchTap.startX = event.clientX;
+      touchTap.startY = event.clientY;
+      touchTap.startedAt = performance.now();
+      touchTap.moved = false;
+      pointer.down = false;
+      return;
     }
+    activateParticlePointer(event.clientX, event.clientY);
   }
 
-  function onPointerUp() {
+  function onPointerUp(event) {
+    if (event.pointerType === 'touch') {
+      const isTap = (
+        event.pointerId === touchTap.pointerId
+        && !touchTap.moved
+        && performance.now() - touchTap.startedAt < 650
+      );
+      if (
+        isTap
+      ) {
+        activateParticlePointer(event.clientX, event.clientY);
+      }
+      touchTap.pointerId = -1;
+      pointer.down = false;
+      if (!isTap) return;
+    }
     pointer.down = false;
     imageSuppression = 1;
     imageSuppressionHoldUntil = Math.max(
       imageSuppressionHoldUntil,
       performance.now() + 2400,
     );
+  }
+
+  function onPointerCancel(event) {
+    if (event.pointerType === 'touch' && event.pointerId === touchTap.pointerId) {
+      touchTap.pointerId = -1;
+    }
+    pointer.down = false;
   }
 
   function onScroll() {
@@ -1781,6 +1857,10 @@
   }
 
   function drawFormTitleParticles(time, frameStep) {
+    if (
+      !(formTitleCanvas instanceof HTMLCanvasElement)
+      || !formTitleContext
+    ) return;
     const rect = formTitleCanvas.getBoundingClientRect();
     if (rect.bottom < -24 || rect.top > height + 24 || formTitleParticles.length === 0) {
       return;
@@ -2001,7 +2081,7 @@
   window.addEventListener('pointermove', onPointerMove, { passive: true });
   window.addEventListener('pointerdown', onPointerDown, { passive: true });
   window.addEventListener('pointerup', onPointerUp, { passive: true });
-  window.addEventListener('pointercancel', onPointerUp, { passive: true });
+  window.addEventListener('pointercancel', onPointerCancel, { passive: true });
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', () => {
     window.cancelAnimationFrame(resizeFrame);
