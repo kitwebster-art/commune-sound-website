@@ -482,7 +482,8 @@
   canvas.dataset.trailFade = '0.10';
   canvas.dataset.fragmentCadence = 'interleaved';
   canvas.dataset.pointerTrailMode = 'particle-attraction';
-  canvas.dataset.pointerTrailFadeSeconds = '10';
+  canvas.dataset.pointerTrailHoldSeconds = '6';
+  canvas.dataset.pointerTrailFadeSeconds = '6';
 
   const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
   const smoothstep = (minimum, maximum, value) => {
@@ -958,7 +959,7 @@
       hue: palette[particleTrail.length % palette.length],
       strength: clamp(Math.hypot(pointer.velocityX, pointer.velocityY) / 28, 0.25, 1),
     });
-    if (particleTrail.length > (width < 700 ? 75 : 150)) particleTrail.shift();
+    if (particleTrail.length > (width < 700 ? 140 : 240)) particleTrail.shift();
   }
 
   function createParticleDesign(x, y) {
@@ -1068,7 +1069,12 @@
   }
 
   function drawParticleTrail(now) {
-    const livePoints = particleTrail.filter((point) => now - point.born < 10000);
+    const artworkHoldMs = 6000;
+    const artworkFadeMs = 6000;
+    const artworkLifetimeMs = artworkHoldMs + artworkFadeMs;
+    const livePoints = particleTrail.filter(
+      (point) => now - point.born < artworkLifetimeMs,
+    );
     particleTrail.length = 0;
     particleTrail.push(...livePoints);
     if (livePoints.length === 0) return;
@@ -1077,7 +1083,12 @@
     context.globalCompositeOperation = 'lighter';
     livePoints.forEach((point, index) => {
       const age = now - point.born;
-      const life = Math.pow(clamp(1 - age / 10000, 0, 1), 0.82);
+      const life = age <= artworkHoldMs
+        ? 1
+        : Math.pow(
+          clamp(1 - (age - artworkHoldMs) / artworkFadeMs, 0, 1),
+          0.78,
+        );
       const particleCount = 3 + Math.round(point.strength * 5);
       for (let particle = 0; particle < particleCount; particle += 1) {
         const seed = index * 2.399 + particle * 4.17;
@@ -1982,10 +1993,8 @@
       drawVenueParticles(time, frameStep, flux);
       drawTargetParticles(time, frameStep, flux);
     }
-    if (!useDenseOrganism) {
-      drawParticleTrail(now);
-      drawParticleDesigns(now);
-    }
+    drawParticleTrail(now);
+    if (!useDenseOrganism) drawParticleDesigns(now);
     drawFormTitleParticles(time, frameStep);
   }
 

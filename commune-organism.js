@@ -135,72 +135,178 @@
         );
         float gesture_role = floor(hash(a_seed * 59.0 + 11.0) * 6.0);
         float gesture_t = hash(a_seed * 83.0 + 7.0);
-        float gesture_wave = sin(
-          u_time * (0.72 + flock_random * 0.18)
+        float dance_phase = (
+          u_time * (0.9 + flock_random * 0.24)
           + flock_phase
-          + gesture_t * 4.2
         );
-        vec2 upright = vec2(0.0, -1.0);
-        vec2 lateral = vec2(1.0, 0.0);
+        float weight_shift = sin(dance_phase);
+        float counter_shift = sin(dance_phase + 3.14159265);
+        float body_scale = 0.86 + flock_random * 0.24;
+        float floor_line = leader.y + 0.074 * body_scale;
+        vec2 pelvis = leader + vec2(
+          weight_shift * 0.009,
+          -0.009 - abs(cos(dance_phase)) * 0.004
+        ) * body_scale;
+        vec2 chest = pelvis + vec2(
+          sin(dance_phase * 0.52 + flock_phase) * 0.009,
+          -0.046
+        ) * body_scale;
+        vec2 crown = chest + vec2(
+          sin(dance_phase * 0.41 + flock_phase * 1.7) * 0.006,
+          -0.027
+        ) * body_scale;
+        vec2 left_shoulder = chest + vec2(-0.019, -0.004) * body_scale;
+        vec2 right_shoulder = chest + vec2(0.019, -0.004) * body_scale;
+        float left_arm_phase = dance_phase * 0.91 + flock_phase * 0.17;
+        float right_arm_phase = dance_phase * 1.07 + 2.12 + flock_phase * 0.11;
+        vec2 left_elbow = left_shoulder + vec2(
+          -0.023 - cos(left_arm_phase) * 0.013,
+          -0.007 - sin(left_arm_phase) * 0.024
+        ) * body_scale;
+        vec2 right_elbow = right_shoulder + vec2(
+          0.023 + cos(right_arm_phase) * 0.014,
+          -0.007 - sin(right_arm_phase) * 0.023
+        ) * body_scale;
+        vec2 left_wrist = left_elbow + vec2(
+          -0.024 - sin(left_arm_phase * 1.31) * 0.016,
+          -0.016 - cos(left_arm_phase * 1.19) * 0.026
+        ) * body_scale;
+        vec2 right_wrist = right_elbow + vec2(
+          0.024 + sin(right_arm_phase * 1.27) * 0.017,
+          -0.016 - cos(right_arm_phase * 1.23) * 0.025
+        ) * body_scale;
+        float left_lift = max(0.0, weight_shift);
+        float right_lift = max(0.0, counter_shift);
+        vec2 left_hip = pelvis + vec2(-0.009, 0.006) * body_scale;
+        vec2 right_hip = pelvis + vec2(0.009, 0.006) * body_scale;
+        vec2 left_knee = left_hip + vec2(
+          -0.008 + weight_shift * 0.019,
+          0.032 - left_lift * 0.009
+        ) * body_scale;
+        vec2 right_knee = right_hip + vec2(
+          0.008 + counter_shift * 0.019,
+          0.032 - right_lift * 0.009
+        ) * body_scale;
+        vec2 left_ankle = vec2(
+          leader.x - 0.015 * body_scale + weight_shift * 0.03 * body_scale,
+          floor_line - left_lift * 0.017 * body_scale
+        );
+        vec2 right_ankle = vec2(
+          leader.x + 0.015 * body_scale + counter_shift * 0.03 * body_scale,
+          floor_line - right_lift * 0.017 * body_scale
+        );
         vec2 gesture_uv = flock_uv;
         if (gesture_role < 2.0) {
-          float arm_side = gesture_role < 1.0 ? -1.0 : 1.0;
-          float arm_reach = 0.014
-            + gesture_t * (0.074 + flock_random * 0.024);
-          float open_lift = 0.024
-            + sin(gesture_t * 3.14159) * (0.024 + gesture_wave * 0.01);
-          gesture_uv = leader
-            + upright * open_lift
-            + lateral * arm_side * arm_reach;
-          gesture_uv += upright
-            * sin(
-              u_time * 0.86
-              + arm_side * 1.4
-              + gesture_t * 3.14159
-            )
-            * 0.012
-            * gesture_t;
-          gesture_uv += lateral
-            * arm_side
-            * cos(u_time * 1.24 + gesture_t * 5.2 + flock_phase)
-            * 0.007
-            * pow(gesture_t, 1.7);
-        } else if (gesture_role < 4.0) {
-          float leg_side = gesture_role < 3.0 ? -1.0 : 1.0;
-          float stride = sin(
-            u_time * (0.62 + flock_random * 0.16)
-            + flock_phase
-            + leg_side * 1.35
+          vec2 arm_start = gesture_role < 1.0
+            ? left_shoulder
+            : right_shoulder;
+          vec2 arm_joint = gesture_role < 1.0
+            ? left_elbow
+            : right_elbow;
+          vec2 arm_end = gesture_role < 1.0
+            ? left_wrist
+            : right_wrist;
+          float arm_path = gesture_t * 2.0;
+          vec2 segment_start = arm_path < 1.0 ? arm_start : arm_joint;
+          vec2 segment_end = arm_path < 1.0 ? arm_joint : arm_end;
+          float segment_t = arm_path < 1.0 ? arm_path : arm_path - 1.0;
+          vec2 segment_delta = segment_end - segment_start;
+          vec2 ribbon_normal = normalize(
+            vec2(-segment_delta.y, segment_delta.x)
           );
-          gesture_uv = leader
-            - upright * (0.008 + gesture_t * (0.064 + flock_random * 0.018))
-            + lateral
-              * leg_side
-              * (
-                0.008
-                + gesture_t * (0.026 + abs(stride) * 0.024)
-              );
-          gesture_uv += upright
-            * sin(gesture_t * 3.14159)
-            * 0.012;
-          gesture_uv += lateral
-            * leg_side
-            * stride
-            * 0.008
-            * gesture_t;
-        } else {
-          gesture_uv = leader
-            + upright * (gesture_t * 0.078 - 0.012)
-            + lateral
+          float ribbon_width = (
+            0.0045
+            + sin(segment_t * 3.14159265) * 0.0065
+          ) * body_scale;
+          float silk_wave = sin(
+            dance_phase * 1.43
+            + gesture_t * 8.0
+            + gesture_role * 1.9
+          );
+          gesture_uv = mix(segment_start, segment_end, segment_t)
+            + ribbon_normal
               * (flow_variation - 0.5)
-              * (0.012 + gesture_t * 0.016);
-          gesture_uv += lateral
-            * sin(u_time * 0.54 + gesture_t * 4.0 + flock_phase)
-            * (0.005 + gesture_t * 0.006);
+              * ribbon_width
+              * 2.0
+            + ribbon_normal
+              * silk_wave
+              * ribbon_width
+              * gesture_t
+              * 0.44;
+        } else if (gesture_role < 4.0) {
+          vec2 leg_start = gesture_role < 3.0 ? left_hip : right_hip;
+          vec2 leg_joint = gesture_role < 3.0 ? left_knee : right_knee;
+          vec2 leg_end = gesture_role < 3.0 ? left_ankle : right_ankle;
+          float leg_path = gesture_t * 2.0;
+          vec2 segment_start = leg_path < 1.0 ? leg_start : leg_joint;
+          vec2 segment_end = leg_path < 1.0 ? leg_joint : leg_end;
+          float segment_t = leg_path < 1.0 ? leg_path : leg_path - 1.0;
+          vec2 segment_delta = segment_end - segment_start;
+          vec2 ribbon_normal = normalize(
+            vec2(-segment_delta.y, segment_delta.x)
+          );
+          float leg_width = (
+            0.0035
+            + sin(segment_t * 3.14159265) * 0.0048
+          ) * body_scale;
+          gesture_uv = mix(segment_start, segment_end, segment_t)
+            + ribbon_normal
+              * (flow_variation - 0.5)
+              * leg_width
+              * 2.0;
+          if (gesture_t > 0.86) {
+            float foot_t = smoothstep(0.86, 1.0, gesture_t);
+            float foot_side = gesture_role < 3.0 ? -1.0 : 1.0;
+            gesture_uv += vec2(
+              foot_side * foot_t * 0.011 * body_scale,
+              sin(foot_t * 3.14159265) * 0.002
+            );
+          }
+        } else {
+          if (gesture_role < 5.0) {
+            float torso_path = gesture_t * 1.18;
+            vec2 torso_end = torso_path < 0.82 ? chest : crown;
+            float torso_t = torso_path < 0.82
+              ? torso_path / 0.82
+              : (torso_path - 0.82) / 0.36;
+            vec2 torso_start = torso_path < 0.82 ? pelvis : chest;
+            vec2 torso_delta = torso_end - torso_start;
+            vec2 ribbon_normal = normalize(
+              vec2(-torso_delta.y, torso_delta.x)
+            );
+            float torso_width = (
+              0.007
+              + sin(gesture_t * 3.14159265) * 0.012
+            ) * body_scale;
+            gesture_uv = mix(torso_start, torso_end, torso_t)
+              + ribbon_normal
+                * (flow_variation - 0.5)
+                * torso_width
+                * 2.0;
+          } else {
+            float veil_path = gesture_t * 2.0;
+            vec2 veil_start = veil_path < 1.0 ? left_wrist : chest;
+            vec2 veil_end = veil_path < 1.0 ? chest : right_wrist;
+            float veil_t = veil_path < 1.0
+              ? veil_path
+              : veil_path - 1.0;
+            vec2 veil_delta = veil_end - veil_start;
+            vec2 veil_normal = normalize(
+              vec2(-veil_delta.y, veil_delta.x)
+            );
+            float veil_billow = sin(
+              veil_t * 3.14159265
+              + dance_phase * 0.38
+            ) * 0.014 * body_scale;
+            gesture_uv = mix(veil_start, veil_end, veil_t)
+              + veil_normal * veil_billow
+              + turbulent_noise
+                * (0.003 + flow_variation * 0.005);
+          }
         }
-        gesture_uv += turbulent_noise * (0.003 + flow_variation * 0.004);
-        flock_uv = mix(flock_uv, gesture_uv, 0.79);
-        gesture_definition = 0.72 + gesture_t * 0.28;
+        gesture_uv += turbulent_noise * (0.002 + flow_variation * 0.003);
+        flock_uv = mix(flock_uv, gesture_uv, 0.88);
+        gesture_definition = 0.76 + gesture_t * 0.24;
         flock_position = u_rect.xy + flock_uv * u_rect.zw;
         float flock_mix = (
           u_morph
@@ -759,7 +865,12 @@
   }
 
   function updateTrail(now) {
-    const livePoints = pointerTrail.filter((point) => now - point.born < 10000);
+    const artworkHoldMs = 6000;
+    const artworkFadeMs = 6000;
+    const artworkLifetimeMs = artworkHoldMs + artworkFadeMs;
+    const livePoints = pointerTrail.filter(
+      (point) => now - point.born < artworkLifetimeMs,
+    );
     pointerTrail.length = 0;
     pointerTrail.push(...livePoints);
     trailCoordinates.fill(-1000);
@@ -768,10 +879,12 @@
       const age = now - point.born;
       trailCoordinates[index * 2] = point.x;
       trailCoordinates[index * 2 + 1] = point.y;
-      trailWeights[index] = Math.pow(
-        Math.max(0, 1 - age / 10000),
-        0.82,
-      );
+      trailWeights[index] = age <= artworkHoldMs
+        ? 1
+        : Math.pow(
+          Math.max(0, 1 - (age - artworkHoldMs) / artworkFadeMs),
+          0.82,
+        );
     });
     canvas.dataset.particleTrailPoints = String(livePoints.length);
   }
@@ -863,9 +976,10 @@
   gl.disable(gl.CULL_FACE);
   canvas.dataset.engine = 'webgl-flocking-organism';
   canvas.dataset.interactionMode = 'particle-trail-attractors';
-  canvas.dataset.particleTrailFadeSeconds = '10';
+  canvas.dataset.particleTrailHoldSeconds = '6';
+  canvas.dataset.particleTrailFadeSeconds = '6';
   canvas.dataset.brightnessMode = 'fluid-wave-amplitude';
-  canvas.dataset.figureMode = 'open-gesture-ribbons';
+  canvas.dataset.figureMode = 'articulated-dance-ribbons';
   canvas.dataset.imageCycleSeconds = String(cycleSeconds);
   canvas.dataset.particleHoldSeconds = String(particleHoldSeconds);
   canvas.dataset.webglStatus = 'initializing';
