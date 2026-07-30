@@ -1,5 +1,6 @@
 (() => {
   const canvas = document.querySelector('[data-commune-realtime]');
+  const organismCanvas = document.querySelector('[data-commune-organism]');
   const logo = document.querySelector('[data-particle-logo]');
   const venueImage = document.querySelector('[data-particle-venue]');
   const formTitle = document.querySelector('[data-particle-form-title]');
@@ -412,14 +413,14 @@
     || !formTitleMaskContext
   ) return;
 
-  const palette = [18, 34, 178, 194, 310, 328];
+  const palette = [13, 30, 167, 201, 210];
   const bannerParticlePalette = [
-    { hue: 16, saturation: 85, lightness: 53 },
-    { hue: 29, saturation: 89, lightness: 60 },
-    { hue: 177, saturation: 39, lightness: 46 },
-    { hue: 344, saturation: 82, lightness: 53 },
-    { hue: 349, saturation: 77, lightness: 36 },
-    { hue: 32, saturation: 24, lightness: 87 },
+    { hue: 13, saturation: 71, lightness: 49 },
+    { hue: 33, saturation: 62, lightness: 86 },
+    { hue: 29, saturation: 53, lightness: 73 },
+    { hue: 167, saturation: 4, lightness: 57 },
+    { hue: 201, saturation: 22, lightness: 43 },
+    { hue: 210, saturation: 53, lightness: 28 },
   ];
   const particles = [];
   const venueParticles = [];
@@ -534,8 +535,15 @@
     maskCanvas.height = Math.max(1, Math.round(height * maskScale));
     rebuildAmbient(compact);
     rebuildFormTitleParticles(compact);
-    rebuildTargets();
-    rebuildVenueTargets();
+    if (organismCanvas?.dataset.webglReady !== 'true') {
+      rebuildTargets();
+      rebuildVenueTargets();
+    } else {
+      particles.length = 0;
+      venueParticles.length = 0;
+      targetPoints.length = 0;
+      venueTargetPoints.length = 0;
+    }
   }
 
   function rebuildAmbient(compact = width < 700) {
@@ -644,7 +652,7 @@
     formTitleParticles.length = targets.length;
     formTitleCanvas.dataset.maskCandidates = String(candidates.length);
     formTitleCanvas.dataset.particles = String(formTitleParticles.length);
-    formTitleCanvas.dataset.palette = 'ed5e22-f48f3d-49a39f-ea245f-a5152e-e5ded4';
+    formTitleCanvas.dataset.palette = 'd44f24-f5dec2-e1b791-8e9795-567486-22486e';
     const ready = formTitleParticles.length > 80;
     formTitleCanvas.dataset.ready = String(ready);
     document.documentElement.classList.toggle('form-title-particles-ready', ready);
@@ -1034,8 +1042,10 @@
     lastScroll = currentScroll;
     window.clearTimeout(rebuildTimer);
     rebuildTimer = window.setTimeout(() => {
-      rebuildTargets();
-      rebuildVenueTargets();
+      if (organismCanvas?.dataset.webglReady !== 'true') {
+        rebuildTargets();
+        rebuildVenueTargets();
+      }
     }, 180);
   }
 
@@ -1915,7 +1925,7 @@
       formTitleContext.fill();
 
       if ((index + Math.floor(time * 12)) % 31 === 0) {
-        formTitleContext.fillStyle = `rgba(229, 222, 212, ${alpha * 0.82})`;
+        formTitleContext.fillStyle = `rgba(245, 222, 194, ${alpha * 0.82})`;
         formTitleContext.beginPath();
         formTitleContext.arc(particle.x, particle.y, 0.62 + shimmer * 0.28, 0, Math.PI * 2);
         formTitleContext.fill();
@@ -1972,23 +1982,28 @@
     }
     scrollEnergy *= 0.94;
 
-    const fragmentInterval = quality < 0.72 ? 4 : 2;
-    const fragmentPhase = simulationFrame % fragmentInterval;
-    if (fragmentPhase === 0) {
-      drawFluxImage(logo, logo.getBoundingClientRect(), time, flux.logoPresence, 'logo');
-    }
-    if (fragmentPhase === Math.floor(fragmentInterval * 0.5)) {
-      drawFluxImage(
-        venueImage,
-        venueImage.getBoundingClientRect(),
-        time,
-        flux.venuePresence,
-        'venue',
-      );
+    const useDenseOrganism = organismCanvas?.dataset.webglReady === 'true';
+    if (!useDenseOrganism) {
+      const fragmentInterval = quality < 0.72 ? 4 : 2;
+      const fragmentPhase = simulationFrame % fragmentInterval;
+      if (fragmentPhase === 0) {
+        drawFluxImage(logo, logo.getBoundingClientRect(), time, flux.logoPresence, 'logo');
+      }
+      if (fragmentPhase === Math.floor(fragmentInterval * 0.5)) {
+        drawFluxImage(
+          venueImage,
+          venueImage.getBoundingClientRect(),
+          time,
+          flux.venuePresence,
+          'venue',
+        );
+      }
     }
     drawAmbient(time, frameStep);
-    drawVenueParticles(time, frameStep, flux);
-    drawTargetParticles(time, frameStep, flux);
+    if (!useDenseOrganism) {
+      drawVenueParticles(time, frameStep, flux);
+      drawTargetParticles(time, frameStep, flux);
+    }
     drawGestureTrails(now);
     drawParticleDesigns(now);
     drawFormTitleParticles(time, frameStep);

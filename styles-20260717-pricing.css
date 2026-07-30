@@ -4,16 +4,17 @@
   --muted: rgba(241, 231, 215, 0.68);
   --line: rgba(241, 231, 215, 0.18);
   --panel: rgba(241, 231, 215, 0.055);
-  --orange: #ff6c22;
-  --pink: #f03b87;
-  --cyan: #62d3df;
-  --banner-ink: #020508;
-  --banner-cream: #e5ded4;
-  --banner-orange: #ed5e22;
-  --banner-amber: #f48f3d;
-  --banner-magenta: #ea245f;
-  --banner-teal: #49a39f;
-  --banner-deep-teal: #234a50;
+  --orange: #d44f24;
+  --pink: #8e9795;
+  --cyan: #567486;
+  --banner-ink: #0b0f13;
+  --banner-cream: #f5dec2;
+  --banner-orange: #d44f24;
+  --banner-amber: #e1b791;
+  --banner-charcoal: #48413a;
+  --banner-slate: #8e9795;
+  --banner-blue: #22486e;
+  --banner-deep-blue: #121d2d;
   --logo-image-opacity: 0.075;
   --logo-flux-x: 0px;
   --logo-flux-y: 0px;
@@ -45,8 +46,8 @@ body {
   overflow-x: clip;
   color: var(--cream);
   background:
-    radial-gradient(circle at 18% 5%, rgba(255, 108, 34, 0.08), transparent 30%),
-    radial-gradient(circle at 82% 24%, rgba(98, 211, 223, 0.07), transparent 34%),
+    radial-gradient(circle at 18% 5%, rgba(212, 79, 36, 0.08), transparent 30%),
+    radial-gradient(circle at 82% 24%, rgba(34, 72, 110, 0.09), transparent 34%),
     var(--ink);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -56,6 +57,7 @@ main {
   z-index: 1;
 }
 
+.commune-organism-field,
 .commune-realtime-field {
   position: fixed;
   z-index: 0;
@@ -65,12 +67,21 @@ main {
   pointer-events: none;
 }
 
+.commune-organism-field {
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+
+.particle-organism-ready .commune-organism-field {
+  opacity: 1;
+}
+
 .commune-realtime-vignette {
   position: fixed;
   z-index: 0;
   inset: 0;
   background:
-    radial-gradient(circle at var(--commune-pointer-x, 50%) var(--commune-pointer-y, 30%), rgba(255, 95, 46, 0.055), transparent 24%),
+    radial-gradient(circle at var(--commune-pointer-x, 50%) var(--commune-pointer-y, 30%), rgba(212, 79, 36, 0.055), transparent 24%),
     radial-gradient(circle at 50% 45%, transparent 26%, rgba(5, 5, 5, 0.2) 100%);
   pointer-events: none;
 }
@@ -91,7 +102,7 @@ main {
   background: rgba(5, 5, 5, 0.78);
   box-shadow:
     0 12px 42px rgba(0, 0, 0, 0.42),
-    inset 0 0 0 1px rgba(98, 211, 223, 0.025);
+    inset 0 0 0 1px rgba(86, 116, 134, 0.035);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
   font: 800 10px/1 Inter, ui-sans-serif, system-ui, sans-serif;
@@ -107,7 +118,7 @@ main {
 
 .soundscape-toggle:hover {
   color: var(--cream);
-  border-color: rgba(98, 211, 223, 0.54);
+  border-color: rgba(86, 116, 134, 0.62);
 }
 
 .soundscape-toggle:focus-visible {
@@ -117,12 +128,12 @@ main {
 
 .soundscape-toggle[data-state="on"] {
   color: var(--cream);
-  border-color: rgba(98, 211, 223, 0.58);
+  border-color: rgba(86, 116, 134, 0.66);
   background: rgba(7, 12, 13, 0.86);
   box-shadow:
     0 12px 42px rgba(0, 0, 0, 0.42),
-    0 0 26px rgba(98, 211, 223, 0.1),
-    inset 0 0 0 1px rgba(255, 108, 34, 0.08);
+    0 0 26px rgba(34, 72, 110, 0.16),
+    inset 0 0 0 1px rgba(212, 79, 36, 0.09);
 }
 
 .soundscape-icon {
@@ -183,7 +194,7 @@ a {
   color: var(--ink);
   background: linear-gradient(90deg, var(--orange), var(--pink) 55%, var(--cyan));
   border: 0;
-  box-shadow: 0 12px 36px rgba(240, 59, 135, 0.14);
+  box-shadow: 0 12px 36px rgba(34, 72, 110, 0.16);
 }
 
 .button:disabled {
@@ -204,8 +215,8 @@ a {
   padding: clamp(22px, 4vw, 46px) clamp(20px, 6vw, 72px) clamp(16px, 2.4vw, 28px);
   background:
     linear-gradient(to bottom, transparent 62%, var(--ink) 100%),
-    radial-gradient(circle at 22% 28%, rgba(255, 108, 34, 0.2), transparent 30%),
-    radial-gradient(circle at 78% 12%, rgba(98, 211, 223, 0.16), transparent 28%),
+    radial-gradient(circle at 22% 28%, rgba(212, 79, 36, 0.2), transparent 30%),
+    radial-gradient(circle at 78% 12%, rgba(34, 72, 110, 0.2), transparent 28%),
     rgba(5, 5, 5, 0.32);
 }
 
@@ -267,10 +278,10 @@ a {
   text-align: center;
   background:
     linear-gradient(to bottom, var(--ink) 0, transparent 130px),
-    radial-gradient(ellipse at 8% 22%, rgba(237, 94, 34, 0.18), transparent 48%),
-    radial-gradient(ellipse at 91% 24%, rgba(73, 163, 159, 0.17), transparent 48%),
-    radial-gradient(ellipse at 76% 84%, rgba(234, 36, 95, 0.14), transparent 44%),
-    radial-gradient(ellipse at 20% 88%, rgba(244, 143, 61, 0.11), transparent 48%),
+    radial-gradient(ellipse at 8% 22%, rgba(212, 79, 36, 0.2), transparent 48%),
+    radial-gradient(ellipse at 91% 24%, rgba(34, 72, 110, 0.22), transparent 48%),
+    radial-gradient(ellipse at 76% 84%, rgba(142, 151, 149, 0.13), transparent 44%),
+    radial-gradient(ellipse at 20% 88%, rgba(225, 183, 145, 0.12), transparent 48%),
     var(--banner-ink);
 }
 
@@ -325,8 +336,8 @@ h1 {
   background:
     linear-gradient(to bottom, var(--ink) 0, transparent 150px),
     linear-gradient(to bottom, transparent 68%, var(--ink) 100%),
-    radial-gradient(circle at 18% 8%, rgba(255, 108, 34, 0.14), transparent 28%),
-    radial-gradient(circle at 82% 92%, rgba(98, 211, 223, 0.12), transparent 30%),
+    radial-gradient(circle at 18% 8%, rgba(212, 79, 36, 0.15), transparent 28%),
+    radial-gradient(circle at 82% 92%, rgba(34, 72, 110, 0.17), transparent 30%),
     rgba(5, 5, 5, 0.22);
 }
 
@@ -368,14 +379,14 @@ h1 {
   gap: 16px;
   width: min(100%, 620px);
   padding: clamp(22px, 4vw, 32px);
-  border: 1px solid rgba(229, 222, 212, 0.24);
+  border: 1px solid rgba(245, 222, 194, 0.24);
   background:
-    radial-gradient(circle at 0 0, rgba(237, 94, 34, 0.15), transparent 38%),
-    radial-gradient(circle at 100% 100%, rgba(73, 163, 159, 0.14), transparent 42%),
-    linear-gradient(145deg, rgba(35, 74, 80, 0.16), rgba(2, 5, 8, 0.9) 54%);
+    radial-gradient(circle at 0 0, rgba(212, 79, 36, 0.17), transparent 38%),
+    radial-gradient(circle at 100% 100%, rgba(34, 72, 110, 0.2), transparent 42%),
+    linear-gradient(145deg, rgba(72, 65, 58, 0.2), rgba(11, 15, 19, 0.92) 54%);
   box-shadow:
     0 26px 80px rgba(0, 0, 0, 0.34),
-    inset 0 0 0 1px rgba(234, 36, 95, 0.035);
+    inset 0 0 0 1px rgba(142, 151, 149, 0.05);
 }
 
 .site-footer {
@@ -427,7 +438,7 @@ h1 {
 .privacy-note,
 .form-status {
   margin: 0;
-  color: rgba(229, 222, 212, 0.66);
+  color: rgba(245, 222, 194, 0.66);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -437,7 +448,7 @@ h1 {
 }
 
 .form-status[data-state="success"] {
-  color: var(--banner-teal);
+  color: var(--banner-slate);
   font-weight: 800;
 }
 
@@ -459,7 +470,7 @@ h1 {
 }
 
 .signup-form label:nth-of-type(2) span {
-  color: var(--banner-teal);
+  color: var(--banner-blue);
 }
 
 .signup-form input {
@@ -467,9 +478,9 @@ h1 {
   min-height: 48px;
   padding: 12px 14px;
   color: var(--banner-cream);
-  border: 1px solid rgba(229, 222, 212, 0.22);
+  border: 1px solid rgba(245, 222, 194, 0.22);
   border-radius: 0;
-  background: rgba(2, 5, 8, 0.82);
+  background: rgba(11, 15, 19, 0.84);
   font: inherit;
 }
 
@@ -479,7 +490,7 @@ h1 {
 }
 
 .signup-form label:nth-of-type(2) input:focus {
-  outline-color: var(--banner-teal);
+  outline-color: var(--banner-blue);
 }
 
 .signup-hero .button.primary {
@@ -488,13 +499,13 @@ h1 {
     linear-gradient(
       90deg,
       var(--banner-orange),
-      var(--banner-amber) 24%,
-      var(--banner-magenta) 58%,
-      var(--banner-teal)
+      var(--banner-cream) 40%,
+      var(--banner-slate) 68%,
+      var(--banner-blue)
     );
   box-shadow:
-    0 14px 38px rgba(234, 36, 95, 0.16),
-    0 0 26px rgba(73, 163, 159, 0.08);
+    0 14px 38px rgba(212, 79, 36, 0.18),
+    0 0 30px rgba(34, 72, 110, 0.16);
 }
 
 .mailchimp-honeypot {
@@ -593,6 +604,7 @@ h1 {
   }
 
   .commune-realtime-field,
+  .commune-organism-field,
   .commune-realtime-vignette,
   .form-title-particle-canvas {
     display: none;
