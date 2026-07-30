@@ -425,7 +425,7 @@
   const particles = [];
   const venueParticles = [];
   const ambient = [];
-  const gestureTrail = [];
+  const particleTrail = [];
   const particleDesigns = [];
   const targetPoints = [];
   const venueTargetPoints = [];
@@ -474,6 +474,7 @@
   canvas.dataset.simulationMode = 'staggered';
   canvas.dataset.trailFade = '0.10';
   canvas.dataset.fragmentCadence = 'interleaved';
+  canvas.dataset.pointerTrailMode = 'particle-attraction';
 
   const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
   const smoothstep = (minimum, maximum, value) => {
@@ -933,18 +934,18 @@
     if (venueParticles.length > 100) document.documentElement.classList.add('venue-flux-ready');
   }
 
-  function addGesturePoint(x, y, force = false) {
-    const previous = gestureTrail[gestureTrail.length - 1];
+  function addParticleTrailPoint(x, y, force = false) {
+    const previous = particleTrail[particleTrail.length - 1];
     const distance = previous ? Math.hypot(x - previous.x, y - previous.y) : 99;
     if (!force && distance < 7) return;
-    gestureTrail.push({
+    particleTrail.push({
       x,
       y,
       born: performance.now(),
-      hue: palette[gestureTrail.length % palette.length],
+      hue: palette[particleTrail.length % palette.length],
       strength: clamp(Math.hypot(pointer.velocityX, pointer.velocityY) / 28, 0.25, 1),
     });
-    if (gestureTrail.length > (width < 700 ? 75 : 150)) gestureTrail.shift();
+    if (particleTrail.length > (width < 700 ? 75 : 150)) particleTrail.shift();
   }
 
   function createParticleDesign(x, y) {
@@ -993,7 +994,7 @@
     document.documentElement.style.setProperty('--commune-pointer-x', `${event.clientX}px`);
     document.documentElement.style.setProperty('--commune-pointer-y', `${event.clientY}px`);
     if (pointer.down || Math.hypot(pointer.velocityX, pointer.velocityY) > 13) {
-      addGesturePoint(event.clientX, event.clientY);
+      addParticleTrailPoint(event.clientX, event.clientY);
     }
     if (pointer.down) {
       imageSuppression = 1;
@@ -1014,8 +1015,10 @@
     imageSuppression = 1;
     imageSuppressionHoldUntil = performance.now() + 6000;
     pointer.active = 1;
-    addGesturePoint(event.clientX, event.clientY, true);
-    createParticleDesign(event.clientX, event.clientY);
+    addParticleTrailPoint(event.clientX, event.clientY, true);
+    if (organismCanvas?.dataset.webglReady !== 'true') {
+      createParticleDesign(event.clientX, event.clientY);
+    }
   }
 
   function onPointerUp() {
@@ -1051,100 +1054,33 @@
     }, 180);
   }
 
-  function drawGestureTrails(now) {
-    const livePoints = gestureTrail.filter((point) => now - point.born < 2600);
-    gestureTrail.length = 0;
-    gestureTrail.push(...livePoints);
-    if (livePoints.length < 2) return;
-
-    const drawPass = (blur, widthScale, alphaScale) => {
-      context.save();
-      context.globalCompositeOperation = 'lighter';
-      context.filter = `blur(${blur}px)`;
-      context.lineCap = 'round';
-      context.lineJoin = 'round';
-      context.beginPath();
-      context.moveTo(livePoints[0].x, livePoints[0].y);
-      for (let index = 1; index < livePoints.length - 1; index += 1) {
-        const point = livePoints[index];
-        const next = livePoints[index + 1];
-        context.quadraticCurveTo(
-          point.x,
-          point.y,
-          (point.x + next.x) * 0.5,
-          (point.y + next.y) * 0.5,
-        );
-      }
-      const finalPoint = livePoints[livePoints.length - 1];
-      const life = clamp(1 - (now - finalPoint.born) / 2600, 0, 1);
-      context.strokeStyle = `hsla(${(finalPoint.hue + now * 0.025) % 360}, 100%, 68%, ${life * alphaScale})`;
-      context.lineWidth = widthScale * (0.7 + finalPoint.strength);
-      context.stroke();
-      context.restore();
-    };
-
-    drawPass(10, 13, 0.08);
-    drawPass(2.4, 4.8, 0.16);
-    drawPass(0, 0.75, 0.42);
-
-    const filamentPoint = (index, filament) => {
-      const point = livePoints[index];
-      const previous = livePoints[Math.max(0, index - 1)];
-      const next = livePoints[Math.min(livePoints.length - 1, index + 1)];
-      const tangentX = next.x - previous.x;
-      const tangentY = next.y - previous.y;
-      const tangentLength = Math.hypot(tangentX, tangentY) + 0.001;
-      const normalX = -tangentY / tangentLength;
-      const normalY = tangentX / tangentLength;
-      const age = (now - point.born) / 1000;
-      const wave = Math.sin(index * 0.82 + filament * 1.7 + now * 0.0012)
-        * (2.4 + Math.abs(filament) * 1.5 + age * 1.2);
-      const offset = filament * 2.2 + wave;
-      return {
-        x: point.x + normalX * offset,
-        y: point.y + normalY * offset,
-      };
-    };
+  function drawParticleTrail(now) {
+    const livePoints = particleTrail.filter((point) => now - point.born < 2200);
+    particleTrail.length = 0;
+    particleTrail.push(...livePoints);
+    if (livePoints.length === 0) return;
 
     context.save();
     context.globalCompositeOperation = 'lighter';
-    context.lineCap = 'round';
-    context.lineJoin = 'round';
-    for (let filament = -3; filament <= 3; filament += 1) {
-      const first = filamentPoint(0, filament);
-      const latest = livePoints[livePoints.length - 1];
-      const life = clamp(1 - (now - latest.born) / 2600, 0, 1);
-      context.strokeStyle = `hsla(${(latest.hue + filament * 28 + 360) % 360}, 100%, ${filament === 0 ? 84 : 70}%, ${life * (filament === 0 ? 0.24 : 0.115)})`;
-      context.lineWidth = filament === 0 ? 0.74 : 0.42;
-      context.beginPath();
-      context.moveTo(first.x, first.y);
-      for (let index = 1; index < livePoints.length - 1; index += 1) {
-        const point = filamentPoint(index, filament);
-        const next = filamentPoint(index + 1, filament);
-        context.quadraticCurveTo(
-          point.x,
-          point.y,
-          (point.x + next.x) * 0.5,
-          (point.y + next.y) * 0.5,
-        );
-      }
-      const final = filamentPoint(livePoints.length - 1, filament);
-      context.lineTo(final.x, final.y);
-      context.stroke();
-    }
-
     livePoints.forEach((point, index) => {
-      if (index % 2 !== 0) return;
       const age = now - point.born;
-      const life = clamp(1 - age / 2600, 0, 1);
-      for (let droplet = 0; droplet < 3; droplet += 1) {
-        const seed = index * 2.399 + droplet * 4.17;
-        const reach = 5 + (index % 7) * 1.8 + droplet * 4.6 + age * 0.006;
-        const x = point.x + Math.cos(seed + now * 0.00018) * reach;
-        const y = point.y + Math.sin(seed - now * 0.00016) * reach;
-        context.fillStyle = `hsla(${(point.hue + droplet * 34) % 360}, 100%, 78%, ${life * 0.22})`;
+      const life = clamp(1 - age / 2200, 0, 1);
+      const particleCount = 3 + Math.round(point.strength * 5);
+      for (let particle = 0; particle < particleCount; particle += 1) {
+        const seed = index * 2.399 + particle * 4.17;
+        const spread = 3.5 + particle * 1.7 + age * 0.003;
+        const x = point.x + Math.cos(seed + now * 0.00021) * spread;
+        const y = point.y + Math.sin(seed - now * 0.00017) * spread * 0.72;
+        const hue = (point.hue + particle * 19 + now * 0.008) % 360;
+        context.fillStyle = `hsla(${hue}, 92%, 76%, ${life * 0.26})`;
         context.beginPath();
-        context.arc(x, y, 0.34 + droplet * 0.16, 0, Math.PI * 2);
+        context.arc(
+          x,
+          y,
+          0.32 + (particle % 3) * 0.18 + point.strength * 0.2,
+          0,
+          Math.PI * 2,
+        );
         context.fill();
       }
     });
@@ -2014,8 +1950,10 @@
       drawVenueParticles(time, frameStep, flux);
       drawTargetParticles(time, frameStep, flux);
     }
-    drawGestureTrails(now);
-    drawParticleDesigns(now);
+    if (!useDenseOrganism) {
+      drawParticleTrail(now);
+      drawParticleDesigns(now);
+    }
     drawFormTitleParticles(time, frameStep);
   }
 

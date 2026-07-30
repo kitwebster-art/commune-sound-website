@@ -35,13 +35,15 @@
     uniform vec4 u_rect;
     uniform vec2 u_pointer;
     uniform vec2 u_pointer_velocity;
+    uniform vec2 u_trail_points[8];
+    uniform float u_trail_weights[8];
     uniform float u_pointer_active;
     uniform float u_pointer_down;
     uniform float u_time;
     uniform float u_morph;
     uniform float u_mode;
     uniform float u_dpr;
-    uniform float u_bloom_pass;
+    uniform float u_flock_pass;
 
     varying vec3 v_colour;
     varying float v_alpha;
@@ -60,7 +62,7 @@
         + a_uv.y * 5.0
       );
       vec2 position = base;
-      vec2 bloom_position = base;
+      vec2 flock_position = base;
       float perspective = 1.0;
       float flow_glow = 0.0;
       float flow_progress = 0.0;
@@ -69,45 +71,60 @@
       if (u_mode > 0.5) {
         float floor_presence = smoothstep(0.34, 0.96, a_uv.y);
         perspective = mix(0.28, 1.0, smoothstep(0.35, 1.0, a_uv.y));
-        float strand = floor(a_seed * 4.0);
+        float flock_id = floor(a_seed * 7.0);
         flow_progress = hash(a_seed * 43.0 + 2.0);
         flow_variation = hash(a_seed * 71.0 + 5.0);
-        float rise = pow(flow_progress, 0.72);
-        float strand_angle = strand * 1.570795;
-        float curl_angle = (
-          strand_angle
-          + flow_progress * 8.5
-          + u_time * (0.16 + flow_variation * 0.2)
-          + sin(u_time * 0.3 + flow_progress * 6.0) * 0.52
+        float flock_random = hash(flock_id * 17.0 + 3.0);
+        float flock_phase = flock_id * 2.127 + flock_random * 2.4;
+        float drift_phase = (
+          u_time * (0.13 + flock_random * 0.1)
+          + flock_phase
         );
-        float radius = (
-          0.015 + rise * 0.17
-        ) * (0.72 + flow_variation * 0.45);
-        vec2 centre_uv = vec2(
-          0.5 + sin(u_time * 0.19) * 0.012,
-          0.805
+        vec2 flock_centre = vec2(0.5, 0.715);
+        vec2 leader = flock_centre + vec2(
+          sin(drift_phase) * (0.095 + flock_random * 0.055)
+            + sin(u_time * 0.31 + flock_phase * 1.7) * 0.035,
+          cos(drift_phase * 0.83 + flock_phase * 0.37) * 0.065
+            + sin(u_time * 0.23 + flock_phase * 1.31) * 0.05
         );
-        vec2 bloom_uv = centre_uv + vec2(
-          cos(curl_angle) * radius
-            + sin(flow_progress * 11.0 + u_time * 0.25) * 0.025 * rise,
-          sin(curl_angle) * radius * 0.48 - rise * 0.22
+        float heading = (
+          drift_phase
+          + sin(u_time * 0.27 + flock_phase) * 0.82
         );
-        float eddy_angle = (
-          u_time * (0.24 + flow_variation * 0.18)
-          + a_seed * 29.0
+        vec2 direction = vec2(cos(heading), sin(heading) * 0.72);
+        vec2 normal = normalize(vec2(-direction.y, direction.x));
+        float rank = flow_progress - 0.5;
+        float wing = flow_variation - 0.5;
+        float cohesion = 0.78
+          + sin(u_time * 0.39 + flock_phase + flow_progress * 4.0) * 0.22;
+        vec2 flock_uv = leader
+          + direction * rank * (0.11 + flock_random * 0.055) * cohesion
+          + normal * wing * (
+            0.05 + abs(rank) * 0.085
+          );
+        vec2 turbulent_noise = vec2(
+          sin(
+            a_seed * 37.0
+            + u_time * (0.42 + flock_random * 0.22)
+            + flow_progress * 9.0
+          ),
+          cos(
+            a_seed * 29.0
+            - u_time * (0.35 + flow_variation * 0.2)
+            + flow_progress * 7.0
+          )
         );
-        bloom_uv += vec2(
-          cos(eddy_angle),
-          sin(eddy_angle) * 0.72
-        ) * (0.005 + flow_variation * 0.012);
-        bloom_position = u_rect.xy + bloom_uv * u_rect.zw;
-        float bloom_mix = (
+        flock_uv += turbulent_noise * (
+          0.006 + flow_variation * 0.014
+        );
+        flock_position = u_rect.xy + flock_uv * u_rect.zw;
+        float flock_mix = (
           u_morph
           * freedom
-          * (0.16 + floor_presence * 0.68)
+          * (0.18 + floor_presence * 0.66)
         );
-        position = mix(base, bloom_position, bloom_mix * 0.62);
-        flow_glow = bloom_mix * 0.55;
+        position = mix(base, flock_position, flock_mix * 0.58);
+        flow_glow = flock_mix * 0.52;
 
         float architectural_breath = (
           sin(u_time * 0.38 + a_uv.y * 18.0 + a_seed * 8.0)
@@ -150,7 +167,7 @@
         cos(position.x * 0.015 - u_time * 0.42 + a_seed * 3.0)
           - sin((position.x - position.y) * 0.011 + u_time * 0.37)
       );
-      if (u_bloom_pass > 0.5) {
+      if (u_flock_pass > 0.5) {
         if (u_mode < 0.5 || u_morph < 0.12) {
           gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
           gl_PointSize = 0.0;
@@ -158,9 +175,9 @@
           v_alpha = 0.0;
           return;
         }
-        position = bloom_position + fluid_field * fluid_strength * 1.58;
+        position = flock_position + fluid_field * fluid_strength * 1.34;
         perspective = mix(0.62, 0.96, flow_progress);
-        flow_glow = 0.68;
+        flow_glow = 0.62;
       } else {
         position += fluid_field * fluid_strength;
       }
@@ -184,6 +201,27 @@
         * (8.0 + motion * 34.0)
         * sin(u_time * 1.8 + a_seed * 24.0);
 
+      float trail_energy = 0.0;
+      vec2 trail_shift = vec2(0.0);
+      for (int trail_index = 0; trail_index < 8; trail_index++) {
+        vec2 trail_delta = position - u_trail_points[trail_index];
+        float trail_distance = length(trail_delta) + 0.001;
+        float trail_influence = (
+          1.0 - smoothstep(7.0, 92.0, trail_distance)
+        ) * u_trail_weights[trail_index];
+        vec2 trail_radial = trail_delta / trail_distance;
+        vec2 trail_tangent = vec2(-trail_radial.y, trail_radial.x);
+        trail_shift -= trail_radial
+          * trail_influence
+          * (7.0 + u_pointer_down * 7.0);
+        trail_shift += trail_tangent
+          * trail_influence
+          * sin(a_seed * 21.0 + u_time * 1.5)
+          * 3.8;
+        trail_energy = max(trail_energy, trail_influence);
+      }
+      position += trail_shift * (0.48 + freedom * 0.52);
+
       vec2 clip = vec2(
         position.x / u_resolution.x * 2.0 - 1.0,
         1.0 - position.y / u_resolution.y * 2.0
@@ -193,15 +231,26 @@
       float base_size = mix(1.02, 1.58, perspective);
       gl_PointSize = u_dpr
         * base_size
-        * (1.0 + u_morph * 0.38 + gravity * 0.46 + u_bloom_pass * 0.28);
+        * (
+          1.0
+          + u_morph * 0.38
+          + gravity * 0.46
+          + trail_energy * 0.5
+          + u_flock_pass * 0.24
+        );
 
       float edge_fade = smoothstep(0.0, 0.055, a_uv.x)
         * smoothstep(0.0, 0.055, 1.0 - a_uv.x)
         * smoothstep(0.0, 0.045, a_uv.y)
         * smoothstep(0.0, 0.045, 1.0 - a_uv.y);
-      edge_fade = mix(edge_fade, 1.0, u_bloom_pass);
+      edge_fade = mix(edge_fade, 1.0, u_flock_pass);
       float particle_alpha = mix(0.28, 0.96, u_morph);
-      particle_alpha += a_anchor * 0.12 + gravity * 0.12 + flow_glow * 0.08;
+      particle_alpha += (
+        a_anchor * 0.12
+        + gravity * 0.12
+        + trail_energy * 0.18
+        + flow_glow * 0.08
+      );
       v_alpha = clamp(particle_alpha * edge_fade, 0.0, 0.98);
       vec3 lifted_colour = pow(
         max(a_colour, vec3(0.008)),
@@ -220,22 +269,23 @@
         + gravity * 0.14
         + flow_glow * 0.18
       );
-      vec3 bloom_warm = vec3(0.831, 0.31, 0.141);
-      vec3 bloom_cream = vec3(0.961, 0.871, 0.761);
-      vec3 bloom_blue = vec3(0.133, 0.282, 0.431);
-      vec3 bloom_colour = mix(
-        bloom_warm,
-        bloom_cream,
+      vec3 flock_warm = vec3(0.831, 0.31, 0.141);
+      vec3 flock_cream = vec3(0.961, 0.871, 0.761);
+      vec3 flock_blue = vec3(0.133, 0.282, 0.431);
+      vec3 flock_colour = mix(
+        flock_warm,
+        flock_cream,
         smoothstep(0.0, 0.58, flow_progress)
       );
-      bloom_colour = mix(
-        bloom_colour,
-        bloom_blue,
+      flock_colour = mix(
+        flock_colour,
+        flock_blue,
         smoothstep(0.46, 1.0, flow_progress) * (0.48 + flow_variation * 0.24)
       );
-      bloom_colour *= 0.84 + pulse * 0.15 + gravity * 0.1;
-      v_colour = mix(image_colour, bloom_colour, u_bloom_pass * 0.76);
-      if (u_bloom_pass > 0.5) {
+      flock_colour *= 0.84 + pulse * 0.15 + gravity * 0.1;
+      v_colour = mix(image_colour, flock_colour, u_flock_pass * 0.74);
+      v_colour = mix(v_colour, flock_cream, trail_energy * 0.24);
+      if (u_flock_pass > 0.5) {
         v_alpha = clamp(
           smoothstep(0.12, 0.56, u_morph) * (0.48 + pulse * 0.12),
           0.0,
@@ -305,13 +355,15 @@
     rect: gl.getUniformLocation(program, 'u_rect'),
     pointer: gl.getUniformLocation(program, 'u_pointer'),
     pointerVelocity: gl.getUniformLocation(program, 'u_pointer_velocity'),
+    trailPoints: gl.getUniformLocation(program, 'u_trail_points[0]'),
+    trailWeights: gl.getUniformLocation(program, 'u_trail_weights[0]'),
     pointerActive: gl.getUniformLocation(program, 'u_pointer_active'),
     pointerDown: gl.getUniformLocation(program, 'u_pointer_down'),
     time: gl.getUniformLocation(program, 'u_time'),
     morph: gl.getUniformLocation(program, 'u_morph'),
     mode: gl.getUniformLocation(program, 'u_mode'),
     dpr: gl.getUniformLocation(program, 'u_dpr'),
-    bloomPass: gl.getUniformLocation(program, 'u_bloom_pass'),
+    flockPass: gl.getUniformLocation(program, 'u_flock_pass'),
   };
 
   const regions = [
@@ -327,6 +379,9 @@
     down: false,
     lastMove: 0,
   };
+  const pointerTrail = [];
+  const trailCoordinates = new Float32Array(16);
+  const trailWeights = new Float32Array(8);
   const analysisCanvas = document.createElement('canvas');
   const analysisContext = analysisCanvas.getContext('2d', { willReadFrequently: true });
   if (!analysisContext) {
@@ -545,20 +600,51 @@
     gl.uniform4f(uniforms.rect, rect.left, rect.top, rect.width, rect.height);
     gl.uniform2f(uniforms.pointer, pointer.x, pointer.y);
     gl.uniform2f(uniforms.pointerVelocity, pointer.velocityX, pointer.velocityY);
+    gl.uniform2fv(uniforms.trailPoints, trailCoordinates);
+    gl.uniform1fv(uniforms.trailWeights, trailWeights);
     gl.uniform1f(uniforms.pointerActive, pointer.active);
     gl.uniform1f(uniforms.pointerDown, pointer.down ? 1 : 0);
     gl.uniform1f(uniforms.time, time);
     gl.uniform1f(uniforms.morph, morph);
     gl.uniform1f(uniforms.mode, region.mode);
     gl.uniform1f(uniforms.dpr, dpr);
-    gl.uniform1f(uniforms.bloomPass, 0);
+    gl.uniform1f(uniforms.flockPass, 0);
     gl.drawArrays(gl.POINTS, 0, region.count);
     if (region.mode > 0.5 && morph > 0.12) {
-      const bloomCount = Math.max(10000, Math.round(region.count * 0.13));
-      canvas.dataset.turbulenceParticles = String(bloomCount);
-      gl.uniform1f(uniforms.bloomPass, 1);
-      gl.drawArrays(gl.POINTS, 0, Math.min(region.count, bloomCount));
+      const flockCount = Math.max(10000, Math.round(region.count * 0.15));
+      canvas.dataset.flockParticles = String(flockCount);
+      gl.uniform1f(uniforms.flockPass, 1);
+      gl.drawArrays(gl.POINTS, 0, Math.min(region.count, flockCount));
     }
+  }
+
+  function addTrailPoint(x, y, force = false) {
+    const previous = pointerTrail[pointerTrail.length - 1];
+    if (
+      !force
+      && previous
+      && Math.hypot(x - previous.x, y - previous.y) < 22
+    ) return;
+    pointerTrail.push({ x, y, born: performance.now() });
+    if (pointerTrail.length > 8) pointerTrail.shift();
+  }
+
+  function updateTrail(now) {
+    const livePoints = pointerTrail.filter((point) => now - point.born < 1900);
+    pointerTrail.length = 0;
+    pointerTrail.push(...livePoints);
+    trailCoordinates.fill(-1000);
+    trailWeights.fill(0);
+    livePoints.forEach((point, index) => {
+      const age = now - point.born;
+      trailCoordinates[index * 2] = point.x;
+      trailCoordinates[index * 2 + 1] = point.y;
+      trailWeights[index] = Math.pow(
+        Math.max(0, 1 - age / 1900),
+        0.72,
+      );
+    });
+    canvas.dataset.particleTrailPoints = String(livePoints.length);
   }
 
   function animate(now) {
@@ -568,6 +654,7 @@
     if (now - pointer.lastMove > 900 && !pointer.down) pointer.active *= 0.965;
     pointer.velocityX *= 0.84;
     pointer.velocityY *= 0.84;
+    updateTrail(now);
 
     const cycle = (time % cycleSeconds) / cycleSeconds;
     let baseMorph = 0;
@@ -610,6 +697,7 @@
     pointer.y = event.clientY;
     pointer.active = 1;
     pointer.lastMove = performance.now();
+    if (pointer.down) addTrailPoint(event.clientX, event.clientY);
   }
 
   function onPointerDown(event) {
@@ -619,6 +707,8 @@
     pointer.y = event.clientY;
     pointer.active = 1;
     pointer.lastMove = performance.now();
+    pointerTrail.length = 0;
+    addTrailPoint(event.clientX, event.clientY, true);
   }
 
   function onPointerUp() {
@@ -642,7 +732,8 @@
 
   gl.disable(gl.DEPTH_TEST);
   gl.disable(gl.CULL_FACE);
-  canvas.dataset.engine = 'webgl-collective-organism';
+  canvas.dataset.engine = 'webgl-flocking-organism';
+  canvas.dataset.interactionMode = 'particle-trail-attractors';
   canvas.dataset.imageCycleSeconds = String(cycleSeconds);
   canvas.dataset.particleHoldSeconds = String(particleHoldSeconds);
   canvas.dataset.webglStatus = 'initializing';
