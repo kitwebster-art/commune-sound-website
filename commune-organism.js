@@ -60,59 +60,74 @@
       );
       vec2 position = base;
       float perspective = 1.0;
+      float organism_glow = 0.0;
 
       if (u_mode > 0.5) {
         float floor_presence = smoothstep(0.34, 0.96, a_uv.y);
         perspective = mix(0.28, 1.0, smoothstep(0.35, 1.0, a_uv.y));
-        float member = floor(a_seed * 11.0);
-        float member_seed = hash(member + 7.0);
-        float depth_seed = hash(member * 3.17 + 2.0);
-        float collective_sway = sin(
-          u_time * (0.34 + member_seed * 0.18)
-          + member * 1.41
-        );
-        float collective_turn = cos(
-          u_time * (0.27 + depth_seed * 0.16)
-          - member * 1.13
-        );
-        vec2 centre_uv = vec2(
-          0.5
-            + (member_seed - 0.5) * (0.34 + depth_seed * 0.2)
-            + collective_sway * (0.025 + depth_seed * 0.025),
-          0.58
-            + depth_seed * 0.3
-            + collective_turn * 0.016
-        );
+        float anatomy = floor(a_seed * 6.0);
+        float anatomy_t = hash(a_seed * 43.0 + 2.0);
+        float orbit_seed = hash(a_seed * 71.0 + 5.0);
+        float sway = sin(u_time * 0.48) * 0.036;
+        float turn = sin(u_time * 0.34 + 0.8);
+        vec2 centre_uv = vec2(0.5 + sway, 0.71);
+        vec2 dancer_uv = centre_uv;
+
+        if (anatomy < 1.0) {
+          float angle = anatomy_t * 6.28318 + u_time * 0.34;
+          dancer_uv = vec2(
+            centre_uv.x + cos(angle) * (0.024 + orbit_seed * 0.014),
+            0.575 + sin(angle) * (0.022 + orbit_seed * 0.012)
+          );
+        } else if (anatomy < 3.0) {
+          float side = anatomy < 2.0 ? -1.0 : 1.0;
+          float reach = anatomy_t;
+          float lift = 0.055
+            + sin(u_time * 0.52 + side * 1.4) * 0.035;
+          dancer_uv = vec2(
+            centre_uv.x
+              + side * (0.032 + reach * (0.13 + turn * side * 0.035)),
+            0.655
+              - sin(reach * 3.14159) * lift
+              + reach * side * turn * 0.024
+          );
+        } else if (anatomy < 4.0) {
+          float torso_y = anatomy_t;
+          dancer_uv = vec2(
+            centre_uv.x
+              + sin(u_time * 0.58 + torso_y * 5.4) * (0.012 + torso_y * 0.02),
+            0.625 + torso_y * 0.16
+          );
+        } else {
+          float side = anatomy < 5.0 ? -1.0 : 1.0;
+          float stride = anatomy_t;
+          dancer_uv = vec2(
+            centre_uv.x
+              + side * (
+                0.016
+                + stride * (0.052 + abs(turn) * 0.028)
+              ),
+            0.765 + stride * 0.16
+          );
+        }
+
         float orbit_angle = (
-          a_seed * 78.0
-          + u_time * (0.38 + hash(a_seed * 29.0) * 0.72)
-          + sin(u_time * 0.31 + member) * 0.42
+          a_seed * 83.0
+          + u_time * (0.31 + orbit_seed * 0.56)
         );
-        float orbit_radius = (
-          0.012
-          + hash(a_seed * 47.0 + 3.0) * 0.058
-        ) * mix(0.52, 1.0, depth_seed);
-        vec2 orbit = vec2(
+        float orbit_radius = 0.003 + orbit_seed * 0.013;
+        dancer_uv += vec2(
           cos(orbit_angle) * orbit_radius,
-          sin(orbit_angle) * orbit_radius * 1.72
+          sin(orbit_angle) * orbit_radius * 1.45
         );
-        orbit.x += sin(
-          u_time * 0.46
-          + centre_uv.y * 14.0
-          + a_seed * 19.0
-        ) * 0.012;
-        orbit.y += cos(
-          u_time * 0.39
-          + centre_uv.x * 17.0
-          - a_seed * 13.0
-        ) * 0.009;
-        vec2 organism = u_rect.xy + (centre_uv + orbit) * u_rect.zw;
+        vec2 organism = u_rect.xy + dancer_uv * u_rect.zw;
         float dancer_mix = (
           u_morph
           * freedom
-          * (0.12 + floor_presence * 0.78)
+          * (0.2 + floor_presence * 0.74)
         );
-        position = mix(base, organism, dancer_mix * 0.78);
+        position = mix(base, organism, dancer_mix * 0.86);
+        organism_glow = dancer_mix;
 
         float architectural_breath = (
           sin(u_time * 0.38 + a_uv.y * 18.0 + a_seed * 8.0)
@@ -146,6 +161,17 @@
         position = mix(base, ribbon, 0.34 + freedom * 0.66);
       }
 
+      float fluid_strength = u_morph
+        * mix(1.35, 2.8, u_mode)
+        * (0.28 + freedom * 0.72);
+      vec2 fluid_field = vec2(
+        sin(position.y * 0.018 + u_time * 0.48 + a_seed * 4.0)
+          + cos((position.x + position.y) * 0.009 - u_time * 0.31),
+        cos(position.x * 0.015 - u_time * 0.42 + a_seed * 3.0)
+          - sin((position.x - position.y) * 0.011 + u_time * 0.37)
+      );
+      position += fluid_field * fluid_strength;
+
       vec2 pointer_delta = position - u_pointer;
       float pointer_distance = length(pointer_delta) + 0.001;
       float field_radius = mix(138.0, 220.0, u_mode);
@@ -171,7 +197,7 @@
       );
       gl_Position = vec4(clip, 0.0, 1.0);
 
-      float base_size = mix(0.88, 1.42, perspective);
+      float base_size = mix(1.02, 1.58, perspective);
       gl_PointSize = u_dpr
         * base_size
         * (1.0 + u_morph * 0.34 + gravity * 0.46);
@@ -180,14 +206,20 @@
         * smoothstep(0.0, 0.055, 1.0 - a_uv.x)
         * smoothstep(0.0, 0.045, a_uv.y)
         * smoothstep(0.0, 0.045, 1.0 - a_uv.y);
-      float particle_alpha = mix(0.16, 0.86, u_morph);
-      particle_alpha += a_anchor * 0.12 + gravity * 0.12;
-      v_alpha = clamp(particle_alpha * edge_fade, 0.0, 0.96);
-      v_colour = a_colour * (
-        0.82
+      float particle_alpha = mix(0.2, 0.92, u_morph);
+      particle_alpha += a_anchor * 0.12 + gravity * 0.12 + organism_glow * 0.08;
+      v_alpha = clamp(particle_alpha * edge_fade, 0.0, 0.98);
+      vec3 lifted_colour = mix(
+        a_colour,
+        sqrt(max(a_colour, vec3(0.004))),
+        0.32 + u_morph * 0.18
+      );
+      v_colour = lifted_colour * (
+        0.98
         + pulse * 0.18
-        + u_morph * 0.12
+        + u_morph * 0.16
         + gravity * 0.14
+        + organism_glow * 0.24
       );
     }
   `;
@@ -289,6 +321,8 @@
   let performanceFrames = 0;
   let performanceStarted = performance.now();
   let degraded = false;
+  const cycleSeconds = 14;
+  const particleHoldSeconds = 5.6;
 
   const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
   const smoothstep = (minimum, maximum, value) => {
@@ -477,7 +511,7 @@
       && pointer.y >= rect.top
       && pointer.y <= rect.bottom;
     const hoverMorph = insidePointer
-      ? pointer.active * (pointer.down ? 0.8 : 0.42)
+      ? pointer.active * (pointer.down ? 0.94 : 0.42)
       : 0;
     const morph = clamp(Math.max(baseMorph, hoverMorph), 0, 1);
 
@@ -506,9 +540,15 @@
     pointer.velocityX *= 0.84;
     pointer.velocityY *= 0.84;
 
-    const imageWave = 0.5 - Math.cos(time / 10 * Math.PI * 2) * 0.5;
-    const imagePresence = smoothstep(0.035, 0.965, imageWave);
-    const baseMorph = 1 - (0.075 + imagePresence * 0.925);
+    const cycle = (time % cycleSeconds) / cycleSeconds;
+    let baseMorph = 0;
+    if (cycle >= 0.18 && cycle < 0.32) {
+      baseMorph = smoothstep(0.18, 0.32, cycle) * 0.925;
+    } else if (cycle >= 0.32 && cycle < 0.72) {
+      baseMorph = 0.925;
+    } else if (cycle >= 0.72 && cycle < 0.86) {
+      baseMorph = (1 - smoothstep(0.72, 0.86, cycle)) * 0.925;
+    }
 
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -574,6 +614,8 @@
   gl.disable(gl.DEPTH_TEST);
   gl.disable(gl.CULL_FACE);
   canvas.dataset.engine = 'webgl-collective-organism';
+  canvas.dataset.imageCycleSeconds = String(cycleSeconds);
+  canvas.dataset.particleHoldSeconds = String(particleHoldSeconds);
   canvas.dataset.webglStatus = 'initializing';
   resize();
   if (!logo.complete) logo.addEventListener('load', rebuildRegions, { once: true });

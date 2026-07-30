@@ -464,9 +464,11 @@
   let formTitleDpr = 1;
   let formTitleWidth = 1;
   let formTitleHeight = 1;
-  const imageCycleSeconds = 10;
+  const imageCycleSeconds = 14;
+  const particleHoldSeconds = 5.6;
   const imageOpacityFloor = 0.075;
   canvas.dataset.imageCycleSeconds = String(imageCycleSeconds);
+  canvas.dataset.particleHoldSeconds = String(particleHoldSeconds);
   canvas.dataset.imageOpacityFloor = String(imageOpacityFloor);
   canvas.dataset.glitchMode = 'structural-blocks';
   canvas.dataset.simulationMode = 'staggered';
@@ -1237,8 +1239,16 @@
   function calculateFluxState(time) {
     const slowBreath = 0.5 + Math.sin(time * 0.43 - 0.8) * 0.5;
     const soundBreath = 0.5 + Math.sin(time * Math.PI * 2 * (75 / 60)) * 0.5;
-    const imageWave = 0.5 - Math.cos(time / imageCycleSeconds * Math.PI * 2) * 0.5;
-    const imagePresence = smoothstep(0.035, 0.965, imageWave);
+    const cycle = (time % imageCycleSeconds) / imageCycleSeconds;
+    let particleMorph = 0;
+    if (cycle >= 0.18 && cycle < 0.32) {
+      particleMorph = smoothstep(0.18, 0.32, cycle);
+    } else if (cycle >= 0.32 && cycle < 0.72) {
+      particleMorph = 1;
+    } else if (cycle >= 0.72 && cycle < 0.86) {
+      particleMorph = 1 - smoothstep(0.72, 0.86, cycle);
+    }
+    const imagePresence = 1 - particleMorph;
     const interactionVisibility = pointer.down || time * 1000 < imageSuppressionHoldUntil
       ? 0
       : 1 - imageSuppression;
