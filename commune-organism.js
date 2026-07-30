@@ -41,7 +41,7 @@
     uniform float u_morph;
     uniform float u_mode;
     uniform float u_dpr;
-    uniform float u_dancer_pass;
+    uniform float u_bloom_pass;
 
     varying vec3 v_colour;
     varying float v_alpha;
@@ -60,77 +60,54 @@
         + a_uv.y * 5.0
       );
       vec2 position = base;
-      vec2 dancer_position = base;
+      vec2 bloom_position = base;
       float perspective = 1.0;
-      float organism_glow = 0.0;
+      float flow_glow = 0.0;
+      float flow_progress = 0.0;
+      float flow_variation = 0.0;
 
       if (u_mode > 0.5) {
         float floor_presence = smoothstep(0.34, 0.96, a_uv.y);
         perspective = mix(0.28, 1.0, smoothstep(0.35, 1.0, a_uv.y));
-        float anatomy = floor(a_seed * 6.0);
-        float anatomy_t = hash(a_seed * 43.0 + 2.0);
-        float orbit_seed = hash(a_seed * 71.0 + 5.0);
-        float sway = sin(u_time * 0.48) * 0.036;
-        float turn = sin(u_time * 0.34 + 0.8);
-        vec2 centre_uv = vec2(0.5 + sway, 0.71);
-        vec2 dancer_uv = centre_uv;
-
-        if (anatomy < 1.0) {
-          float angle = anatomy_t * 6.28318 + u_time * 0.34;
-          dancer_uv = vec2(
-            centre_uv.x + cos(angle) * (0.024 + orbit_seed * 0.014),
-            0.575 + sin(angle) * (0.022 + orbit_seed * 0.012)
-          );
-        } else if (anatomy < 3.0) {
-          float side = anatomy < 2.0 ? -1.0 : 1.0;
-          float reach = anatomy_t;
-          float lift = 0.055
-            + sin(u_time * 0.52 + side * 1.4) * 0.035;
-          dancer_uv = vec2(
-            centre_uv.x
-              + side * (0.032 + reach * (0.13 + turn * side * 0.035)),
-            0.655
-              - sin(reach * 3.14159) * lift
-              + reach * side * turn * 0.024
-          );
-        } else if (anatomy < 4.0) {
-          float torso_y = anatomy_t;
-          dancer_uv = vec2(
-            centre_uv.x
-              + sin(u_time * 0.58 + torso_y * 5.4) * (0.012 + torso_y * 0.02),
-            0.625 + torso_y * 0.16
-          );
-        } else {
-          float side = anatomy < 5.0 ? -1.0 : 1.0;
-          float stride = anatomy_t;
-          dancer_uv = vec2(
-            centre_uv.x
-              + side * (
-                0.016
-                + stride * (0.052 + abs(turn) * 0.028)
-              ),
-            0.765 + stride * 0.16
-          );
-        }
-
-        float orbit_angle = (
-          a_seed * 83.0
-          + u_time * (0.31 + orbit_seed * 0.56)
+        float strand = floor(a_seed * 4.0);
+        flow_progress = hash(a_seed * 43.0 + 2.0);
+        flow_variation = hash(a_seed * 71.0 + 5.0);
+        float rise = pow(flow_progress, 0.72);
+        float strand_angle = strand * 1.570795;
+        float curl_angle = (
+          strand_angle
+          + flow_progress * 8.5
+          + u_time * (0.16 + flow_variation * 0.2)
+          + sin(u_time * 0.3 + flow_progress * 6.0) * 0.52
         );
-        float orbit_radius = 0.003 + orbit_seed * 0.013;
-        dancer_uv += vec2(
-          cos(orbit_angle) * orbit_radius,
-          sin(orbit_angle) * orbit_radius * 1.45
+        float radius = (
+          0.015 + rise * 0.17
+        ) * (0.72 + flow_variation * 0.45);
+        vec2 centre_uv = vec2(
+          0.5 + sin(u_time * 0.19) * 0.012,
+          0.805
         );
-        vec2 organism = u_rect.xy + dancer_uv * u_rect.zw;
-        float dancer_mix = (
+        vec2 bloom_uv = centre_uv + vec2(
+          cos(curl_angle) * radius
+            + sin(flow_progress * 11.0 + u_time * 0.25) * 0.025 * rise,
+          sin(curl_angle) * radius * 0.48 - rise * 0.22
+        );
+        float eddy_angle = (
+          u_time * (0.24 + flow_variation * 0.18)
+          + a_seed * 29.0
+        );
+        bloom_uv += vec2(
+          cos(eddy_angle),
+          sin(eddy_angle) * 0.72
+        ) * (0.005 + flow_variation * 0.012);
+        bloom_position = u_rect.xy + bloom_uv * u_rect.zw;
+        float bloom_mix = (
           u_morph
           * freedom
-          * (0.2 + floor_presence * 0.74)
+          * (0.16 + floor_presence * 0.68)
         );
-        position = mix(base, organism, dancer_mix * 0.86);
-        dancer_position = organism;
-        organism_glow = dancer_mix;
+        position = mix(base, bloom_position, bloom_mix * 0.62);
+        flow_glow = bloom_mix * 0.55;
 
         float architectural_breath = (
           sin(u_time * 0.38 + a_uv.y * 18.0 + a_seed * 8.0)
@@ -173,7 +150,7 @@
         cos(position.x * 0.015 - u_time * 0.42 + a_seed * 3.0)
           - sin((position.x - position.y) * 0.011 + u_time * 0.37)
       );
-      if (u_dancer_pass > 0.5) {
+      if (u_bloom_pass > 0.5) {
         if (u_mode < 0.5 || u_morph < 0.12) {
           gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
           gl_PointSize = 0.0;
@@ -181,9 +158,9 @@
           v_alpha = 0.0;
           return;
         }
-        position = dancer_position + fluid_field * fluid_strength * 1.35;
-        perspective = 0.82;
-        organism_glow = 1.0;
+        position = bloom_position + fluid_field * fluid_strength * 1.58;
+        perspective = mix(0.62, 0.96, flow_progress);
+        flow_glow = 0.68;
       } else {
         position += fluid_field * fluid_strength;
       }
@@ -216,15 +193,15 @@
       float base_size = mix(1.02, 1.58, perspective);
       gl_PointSize = u_dpr
         * base_size
-        * (1.0 + u_morph * 0.38 + gravity * 0.46 + u_dancer_pass * 0.72);
+        * (1.0 + u_morph * 0.38 + gravity * 0.46 + u_bloom_pass * 0.28);
 
       float edge_fade = smoothstep(0.0, 0.055, a_uv.x)
         * smoothstep(0.0, 0.055, 1.0 - a_uv.x)
         * smoothstep(0.0, 0.045, a_uv.y)
         * smoothstep(0.0, 0.045, 1.0 - a_uv.y);
-      edge_fade = mix(edge_fade, 1.0, u_dancer_pass);
+      edge_fade = mix(edge_fade, 1.0, u_bloom_pass);
       float particle_alpha = mix(0.28, 0.96, u_morph);
-      particle_alpha += a_anchor * 0.12 + gravity * 0.12 + organism_glow * 0.08;
+      particle_alpha += a_anchor * 0.12 + gravity * 0.12 + flow_glow * 0.08;
       v_alpha = clamp(particle_alpha * edge_fade, 0.0, 0.98);
       vec3 lifted_colour = pow(
         max(a_colour, vec3(0.008)),
@@ -241,30 +218,28 @@
         + pulse * 0.18
         + u_morph * 0.16
         + gravity * 0.14
-        + organism_glow * 0.24
+        + flow_glow * 0.18
       );
-      float dancer_horizontal = clamp(
-        (dancer_position.x - u_rect.x) / max(u_rect.z, 1.0),
-        0.0,
-        1.0
+      vec3 bloom_warm = vec3(0.831, 0.31, 0.141);
+      vec3 bloom_cream = vec3(0.961, 0.871, 0.761);
+      vec3 bloom_blue = vec3(0.133, 0.282, 0.431);
+      vec3 bloom_colour = mix(
+        bloom_warm,
+        bloom_cream,
+        smoothstep(0.0, 0.58, flow_progress)
       );
-      vec3 dancer_warm = vec3(0.831, 0.31, 0.141);
-      vec3 dancer_cream = vec3(0.961, 0.871, 0.761);
-      vec3 dancer_blue = vec3(0.133, 0.282, 0.431);
-      vec3 dancer_colour = dancer_horizontal < 0.52
-        ? mix(dancer_warm, dancer_cream, dancer_horizontal / 0.52)
-        : mix(
-          dancer_cream,
-          dancer_blue,
-          (dancer_horizontal - 0.52) / 0.48
-        );
-      dancer_colour *= 1.12 + pulse * 0.2 + gravity * 0.12;
-      v_colour = mix(image_colour, dancer_colour, u_dancer_pass);
-      if (u_dancer_pass > 0.5) {
+      bloom_colour = mix(
+        bloom_colour,
+        bloom_blue,
+        smoothstep(0.46, 1.0, flow_progress) * (0.48 + flow_variation * 0.24)
+      );
+      bloom_colour *= 0.84 + pulse * 0.15 + gravity * 0.1;
+      v_colour = mix(image_colour, bloom_colour, u_bloom_pass * 0.76);
+      if (u_bloom_pass > 0.5) {
         v_alpha = clamp(
-          smoothstep(0.12, 0.52, u_morph) * (0.78 + pulse * 0.16),
+          smoothstep(0.12, 0.56, u_morph) * (0.48 + pulse * 0.12),
           0.0,
-          0.94
+          0.62
         );
       }
     }
@@ -336,7 +311,7 @@
     morph: gl.getUniformLocation(program, 'u_morph'),
     mode: gl.getUniformLocation(program, 'u_mode'),
     dpr: gl.getUniformLocation(program, 'u_dpr'),
-    dancerPass: gl.getUniformLocation(program, 'u_dancer_pass'),
+    bloomPass: gl.getUniformLocation(program, 'u_bloom_pass'),
   };
 
   const regions = [
@@ -576,15 +551,13 @@
     gl.uniform1f(uniforms.morph, morph);
     gl.uniform1f(uniforms.mode, region.mode);
     gl.uniform1f(uniforms.dpr, dpr);
-    gl.uniform1f(uniforms.dancerPass, 0);
+    gl.uniform1f(uniforms.bloomPass, 0);
     gl.drawArrays(gl.POINTS, 0, region.count);
     if (region.mode > 0.5 && morph > 0.12) {
-      const dancerCount = Math.max(12000, Math.round(region.count * 0.18));
-      canvas.dataset.dancerParticles = String(dancerCount);
-      gl.uniform1f(uniforms.dancerPass, 1);
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-      gl.drawArrays(gl.POINTS, 0, Math.min(region.count, dancerCount));
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      const bloomCount = Math.max(10000, Math.round(region.count * 0.13));
+      canvas.dataset.turbulenceParticles = String(bloomCount);
+      gl.uniform1f(uniforms.bloomPass, 1);
+      gl.drawArrays(gl.POINTS, 0, Math.min(region.count, bloomCount));
     }
   }
 
