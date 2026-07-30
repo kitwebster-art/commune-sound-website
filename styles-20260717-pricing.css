@@ -7,6 +7,13 @@
   --orange: #ff6c22;
   --pink: #f03b87;
   --cyan: #62d3df;
+  --banner-ink: #020508;
+  --banner-cream: #e5ded4;
+  --banner-orange: #ed5e22;
+  --banner-amber: #f48f3d;
+  --banner-magenta: #ea245f;
+  --banner-teal: #49a39f;
+  --banner-deep-teal: #234a50;
   --logo-image-opacity: 0.075;
   --logo-flux-x: 0px;
   --logo-flux-y: 0px;
@@ -260,9 +267,11 @@ a {
   text-align: center;
   background:
     linear-gradient(to bottom, var(--ink) 0, transparent 130px),
-    radial-gradient(ellipse at 18% 32%, rgba(255, 108, 34, 0.11), transparent 56%),
-    radial-gradient(ellipse at 82% 72%, rgba(98, 211, 223, 0.12), transparent 56%),
-    rgba(5, 5, 5, 0.56);
+    radial-gradient(ellipse at 8% 22%, rgba(237, 94, 34, 0.18), transparent 48%),
+    radial-gradient(ellipse at 91% 24%, rgba(73, 163, 159, 0.17), transparent 48%),
+    radial-gradient(ellipse at 76% 84%, rgba(234, 36, 95, 0.14), transparent 44%),
+    radial-gradient(ellipse at 20% 88%, rgba(244, 143, 61, 0.11), transparent 48%),
+    var(--banner-ink);
 }
 
 h1,
@@ -359,10 +368,14 @@ h1 {
   gap: 16px;
   width: min(100%, 620px);
   padding: clamp(22px, 4vw, 32px);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(229, 222, 212, 0.24);
   background:
-    linear-gradient(135deg, rgba(255, 108, 34, 0.08), transparent 44%),
-    rgba(5, 5, 5, 0.72);
+    radial-gradient(circle at 0 0, rgba(237, 94, 34, 0.15), transparent 38%),
+    radial-gradient(circle at 100% 100%, rgba(73, 163, 159, 0.14), transparent 42%),
+    linear-gradient(145deg, rgba(35, 74, 80, 0.16), rgba(2, 5, 8, 0.9) 54%);
+  box-shadow:
+    0 26px 80px rgba(0, 0, 0, 0.34),
+    inset 0 0 0 1px rgba(234, 36, 95, 0.035);
 }
 
 .site-footer {
@@ -382,7 +395,7 @@ h1 {
   grid-area: 1 / 1;
   width: 100%;
   margin: 0;
-  color: var(--cream);
+  color: var(--banner-cream);
   font-family: Futura, "Century Gothic", Avenir, Montserrat, sans-serif;
   font-size: clamp(34px, 6.6vw, 58px);
   line-height: 0.88;
@@ -414,7 +427,7 @@ h1 {
 .privacy-note,
 .form-status {
   margin: 0;
-  color: rgba(241, 231, 215, 0.62);
+  color: rgba(229, 222, 212, 0.66);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -424,7 +437,7 @@ h1 {
 }
 
 .form-status[data-state="success"] {
-  color: var(--cyan);
+  color: var(--banner-teal);
   font-weight: 800;
 }
 
@@ -439,26 +452,49 @@ h1 {
 }
 
 .signup-form span {
-  color: var(--cyan);
+  color: var(--banner-orange);
   font-size: 12px;
   font-weight: 950;
   text-transform: uppercase;
+}
+
+.signup-form label:nth-of-type(2) span {
+  color: var(--banner-teal);
 }
 
 .signup-form input {
   width: 100%;
   min-height: 48px;
   padding: 12px 14px;
-  color: var(--cream);
-  border: 1px solid var(--line);
+  color: var(--banner-cream);
+  border: 1px solid rgba(229, 222, 212, 0.22);
   border-radius: 0;
-  background: rgba(5, 5, 5, 0.72);
+  background: rgba(2, 5, 8, 0.82);
   font: inherit;
 }
 
 .signup-form input:focus {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--banner-orange);
   outline-offset: 2px;
+}
+
+.signup-form label:nth-of-type(2) input:focus {
+  outline-color: var(--banner-teal);
+}
+
+.signup-hero .button.primary {
+  color: var(--banner-ink);
+  background:
+    linear-gradient(
+      90deg,
+      var(--banner-orange),
+      var(--banner-amber) 24%,
+      var(--banner-magenta) 58%,
+      var(--banner-teal)
+    );
+  box-shadow:
+    0 14px 38px rgba(234, 36, 95, 0.16),
+    0 0 26px rgba(73, 163, 159, 0.08);
 }
 
 .mailchimp-honeypot {
@@ -563,7 +599,7 @@ h1 {
   }
 
   .form-title-particles-ready .form-title {
-    color: var(--cream);
+    color: var(--banner-cream);
   }
 
   .realtime-ready .wordmark-banner img {

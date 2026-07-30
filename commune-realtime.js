@@ -413,6 +413,14 @@
   ) return;
 
   const palette = [18, 34, 178, 194, 310, 328];
+  const bannerParticlePalette = [
+    { hue: 16, saturation: 85, lightness: 53 },
+    { hue: 29, saturation: 89, lightness: 60 },
+    { hue: 177, saturation: 39, lightness: 46 },
+    { hue: 344, saturation: 82, lightness: 53 },
+    { hue: 349, saturation: 77, lightness: 36 },
+    { hue: 32, saturation: 24, lightness: 87 },
+  ];
   const particles = [];
   const venueParticles = [];
   const ambient = [];
@@ -607,9 +615,13 @@
     const initial = formTitleParticles.length === 0;
     targets.forEach((target, index) => {
       const particle = formTitleParticles[index];
+      const swatch = bannerParticlePalette[index % bannerParticlePalette.length];
       if (particle) {
         particle.targetX = target.x;
         particle.targetY = target.y;
+        particle.hue = swatch.hue;
+        particle.saturation = swatch.saturation;
+        particle.lightness = swatch.lightness;
         return;
       }
       const spread = initial ? 1.2 : 9;
@@ -623,13 +635,16 @@
         velocityX: (Math.random() - 0.5) * 0.18,
         velocityY: (Math.random() - 0.5) * 0.18,
         phase: Math.random() * Math.PI * 2,
-        hue: palette[index % palette.length],
+        hue: swatch.hue,
+        saturation: swatch.saturation,
+        lightness: swatch.lightness,
         size: 0.3 + Math.random() * 0.58,
       });
     });
     formTitleParticles.length = targets.length;
     formTitleCanvas.dataset.maskCandidates = String(candidates.length);
     formTitleCanvas.dataset.particles = String(formTitleParticles.length);
+    formTitleCanvas.dataset.palette = 'ed5e22-f48f3d-49a39f-ea245f-a5152e-e5ded4';
     const ready = formTitleParticles.length > 80;
     formTitleCanvas.dataset.ready = String(ready);
     document.documentElement.classList.toggle('form-title-particles-ready', ready);
@@ -858,8 +873,8 @@
     }
 
     const maximum = compact
-      ? Math.max(480, Math.round(620 * quality))
-      : Math.max(850, Math.round(1200 * quality));
+      ? Math.max(720, Math.round(900 * quality))
+      : Math.max(1350, Math.round(1800 * quality));
     candidates.sort((first, second) => second.rank - first.rank);
     venueTargetPoints.length = 0;
     for (
@@ -904,6 +919,7 @@
     });
     venueParticles.length = venueTargetPoints.length;
     canvas.dataset.venueParticles = String(venueParticles.length);
+    canvas.dataset.venueParticleDensity = '1.5x';
     if (venueParticles.length > 100) document.documentElement.classList.add('venue-flux-ready');
   }
 
@@ -1876,17 +1892,18 @@
       particle.x += particle.velocityX * simulationStep;
       particle.y += particle.velocityY * simulationStep;
 
-      const hue = (particle.hue + shimmer * 28 + interaction * 72 + time * 3) % 360;
+      const hue = (particle.hue + shimmer * 6 + interaction * 18 + time * 0.4) % 360;
       const alpha = clamp(0.34 + shimmer * 0.38 + interaction * 0.22, 0.28, 0.94);
+      const lightness = clamp(particle.lightness + shimmer * 7, 42, 91);
       if (index % 3 === 0) {
-        formTitleContext.strokeStyle = `hsla(${hue}, 100%, 76%, ${alpha * 0.3})`;
+        formTitleContext.strokeStyle = `hsla(${hue}, ${particle.saturation}%, ${Math.min(94, lightness + 8)}%, ${alpha * 0.3})`;
         formTitleContext.lineWidth = 0.3 + particle.size * 0.24;
         formTitleContext.beginPath();
         formTitleContext.moveTo(particle.previousX, particle.previousY);
         formTitleContext.lineTo(particle.x, particle.y);
         formTitleContext.stroke();
       }
-      formTitleContext.fillStyle = `hsla(${hue}, 100%, ${74 + shimmer * 10}%, ${alpha})`;
+      formTitleContext.fillStyle = `hsla(${hue}, ${particle.saturation}%, ${lightness}%, ${alpha})`;
       formTitleContext.beginPath();
       formTitleContext.arc(
         particle.x,
@@ -1898,7 +1915,7 @@
       formTitleContext.fill();
 
       if ((index + Math.floor(time * 12)) % 31 === 0) {
-        formTitleContext.fillStyle = `rgba(255, 250, 238, ${alpha * 0.82})`;
+        formTitleContext.fillStyle = `rgba(229, 222, 212, ${alpha * 0.82})`;
         formTitleContext.beginPath();
         formTitleContext.arc(particle.x, particle.y, 0.62 + shimmer * 0.28, 0, Math.PI * 2);
         formTitleContext.fill();
