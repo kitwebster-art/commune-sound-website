@@ -492,8 +492,8 @@
   let formTitleDpr = 1;
   let formTitleWidth = 1;
   let formTitleHeight = 1;
-  const imageCycleSeconds = 18;
-  const particleHoldSeconds = 8.1;
+  const imageCycleSeconds = 22;
+  const particleHoldSeconds = 11;
   const imageOpacityFloor = 0.075;
   canvas.dataset.imageCycleSeconds = String(imageCycleSeconds);
   canvas.dataset.particleHoldSeconds = String(particleHoldSeconds);
@@ -503,7 +503,7 @@
   canvas.dataset.trailFade = '0.10';
   canvas.dataset.fragmentCadence = 'interleaved';
   canvas.dataset.pointerTrailMode = 'particle-attraction';
-  canvas.dataset.pointerTrailHoldSeconds = '6';
+  canvas.dataset.pointerTrailHoldSeconds = '8';
   canvas.dataset.pointerTrailFadeSeconds = '6';
   canvas.dataset.mobileTouchMode = 'tap-particles-pan-scroll';
 
@@ -1145,7 +1145,7 @@
   }
 
   function drawParticleTrail(now) {
-    const artworkHoldMs = 6000;
+    const artworkHoldMs = 8000;
     const artworkFadeMs = 6000;
     const artworkLifetimeMs = artworkHoldMs + artworkFadeMs;
     const livePoints = particleTrail.filter(
@@ -1277,12 +1277,12 @@
     const soundBreath = 0.5 + Math.sin(time * Math.PI * 2 * (75 / 60)) * 0.5;
     const cycle = (time % imageCycleSeconds) / imageCycleSeconds;
     let particleMorph = 0;
-    if (cycle >= 0.16 && cycle < 0.3) {
-      particleMorph = smoothstep(0.16, 0.3, cycle);
-    } else if (cycle >= 0.3 && cycle < 0.75) {
+    if (cycle >= 0.14 && cycle < 0.28) {
+      particleMorph = smoothstep(0.14, 0.28, cycle);
+    } else if (cycle >= 0.28 && cycle < 0.78) {
       particleMorph = 1;
-    } else if (cycle >= 0.75 && cycle < 0.89) {
-      particleMorph = 1 - smoothstep(0.75, 0.89, cycle);
+    } else if (cycle >= 0.78 && cycle < 0.92) {
+      particleMorph = 1 - smoothstep(0.78, 0.92, cycle);
     }
     const imagePresence = 1 - particleMorph;
     const interactionVisibility = pointer.down || time * 1000 < imageSuppressionHoldUntil

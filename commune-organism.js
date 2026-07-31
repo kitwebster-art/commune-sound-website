@@ -44,12 +44,69 @@
     uniform float u_mode;
     uniform float u_dpr;
     uniform float u_flock_pass;
+    uniform float u_detail;
+    uniform float u_trail_count;
 
     varying vec3 v_colour;
     varying float v_alpha;
 
     float hash(float value) {
       return fract(sin(value * 91.733) * 43758.5453);
+    }
+
+    mat2 rotate_field(float angle) {
+      float cosine = cos(angle);
+      float sine = sin(angle);
+      return mat2(cosine, -sine, sine, cosine);
+    }
+
+    vec2 curl_layer(
+      vec2 point,
+      float frequency,
+      float phase,
+      float aspect
+    ) {
+      float wave_x = point.x * frequency + phase;
+      float wave_y = point.y * frequency * aspect - phase * 0.73;
+      vec2 flow = vec2(
+        frequency * aspect * sin(wave_x) * cos(wave_y),
+        -frequency * cos(wave_x) * sin(wave_y)
+      );
+      return flow / max(frequency * aspect, 0.001);
+    }
+
+    vec2 fractal_curl(
+      vec2 point,
+      float time,
+      float phase,
+      float detail
+    ) {
+      vec2 slow_point = point + vec2(time * 0.035, -time * 0.024);
+      vec2 medium_point = rotate_field(0.67) * point
+        + vec2(-time * 0.052, time * 0.041);
+      vec2 fine_point = rotate_field(-0.43) * point
+        + vec2(time * 0.076, time * 0.058);
+      vec2 flow = curl_layer(
+        slow_point,
+        2.35,
+        phase + time * 0.21,
+        0.78
+      );
+      flow += curl_layer(
+        medium_point,
+        5.4,
+        phase * 1.37 - time * 0.29,
+        1.16
+      ) * 0.52;
+      if (detail > 0.72) {
+        flow += curl_layer(
+          fine_point,
+          11.7,
+          phase * 1.91 + time * 0.37,
+          0.91
+        ) * 0.23 * smoothstep(0.72, 0.98, detail);
+      }
+      return flow / 1.75;
     }
 
     void main() {
@@ -82,240 +139,13 @@
       float flow_glow = 0.0;
       float flow_progress = 0.0;
       float flow_variation = 0.0;
-      float gesture_definition = 0.0;
+      float murmuration_energy = 0.0;
+      float collective_arrival = 0.0;
+      float collective_identity = 0.0;
+      float glint = 0.0;
 
       if (u_mode > 0.5) {
-        float floor_presence = smoothstep(0.34, 0.96, a_uv.y);
         perspective = mix(0.28, 1.0, smoothstep(0.35, 1.0, a_uv.y));
-        float flock_id = floor(a_seed * 7.0);
-        flow_progress = hash(a_seed * 43.0 + 2.0);
-        flow_variation = hash(a_seed * 71.0 + 5.0);
-        float flock_random = hash(flock_id * 17.0 + 3.0);
-        float flock_phase = flock_id * 2.127 + flock_random * 2.4;
-        float drift_phase = (
-          u_time * (0.13 + flock_random * 0.1)
-          + flock_phase
-        );
-        vec2 flock_centre = vec2(0.5, 0.715);
-        vec2 leader = flock_centre + vec2(
-          sin(drift_phase) * (0.095 + flock_random * 0.055)
-            + sin(u_time * 0.31 + flock_phase * 1.7) * 0.035,
-          cos(drift_phase * 0.83 + flock_phase * 0.37) * 0.065
-            + sin(u_time * 0.23 + flock_phase * 1.31) * 0.05
-        );
-        float heading = (
-          drift_phase
-          + sin(u_time * 0.27 + flock_phase) * 0.82
-        );
-        vec2 direction = vec2(cos(heading), sin(heading) * 0.72);
-        vec2 normal = normalize(vec2(-direction.y, direction.x));
-        float rank = flow_progress - 0.5;
-        float wing = flow_variation - 0.5;
-        float cohesion = 0.78
-          + sin(u_time * 0.39 + flock_phase + flow_progress * 4.0) * 0.22;
-        vec2 flock_uv = leader
-          + direction * rank * (0.11 + flock_random * 0.055) * cohesion
-          + normal * wing * (
-            0.05 + abs(rank) * 0.085
-          );
-        vec2 turbulent_noise = vec2(
-          sin(
-            a_seed * 37.0
-            + u_time * (0.42 + flock_random * 0.22)
-            + flow_progress * 9.0
-          ),
-          cos(
-            a_seed * 29.0
-            - u_time * (0.35 + flow_variation * 0.2)
-            + flow_progress * 7.0
-          )
-        );
-        flock_uv += turbulent_noise * (
-          0.006 + flow_variation * 0.014
-        );
-        float gesture_role = floor(hash(a_seed * 59.0 + 11.0) * 6.0);
-        float gesture_t = hash(a_seed * 83.0 + 7.0);
-        float dance_phase = (
-          u_time * (0.9 + flock_random * 0.24)
-          + flock_phase
-        );
-        float weight_shift = sin(dance_phase);
-        float counter_shift = sin(dance_phase + 3.14159265);
-        float body_scale = 0.86 + flock_random * 0.24;
-        float floor_line = leader.y + 0.074 * body_scale;
-        vec2 pelvis = leader + vec2(
-          weight_shift * 0.009,
-          -0.009 - abs(cos(dance_phase)) * 0.004
-        ) * body_scale;
-        vec2 chest = pelvis + vec2(
-          sin(dance_phase * 0.52 + flock_phase) * 0.009,
-          -0.046
-        ) * body_scale;
-        vec2 crown = chest + vec2(
-          sin(dance_phase * 0.41 + flock_phase * 1.7) * 0.006,
-          -0.027
-        ) * body_scale;
-        vec2 left_shoulder = chest + vec2(-0.019, -0.004) * body_scale;
-        vec2 right_shoulder = chest + vec2(0.019, -0.004) * body_scale;
-        float left_arm_phase = dance_phase * 0.91 + flock_phase * 0.17;
-        float right_arm_phase = dance_phase * 1.07 + 2.12 + flock_phase * 0.11;
-        vec2 left_elbow = left_shoulder + vec2(
-          -0.023 - cos(left_arm_phase) * 0.013,
-          -0.007 - sin(left_arm_phase) * 0.024
-        ) * body_scale;
-        vec2 right_elbow = right_shoulder + vec2(
-          0.023 + cos(right_arm_phase) * 0.014,
-          -0.007 - sin(right_arm_phase) * 0.023
-        ) * body_scale;
-        vec2 left_wrist = left_elbow + vec2(
-          -0.024 - sin(left_arm_phase * 1.31) * 0.016,
-          -0.016 - cos(left_arm_phase * 1.19) * 0.026
-        ) * body_scale;
-        vec2 right_wrist = right_elbow + vec2(
-          0.024 + sin(right_arm_phase * 1.27) * 0.017,
-          -0.016 - cos(right_arm_phase * 1.23) * 0.025
-        ) * body_scale;
-        float left_lift = max(0.0, weight_shift);
-        float right_lift = max(0.0, counter_shift);
-        vec2 left_hip = pelvis + vec2(-0.009, 0.006) * body_scale;
-        vec2 right_hip = pelvis + vec2(0.009, 0.006) * body_scale;
-        vec2 left_knee = left_hip + vec2(
-          -0.008 + weight_shift * 0.019,
-          0.032 - left_lift * 0.009
-        ) * body_scale;
-        vec2 right_knee = right_hip + vec2(
-          0.008 + counter_shift * 0.019,
-          0.032 - right_lift * 0.009
-        ) * body_scale;
-        vec2 left_ankle = vec2(
-          leader.x - 0.015 * body_scale + weight_shift * 0.03 * body_scale,
-          floor_line - left_lift * 0.017 * body_scale
-        );
-        vec2 right_ankle = vec2(
-          leader.x + 0.015 * body_scale + counter_shift * 0.03 * body_scale,
-          floor_line - right_lift * 0.017 * body_scale
-        );
-        vec2 gesture_uv = flock_uv;
-        if (gesture_role < 2.0) {
-          vec2 arm_start = gesture_role < 1.0
-            ? left_shoulder
-            : right_shoulder;
-          vec2 arm_joint = gesture_role < 1.0
-            ? left_elbow
-            : right_elbow;
-          vec2 arm_end = gesture_role < 1.0
-            ? left_wrist
-            : right_wrist;
-          float arm_path = gesture_t * 2.0;
-          vec2 segment_start = arm_path < 1.0 ? arm_start : arm_joint;
-          vec2 segment_end = arm_path < 1.0 ? arm_joint : arm_end;
-          float segment_t = arm_path < 1.0 ? arm_path : arm_path - 1.0;
-          vec2 segment_delta = segment_end - segment_start;
-          vec2 ribbon_normal = normalize(
-            vec2(-segment_delta.y, segment_delta.x)
-          );
-          float ribbon_width = (
-            0.0045
-            + sin(segment_t * 3.14159265) * 0.0065
-          ) * body_scale;
-          float silk_wave = sin(
-            dance_phase * 1.43
-            + gesture_t * 8.0
-            + gesture_role * 1.9
-          );
-          gesture_uv = mix(segment_start, segment_end, segment_t)
-            + ribbon_normal
-              * (flow_variation - 0.5)
-              * ribbon_width
-              * 2.0
-            + ribbon_normal
-              * silk_wave
-              * ribbon_width
-              * gesture_t
-              * 0.44;
-        } else if (gesture_role < 4.0) {
-          vec2 leg_start = gesture_role < 3.0 ? left_hip : right_hip;
-          vec2 leg_joint = gesture_role < 3.0 ? left_knee : right_knee;
-          vec2 leg_end = gesture_role < 3.0 ? left_ankle : right_ankle;
-          float leg_path = gesture_t * 2.0;
-          vec2 segment_start = leg_path < 1.0 ? leg_start : leg_joint;
-          vec2 segment_end = leg_path < 1.0 ? leg_joint : leg_end;
-          float segment_t = leg_path < 1.0 ? leg_path : leg_path - 1.0;
-          vec2 segment_delta = segment_end - segment_start;
-          vec2 ribbon_normal = normalize(
-            vec2(-segment_delta.y, segment_delta.x)
-          );
-          float leg_width = (
-            0.0035
-            + sin(segment_t * 3.14159265) * 0.0048
-          ) * body_scale;
-          gesture_uv = mix(segment_start, segment_end, segment_t)
-            + ribbon_normal
-              * (flow_variation - 0.5)
-              * leg_width
-              * 2.0;
-          if (gesture_t > 0.86) {
-            float foot_t = smoothstep(0.86, 1.0, gesture_t);
-            float foot_side = gesture_role < 3.0 ? -1.0 : 1.0;
-            gesture_uv += vec2(
-              foot_side * foot_t * 0.011 * body_scale,
-              sin(foot_t * 3.14159265) * 0.002
-            );
-          }
-        } else {
-          if (gesture_role < 5.0) {
-            float torso_path = gesture_t * 1.18;
-            vec2 torso_end = torso_path < 0.82 ? chest : crown;
-            float torso_t = torso_path < 0.82
-              ? torso_path / 0.82
-              : (torso_path - 0.82) / 0.36;
-            vec2 torso_start = torso_path < 0.82 ? pelvis : chest;
-            vec2 torso_delta = torso_end - torso_start;
-            vec2 ribbon_normal = normalize(
-              vec2(-torso_delta.y, torso_delta.x)
-            );
-            float torso_width = (
-              0.007
-              + sin(gesture_t * 3.14159265) * 0.012
-            ) * body_scale;
-            gesture_uv = mix(torso_start, torso_end, torso_t)
-              + ribbon_normal
-                * (flow_variation - 0.5)
-                * torso_width
-                * 2.0;
-          } else {
-            float veil_path = gesture_t * 2.0;
-            vec2 veil_start = veil_path < 1.0 ? left_wrist : chest;
-            vec2 veil_end = veil_path < 1.0 ? chest : right_wrist;
-            float veil_t = veil_path < 1.0
-              ? veil_path
-              : veil_path - 1.0;
-            vec2 veil_delta = veil_end - veil_start;
-            vec2 veil_normal = normalize(
-              vec2(-veil_delta.y, veil_delta.x)
-            );
-            float veil_billow = sin(
-              veil_t * 3.14159265
-              + dance_phase * 0.38
-            ) * 0.014 * body_scale;
-            gesture_uv = mix(veil_start, veil_end, veil_t)
-              + veil_normal * veil_billow
-              + turbulent_noise
-                * (0.003 + flow_variation * 0.005);
-          }
-        }
-        gesture_uv += turbulent_noise * (0.002 + flow_variation * 0.003);
-        flock_uv = mix(flock_uv, gesture_uv, 0.88);
-        gesture_definition = 0.76 + gesture_t * 0.24;
-        flock_position = u_rect.xy + flock_uv * u_rect.zw;
-        float flock_mix = (
-          u_morph
-          * freedom
-          * (0.18 + floor_presence * 0.66)
-        );
-        position = mix(base, flock_position, flock_mix * 0.58);
-        flow_glow = flock_mix * 0.52;
-
         float architectural_breath = (
           sin(u_time * 0.38 + a_uv.y * 18.0 + a_seed * 8.0)
           + cos(u_time * 0.23 + a_uv.x * 13.0 - a_seed * 5.0)
@@ -365,9 +195,150 @@
           v_alpha = 0.0;
           return;
         }
-        position = flock_position + fluid_field * fluid_strength * 1.34;
-        perspective = mix(0.62, 0.96, flow_progress);
-        flow_glow = 0.62;
+        float collective_id = floor(a_seed * 5.0);
+        collective_identity = collective_id / 4.0;
+        flow_progress = hash(a_seed * 43.0 + 2.0);
+        flow_variation = hash(a_seed * 71.0 + 5.0);
+        float lane_seed = hash(a_seed * 113.0 + 17.0);
+        float collective_random = hash(collective_id * 17.0 + 3.0);
+        float collective_phase = (
+          collective_id * 1.763
+          + collective_random * 2.7
+        );
+        float drift_phase = (
+          u_time * (0.11 + collective_random * 0.065)
+          + collective_phase
+        );
+        vec2 dance_floor = vec2(0.5, 0.715);
+        vec2 leader = dance_floor + vec2(
+          sin(drift_phase) * (0.115 + collective_random * 0.055)
+            + sin(u_time * 0.27 + collective_phase * 1.7) * 0.032,
+          cos(drift_phase * 0.79 + collective_phase * 0.41) * 0.052
+            + sin(u_time * 0.19 + collective_phase * 1.23) * 0.032
+        );
+        float heading = (
+          drift_phase * 0.84
+          + sin(u_time * 0.23 + collective_phase) * 0.72
+        );
+        vec2 direction = normalize(vec2(
+          cos(heading),
+          sin(heading) * 0.68
+        ));
+        vec2 normal = vec2(-direction.y, direction.x);
+        float rank = flow_progress * 2.0 - 1.0;
+        float wing = flow_variation - 0.5;
+        float band_envelope = pow(
+          max(0.0, 1.0 - abs(rank)),
+          0.42
+        );
+        float inhale = 0.5 + 0.5 * sin(
+          u_time * 0.34
+          + collective_phase
+          + rank * 1.8
+        );
+        float cohesion = 0.72 + inhale * 0.34;
+        float broad_curve = sin(
+          rank * 3.7
+          + u_time * (0.31 + collective_random * 0.12)
+          + collective_phase
+        );
+        float fine_curve = sin(
+          rank * 9.4
+          - u_time * 0.47
+          + collective_phase * 1.61
+        );
+        vec2 collective_uv = leader
+          + direction
+            * rank
+            * (0.105 + collective_random * 0.055)
+            * cohesion
+          + normal
+            * (
+              broad_curve * (0.028 + band_envelope * 0.026)
+              + fine_curve * (0.007 + band_envelope * 0.009)
+            );
+        float band_width = (
+          0.012
+          + band_envelope * (0.038 + inhale * 0.016)
+        );
+        collective_uv += normal * wing * band_width * 2.0;
+        float lane = floor(lane_seed * 9.0) / 8.0 - 0.5;
+        collective_uv += normal
+          * lane
+          * (0.006 + band_envelope * 0.016);
+        collective_uv += direction
+          * sin(
+            rank * 14.0
+            + lane * 8.0
+            + u_time * 0.39
+            + collective_phase
+          )
+          * (0.003 + band_envelope * 0.005);
+
+        vec2 folded_local = collective_uv - leader;
+        float fold = sin(
+          u_time * 0.43
+          + collective_phase
+          + rank * 4.8
+        ) * (0.13 + band_envelope * 0.29);
+        collective_uv = leader + rotate_field(fold) * folded_local;
+
+        vec2 curl = fractal_curl(
+          (collective_uv - leader) * 6.2,
+          u_time,
+          collective_phase + rank * 1.4,
+          u_detail
+        );
+        float curl_strength = (
+          0.008
+          + band_envelope * (0.013 + inhale * 0.009)
+        );
+        collective_uv += rotate_field(heading * 0.24)
+          * curl
+          * curl_strength;
+
+        float gesture_pulse = pow(
+          max(0.0, sin(u_time * 0.29 + collective_phase)),
+          4.0
+        );
+        float gesture_side = flow_variation < 0.5 ? -1.0 : 1.0;
+        collective_uv += normal
+          * gesture_side
+          * gesture_pulse
+          * band_envelope
+          * (0.009 + abs(rank) * 0.017);
+        collective_uv += direction
+          * gesture_pulse
+          * sin(rank * 3.14159265)
+          * 0.012;
+
+        murmuration_energy = clamp(
+          length(curl) * 0.62
+          + abs(broad_curve) * 0.18
+          + inhale * 0.2,
+          0.0,
+          1.0
+        );
+        glint = pow(
+          max(
+            0.0,
+            sin(
+              a_seed * 173.0
+              + u_time * 1.28
+              + collective_phase
+              + flow_progress * 17.0
+            )
+          ),
+          18.0
+        ) * (0.3 + murmuration_energy * 0.7);
+        flock_position = u_rect.xy + collective_uv * u_rect.zw;
+        collective_arrival = smoothstep(0.08, 0.78, u_morph);
+        position = mix(base, flock_position, collective_arrival);
+        position += fluid_field
+          * fluid_strength
+          * (0.34 + murmuration_energy * 0.42);
+        perspective = mix(0.58, 1.0, flow_variation);
+        flow_glow = 0.58 + murmuration_energy * 0.34;
       } else {
         position += fluid_field * fluid_strength;
       }
@@ -386,29 +357,38 @@
         * gravity
         * gravity_strength
         * (0.42 + freedom * 0.58);
+      float coherent_spin = sin(u_time * 0.23 + u_mode * 1.7);
       position += tangent
         * gravity
-        * (8.0 + motion * 34.0)
-        * sin(u_time * 1.8 + a_seed * 24.0);
+        * (10.0 + motion * 38.0)
+        * (
+          coherent_spin * 0.78
+          + sin(u_time * 1.1 + a_seed * 18.0) * 0.22
+        );
 
       float trail_energy = 0.0;
       vec2 trail_shift = vec2(0.0);
-      for (int trail_index = 0; trail_index < 24; trail_index++) {
-        vec2 trail_delta = position - u_trail_points[trail_index];
-        float trail_distance = length(trail_delta) + 0.001;
-        float trail_influence = (
-          1.0 - smoothstep(7.0, 92.0, trail_distance)
-        ) * u_trail_weights[trail_index];
-        vec2 trail_radial = trail_delta / trail_distance;
-        vec2 trail_tangent = vec2(-trail_radial.y, trail_radial.x);
-        trail_shift -= trail_radial
-          * trail_influence
-          * (7.0 + u_pointer_down * 7.0);
-        trail_shift += trail_tangent
-          * trail_influence
-          * sin(a_seed * 21.0 + u_time * 1.5)
-          * 3.8;
-        trail_energy = max(trail_energy, trail_influence);
+      if (u_trail_count > 0.5) {
+        for (int trail_index = 0; trail_index < 24; trail_index++) {
+          vec2 trail_delta = position - u_trail_points[trail_index];
+          float trail_distance = length(trail_delta) + 0.001;
+          float trail_influence = (
+            1.0 - smoothstep(7.0, 92.0, trail_distance)
+          ) * u_trail_weights[trail_index];
+          vec2 trail_radial = trail_delta / trail_distance;
+          vec2 trail_tangent = vec2(-trail_radial.y, trail_radial.x);
+          trail_shift -= trail_radial
+            * trail_influence
+            * (7.0 + u_pointer_down * 7.0);
+          trail_shift += trail_tangent
+            * trail_influence
+            * (
+              coherent_spin * 0.72
+              + sin(a_seed * 21.0 + u_time * 1.1) * 0.28
+            )
+            * 4.4;
+          trail_energy = max(trail_energy, trail_influence);
+        }
       }
       float trail_shift_length = length(trail_shift);
       if (trail_shift_length > 38.0) {
@@ -450,7 +430,8 @@
           + gravity * 0.46
           + trail_energy * 0.5
           + u_flock_pass * 0.1
-          + gesture_definition * u_flock_pass * 0.07
+          + murmuration_energy * u_flock_pass * 0.13
+          + glint * u_flock_pass * 0.18
         );
 
       float edge_fade = smoothstep(0.0, 0.055, a_uv.x)
@@ -458,7 +439,7 @@
         * smoothstep(0.0, 0.045, a_uv.y)
         * smoothstep(0.0, 0.045, 1.0 - a_uv.y);
       edge_fade = mix(edge_fade, 1.0, u_flock_pass);
-      float particle_alpha = mix(0.28, 0.96, u_morph);
+      float particle_alpha = mix(0.32, 0.98, u_morph);
       particle_alpha += (
         a_anchor * 0.12
         + gravity * 0.12
@@ -476,55 +457,79 @@
         lifted_colour,
         0.7 + u_morph * 0.18
       );
-      lifted_colour += vec3(0.035 + u_morph * 0.055);
+      lifted_colour += vec3(0.045 + u_morph * 0.07);
       vec3 image_colour = lifted_colour * (
-        1.04
-        + pulse * 0.1
-        + u_morph * 0.16
+        1.07
+        + pulse * 0.12
+        + u_morph * 0.18
         + gravity * 0.14
         + flow_glow * 0.18
       );
       image_colour *= (
         0.94
-        + luminance_wave * mix(0.09, 0.18, u_morph)
+        + luminance_wave * mix(0.12, 0.23, u_morph)
       );
-      vec3 flock_warm = vec3(0.894, 0.427, 0.271);
+      vec3 flock_ember = vec3(0.831, 0.31, 0.141);
       vec3 flock_apricot = vec3(0.941, 0.631, 0.424);
       vec3 flock_cream = vec3(0.961, 0.871, 0.761);
       vec3 flock_blue = vec3(0.133, 0.282, 0.431);
+      vec3 flock_slate = vec3(0.557, 0.592, 0.584);
+      float warm_wave = 0.5 + 0.5 * sin(
+        flow_progress * 9.0
+        - u_time * 0.34
+        + collective_identity * 5.7
+      );
+      float cool_wave = 0.5 + 0.5 * cos(
+        flow_progress * 6.0
+        + u_time * 0.23
+        + collective_identity * 7.1
+      );
       vec3 flock_colour = mix(
-        flock_warm,
+        flock_ember,
         flock_apricot,
-        smoothstep(0.04, 0.52, flow_progress)
+        warm_wave
       );
       flock_colour = mix(
         flock_colour,
-        flock_cream,
-        smoothstep(0.3, 0.96, flow_progress)
+        flock_slate,
+        cool_wave * 0.13
       );
       flock_colour = mix(
         flock_colour,
         flock_blue,
-        smoothstep(0.76, 1.0, flow_progress) * 0.16
+        cool_wave * (0.08 + (1.0 - warm_wave) * 0.16)
+      );
+      flock_colour = mix(
+        flock_colour,
+        flock_cream,
+        clamp(
+          glint * 0.92
+          + pow(luminance_wave, 3.0) * 0.24,
+          0.0,
+          0.92
+        )
       );
       flock_colour *= (
-        0.94
-        + luminance_wave * 0.18
-        + pulse * 0.1
+        0.98
+        + luminance_wave * 0.32
+        + pulse * 0.14
         + gravity * 0.08
+        + murmuration_energy * 0.13
       );
-      v_colour = mix(image_colour, flock_colour, u_flock_pass * 0.82);
-      v_colour = mix(v_colour, flock_cream, trail_energy * 0.24);
+      v_colour = mix(image_colour, flock_colour, u_flock_pass * 0.96);
+      v_colour = mix(v_colour, flock_cream, trail_energy * 0.28);
       if (u_flock_pass > 0.5) {
         v_alpha = clamp(
-          smoothstep(0.12, 0.56, u_morph)
+          collective_arrival
             * (
-              0.53
-              + pulse * 0.08
-              + luminance_wave * 0.08
+              0.16
+              + pulse * 0.055
+              + luminance_wave * 0.07
+              + murmuration_energy * 0.055
+              + glint * 0.14
             ),
           0.0,
-          0.72
+          0.42
         );
       }
     }
@@ -599,6 +604,8 @@
     mode: gl.getUniformLocation(program, 'u_mode'),
     dpr: gl.getUniformLocation(program, 'u_dpr'),
     flockPass: gl.getUniformLocation(program, 'u_flock_pass'),
+    detail: gl.getUniformLocation(program, 'u_detail'),
+    trailCount: gl.getUniformLocation(program, 'u_trail_count'),
   };
 
   const regions = [
@@ -637,11 +644,13 @@
   let frame = 0;
   let rebuildTimer = 0;
   let particleScale = 1;
+  let detailLevel = 1;
+  let trailUniformCount = 0;
+  let regionBuildWidth = 0;
   let performanceFrames = 0;
   let performanceStarted = performance.now();
-  let degraded = false;
-  const cycleSeconds = 18;
-  const particleHoldSeconds = 8.1;
+  const cycleSeconds = 22;
+  const particleHoldSeconds = 11;
 
   const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
   const smoothstep = (minimum, maximum, value) => {
@@ -651,6 +660,23 @@
   const hash = (x, y) => {
     const value = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
     return value - Math.floor(value);
+  };
+  const greatestCommonDivisor = (left, right) => {
+    let a = Math.abs(left);
+    let b = Math.abs(right);
+    while (b) {
+      const remainder = a % b;
+      a = b;
+      b = remainder;
+    }
+    return a;
+  };
+  const stratifiedStride = (count) => {
+    let stride = Math.max(1, Math.floor(count * 0.61803398875));
+    while (stride > 1 && greatestCommonDivisor(stride, count) !== 1) {
+      stride -= 1;
+    }
+    return stride;
   };
 
   function targetCount(mode) {
@@ -736,27 +762,27 @@
         + pixels[offset + 2] * 0.114;
     };
 
-    let index = 0;
-    for (let y = 0; y < gridHeight; y += 1) {
-      for (let x = 0; x < gridWidth; x += 1) {
-        const pixelOffset = (y * gridWidth + x) * 4;
-        const brightness = luminanceAt(x, y);
-        const gradientX = Math.abs(luminanceAt(x + 1, y) - luminanceAt(x - 1, y));
-        const gradientY = Math.abs(luminanceAt(x, y + 1) - luminanceAt(x, y - 1));
-        const edge = clamp((gradientX + gradientY) / 96, 0, 1);
-        const structure = mode
-          ? clamp(Math.pow(edge, 0.68) * 0.92 + (brightness > 186 ? 0.08 : 0), 0, 1)
-          : clamp(edge * 0.72 + smoothstep(132, 236, brightness) * 0.72, 0, 1);
+    const stride = stratifiedStride(count);
+    for (let index = 0; index < count; index += 1) {
+      const sourceIndex = (index * stride) % count;
+      const x = sourceIndex % gridWidth;
+      const y = Math.floor(sourceIndex / gridWidth);
+      const pixelOffset = sourceIndex * 4;
+      const brightness = luminanceAt(x, y);
+      const gradientX = Math.abs(luminanceAt(x + 1, y) - luminanceAt(x - 1, y));
+      const gradientY = Math.abs(luminanceAt(x, y + 1) - luminanceAt(x, y - 1));
+      const edge = clamp((gradientX + gradientY) / 96, 0, 1);
+      const structure = mode
+        ? clamp(Math.pow(edge, 0.68) * 0.92 + (brightness > 186 ? 0.08 : 0), 0, 1)
+        : clamp(edge * 0.72 + smoothstep(132, 236, brightness) * 0.72, 0, 1);
 
-        uv[index * 2] = (x + 0.5) / gridWidth;
-        uv[index * 2 + 1] = (y + 0.5) / gridHeight;
-        colour[index * 3] = pixels[pixelOffset] / 255;
-        colour[index * 3 + 1] = pixels[pixelOffset + 1] / 255;
-        colour[index * 3 + 2] = pixels[pixelOffset + 2] / 255;
-        seed[index] = hash(x + mode * 997, y + mode * 577);
-        anchor[index] = structure;
-        index += 1;
-      }
+      uv[index * 2] = (x + 0.5) / gridWidth;
+      uv[index * 2 + 1] = (y + 0.5) / gridHeight;
+      colour[index * 3] = pixels[pixelOffset] / 255;
+      colour[index * 3 + 1] = pixels[pixelOffset + 1] / 255;
+      colour[index * 3 + 2] = pixels[pixelOffset + 2] / 255;
+      seed[index] = hash(x + mode * 997, y + mode * 577);
+      anchor[index] = structure;
     }
 
     deleteRegionBuffers(region);
@@ -805,13 +831,27 @@
     width = window.innerWidth;
     height = window.innerHeight;
     const compact = width < 700 || window.matchMedia('(pointer: coarse)').matches;
+    const cores = navigator.hardwareConcurrency || 6;
+    const memory = navigator.deviceMemory || 6;
+    const constrained = cores <= 4 || memory <= 4;
+    const baseDetail = compact ? 0.62 : constrained ? 0.78 : 1;
+    detailLevel = particleScale <= 0.51
+      ? 0.28
+      : particleScale < 0.9
+        ? Math.min(baseDetail, 0.48)
+        : baseDetail;
     dpr = Math.min(window.devicePixelRatio || 1, compact ? 1 : 1.15);
     canvas.width = Math.max(1, Math.round(width * dpr));
     canvas.height = Math.max(1, Math.round(height * dpr));
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     gl.viewport(0, 0, canvas.width, canvas.height);
-    rebuildRegions();
+    const needsRegionBuild = regions.some((region) => region.count < 1000)
+      || Math.abs(width - regionBuildWidth) > 6;
+    if (needsRegionBuild) {
+      regionBuildWidth = width;
+      rebuildRegions();
+    }
   }
 
   function bindAttribute(location, buffer, size) {
@@ -850,13 +890,22 @@
     gl.uniform1f(uniforms.morph, morph);
     gl.uniform1f(uniforms.mode, region.mode);
     gl.uniform1f(uniforms.dpr, dpr);
+    gl.uniform1f(uniforms.detail, detailLevel);
+    gl.uniform1f(uniforms.trailCount, trailUniformCount);
     gl.uniform1f(uniforms.flockPass, 0);
     gl.drawArrays(gl.POINTS, 0, region.count);
     if (region.mode > 0.5 && morph > 0.12) {
-      const flockCount = Math.max(10000, Math.round(region.count * 0.15));
+      const compact = width < 700 || window.matchMedia('(pointer: coarse)').matches;
+      const flockRatio = compact ? 0.15 : 0.18;
+      const flockCount = Math.max(
+        compact ? 9000 : 12000,
+        Math.round(region.count * flockRatio),
+      );
       canvas.dataset.flockParticles = String(flockCount);
       gl.uniform1f(uniforms.flockPass, 1);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
       gl.drawArrays(gl.POINTS, 0, Math.min(region.count, flockCount));
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     }
   }
 
@@ -865,14 +914,16 @@
     if (
       !force
       && previous
-      && Math.hypot(x - previous.x, y - previous.y) < 26
+      && Math.hypot(x - previous.x, y - previous.y) < 12
     ) return;
     pointerTrail.push({ x, y, born: performance.now() });
-    if (pointerTrail.length > 24) pointerTrail.shift();
+    const compact = width < 700 || window.matchMedia('(pointer: coarse)').matches;
+    const maximumPoints = compact ? 140 : 240;
+    if (pointerTrail.length > maximumPoints) pointerTrail.shift();
   }
 
   function updateTrail(now) {
-    const artworkHoldMs = 6000;
+    const artworkHoldMs = 8000;
     const artworkFadeMs = 6000;
     const artworkLifetimeMs = artworkHoldMs + artworkFadeMs;
     const livePoints = pointerTrail.filter(
@@ -882,7 +933,12 @@
     pointerTrail.push(...livePoints);
     trailCoordinates.fill(-1000);
     trailWeights.fill(0);
-    livePoints.forEach((point, index) => {
+    trailUniformCount = Math.min(24, livePoints.length);
+    for (let index = 0; index < trailUniformCount; index += 1) {
+      const sourceIndex = trailUniformCount === 1
+        ? livePoints.length - 1
+        : Math.round(index * (livePoints.length - 1) / (trailUniformCount - 1));
+      const point = livePoints[sourceIndex];
       const age = now - point.born;
       trailCoordinates[index * 2] = point.x;
       trailCoordinates[index * 2 + 1] = point.y;
@@ -892,8 +948,9 @@
           Math.max(0, 1 - (age - artworkHoldMs) / artworkFadeMs),
           0.82,
         );
-    });
+    }
     canvas.dataset.particleTrailPoints = String(livePoints.length);
+    canvas.dataset.particleTrailUniforms = String(trailUniformCount);
   }
 
   function animate(now) {
@@ -907,12 +964,12 @@
 
     const cycle = (time % cycleSeconds) / cycleSeconds;
     let baseMorph = 0;
-    if (cycle >= 0.16 && cycle < 0.3) {
-      baseMorph = smoothstep(0.16, 0.3, cycle) * 0.925;
-    } else if (cycle >= 0.3 && cycle < 0.75) {
-      baseMorph = 0.925;
-    } else if (cycle >= 0.75 && cycle < 0.89) {
-      baseMorph = (1 - smoothstep(0.75, 0.89, cycle)) * 0.925;
+    if (cycle >= 0.14 && cycle < 0.28) {
+      baseMorph = smoothstep(0.14, 0.28, cycle) * 0.94;
+    } else if (cycle >= 0.28 && cycle < 0.78) {
+      baseMorph = 0.94;
+    } else if (cycle >= 0.78 && cycle < 0.92) {
+      baseMorph = (1 - smoothstep(0.78, 0.92, cycle)) * 0.94;
     }
 
     gl.clearColor(0, 0, 0, 0);
@@ -928,10 +985,17 @@
       const fps = 1000 / (elapsed / performanceFrames);
       canvas.dataset.fps = fps.toFixed(1);
       canvas.dataset.particleScale = particleScale.toFixed(2);
-      if (fps < 34 && !degraded) {
-        degraded = true;
+      if (fps < 34 && particleScale > 0.69) {
         particleScale = 0.68;
+        detailLevel = Math.min(detailLevel, 0.48);
         canvas.dataset.adaptiveReduction = 'true';
+        canvas.dataset.qualityTier = 'recovery';
+        window.setTimeout(rebuildRegions, 0);
+      } else if (fps < 28 && particleScale > 0.51) {
+        particleScale = 0.5;
+        detailLevel = 0.28;
+        canvas.dataset.adaptiveReduction = 'true';
+        canvas.dataset.qualityTier = 'minimum';
         window.setTimeout(rebuildRegions, 0);
       }
       performanceFrames = 0;
@@ -945,7 +1009,6 @@
     pointer.y = y;
     pointer.active = 1;
     pointer.lastMove = performance.now();
-    pointerTrail.length = 0;
     addTrailPoint(x, y, true);
   }
 
@@ -1014,6 +1077,12 @@
     window.clearTimeout(rebuildTimer);
     rebuildTimer = window.setTimeout(resize, 180);
   });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      performanceFrames = 0;
+      performanceStarted = performance.now();
+    }
+  });
   canvas.addEventListener('webglcontextlost', (event) => {
     event.preventDefault();
     canvas.dataset.webglReady = 'false';
@@ -1023,13 +1092,16 @@
 
   gl.disable(gl.DEPTH_TEST);
   gl.disable(gl.CULL_FACE);
-  canvas.dataset.engine = 'webgl-flocking-organism';
-  canvas.dataset.interactionMode = 'particle-trail-attractors';
-  canvas.dataset.particleTrailHoldSeconds = '6';
+  canvas.dataset.engine = 'webgl-fractal-murmuration';
+  canvas.dataset.interactionMode = 'particle-trail-curl-wake';
+  canvas.dataset.particleTrailHoldSeconds = '8';
   canvas.dataset.particleTrailFadeSeconds = '6';
   canvas.dataset.mobileTouchMode = 'tap-particles-pan-scroll';
-  canvas.dataset.brightnessMode = 'fluid-wave-amplitude';
-  canvas.dataset.figureMode = 'articulated-dance-ribbons';
+  canvas.dataset.brightnessMode = 'banner-spectrum-wave-glints';
+  canvas.dataset.figureMode = 'murmuration-curl-collectives';
+  canvas.dataset.fractalOctaves = 'responsive-two-to-three';
+  canvas.dataset.sampleOrder = 'golden-coprime-stride';
+  canvas.dataset.qualityTier = 'adaptive';
   canvas.dataset.imageCycleSeconds = String(cycleSeconds);
   canvas.dataset.particleHoldSeconds = String(particleHoldSeconds);
   canvas.dataset.webglStatus = 'initializing';
