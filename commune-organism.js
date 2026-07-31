@@ -46,6 +46,7 @@
     uniform float u_flock_pass;
     uniform float u_detail;
     uniform float u_trail_count;
+    uniform float u_compact;
 
     varying vec3 v_colour;
     varying float v_alpha;
@@ -143,6 +144,9 @@
       float collective_arrival = 0.0;
       float collective_identity = 0.0;
       float glint = 0.0;
+      float mobile_opening = 0.0;
+      float mobile_reach = 0.0;
+      float mobile_brightness_wave = 0.0;
 
       if (u_mode > 0.5) {
         perspective = mix(0.28, 1.0, smoothstep(0.35, 1.0, a_uv.y));
@@ -195,10 +199,17 @@
           v_alpha = 0.0;
           return;
         }
-        float collective_id = floor(a_seed * 5.0);
-        collective_identity = collective_id / 4.0;
         flow_progress = hash(a_seed * 43.0 + 2.0);
         flow_variation = hash(a_seed * 71.0 + 5.0);
+        float mobile_population = hash(a_seed * 157.0 + 19.0);
+        float mobile_lobe_id = mobile_population < 0.46
+          ? 0.0
+          : mobile_population < 0.8 ? 1.0 : 2.0;
+        float collective_id = u_compact > 0.5
+          ? mobile_lobe_id
+          : floor(a_seed * 5.0);
+        collective_identity = collective_id
+          / mix(4.0, 2.0, u_compact);
         float lane_seed = hash(a_seed * 113.0 + 17.0);
         float collective_random = hash(collective_id * 17.0 + 3.0);
         float collective_phase = (
@@ -275,12 +286,227 @@
           )
           * (0.003 + band_envelope * 0.005);
 
+        if (u_compact > 0.5) {
+          float score_phase = fract(u_time / 22.0);
+          float gather_stage = smoothstep(0.14, 0.28, score_phase);
+          float split_stage = smoothstep(0.28, 0.4, score_phase);
+          float recohere_stage = smoothstep(0.64, 0.78, score_phase);
+          mobile_opening = split_stage * (1.0 - recohere_stage);
+          mobile_reach = smoothstep(0.52, 0.56, score_phase)
+            * (1.0 - smoothstep(0.62, 0.66, score_phase));
+
+          float stream_id = floor(hash(a_seed * 191.0 + 23.0) * 4.0);
+          vec2 stream_origin = stream_id < 0.5
+            ? vec2(0.22, 0.76)
+            : stream_id < 1.5
+              ? vec2(0.38, 0.69)
+              : stream_id < 2.5
+                ? vec2(0.62, 0.70)
+                : vec2(0.79, 0.77);
+          vec2 gathered_ribbon = vec2(
+            0.5 + rank * 0.23,
+            0.73
+              + sin(rank * 3.14159265) * 0.042
+              + wing * 0.022
+          );
+          vec2 stream_uv = stream_origin + vec2(
+            rank * 0.026,
+            wing * 0.018
+          );
+          vec2 mobile_uv = mix(
+            stream_uv,
+            gathered_ribbon,
+            gather_stage
+          );
+
+          vec2 lobe_centre = mobile_lobe_id < 0.5
+            ? vec2(0.36, 0.70)
+            : mobile_lobe_id < 1.5
+              ? vec2(0.64, 0.74)
+              : vec2(0.5, 0.72);
+          float dance_window = smoothstep(0.37, 0.44, score_phase)
+            * (1.0 - smoothstep(0.59, 0.68, score_phase));
+          lobe_centre += vec2(
+            sin(
+              u_time * 0.32
+              + collective_phase
+            ) * 0.035 * dance_window,
+            cos(
+              u_time * 0.27
+              + collective_phase * 1.3
+            ) * 0.018 * dance_window
+          );
+
+          float base_heading = mobile_lobe_id < 0.5
+            ? 0.16
+            : mobile_lobe_id < 1.5 ? 2.96 : -0.55;
+          float turn_amount = mobile_lobe_id < 0.5
+            ? 2.387
+            : mobile_lobe_id < 1.5 ? -1.948 : 0.44;
+          float propagated_phase = score_phase
+            - (rank + 1.0) * 0.0125;
+          float turn_stage = smoothstep(
+            0.39,
+            0.52,
+            propagated_phase
+          );
+          float mobile_heading = base_heading + turn_amount * turn_stage;
+          vec2 mobile_direction = normalize(vec2(
+            cos(mobile_heading),
+            sin(mobile_heading) * 0.62
+          ));
+          vec2 mobile_normal = vec2(
+            -mobile_direction.y,
+            mobile_direction.x
+          );
+          float lobe_extent = mobile_lobe_id < 0.5
+            ? 0.115
+            : mobile_lobe_id < 1.5 ? 0.102 : 0.12;
+          float lobe_width = mobile_lobe_id < 0.5
+            ? 0.035
+            : mobile_lobe_id < 1.5 ? 0.03 : 0.018;
+          vec2 lobe_uv = lobe_centre
+            + mobile_direction
+              * rank
+              * lobe_extent
+              * (0.88 + inhale * 0.12)
+            + mobile_normal
+              * (
+                wing * lobe_width * 2.0
+                + sin(
+                  rank * 5.8
+                  + u_time * 0.36
+                  + collective_phase
+                ) * lobe_width * 0.52
+              );
+          mobile_uv = mix(mobile_uv, lobe_uv, split_stage);
+
+          float reach_particle = step(
+            0.93,
+            hash(a_seed * 211.0 + 41.0)
+          ) * (1.0 - step(1.5, mobile_lobe_id));
+          float reach_t = hash(a_seed * 229.0 + 13.0);
+          vec2 reach_root = lobe_centre + (
+            mobile_lobe_id < 0.5
+              ? vec2(0.045, -0.028)
+              : vec2(-0.045, -0.032)
+          );
+          vec2 reach_tip = mobile_lobe_id < 0.5
+            ? vec2(0.485, 0.625)
+            : vec2(0.515, 0.615);
+          vec2 reach_control = mix(
+            reach_root,
+            reach_tip,
+            0.5
+          ) + (
+            mobile_lobe_id < 0.5
+              ? vec2(0.026, -0.026)
+              : vec2(-0.026, -0.024)
+          );
+          vec2 reach_first = mix(
+            reach_root,
+            reach_control,
+            reach_t
+          );
+          vec2 reach_second = mix(
+            reach_control,
+            reach_tip,
+            reach_t
+          );
+          vec2 reach_uv = mix(
+            reach_first,
+            reach_second,
+            reach_t
+          );
+          vec2 reach_delta = reach_tip - reach_root;
+          vec2 reach_normal = normalize(vec2(
+            -reach_delta.y,
+            reach_delta.x
+          ));
+          float reach_width = mix(0.013, 0.003, reach_t);
+          reach_uv += reach_normal
+            * wing
+            * reach_width
+            * 2.0;
+          mobile_uv = mix(
+            mobile_uv,
+            reach_uv,
+            reach_particle * mobile_reach
+          );
+
+          vec2 recohere_centre = vec2(0.51, 0.72);
+          float recohere_heading = (
+            sin(u_time * 0.28) * 0.11
+            + sin(score_phase * 6.2831853) * 0.07
+          );
+          vec2 recohere_direction = normalize(vec2(
+            cos(recohere_heading),
+            sin(recohere_heading) * 0.62
+          ));
+          vec2 recohere_normal = vec2(
+            -recohere_direction.y,
+            recohere_direction.x
+          );
+          float recohere_breath = 1.0 + sin(
+            u_time * 0.43
+            + rank * 1.7
+          ) * 0.07;
+          vec2 recohere_uv = recohere_centre
+            + recohere_direction
+              * rank
+              * 0.17
+              * recohere_breath
+            + recohere_normal
+              * (
+                wing
+                  * (0.078 - abs(rank) * 0.035)
+                + sin(
+                  rank * 6.2
+                  + u_time * 0.31
+                ) * 0.009
+              );
+          mobile_uv = mix(
+            mobile_uv,
+            recohere_uv,
+            recohere_stage
+          );
+
+          leader = mix(
+            mix(vec2(0.5, 0.73), lobe_centre, split_stage),
+            recohere_centre,
+            recohere_stage
+          );
+          heading = mix(
+            mix(0.0, mobile_heading, split_stage),
+            recohere_heading,
+            recohere_stage
+          );
+          direction = normalize(vec2(
+            cos(heading),
+            sin(heading) * 0.62
+          ));
+          normal = vec2(-direction.y, direction.x);
+          collective_uv = mobile_uv;
+          mobile_brightness_wave = 1.0 - smoothstep(
+            0.035,
+            0.18,
+            abs(
+              fract(
+                flow_progress
+                - fract(u_time / 4.6)
+                + 0.5
+              ) - 0.5
+            )
+          );
+        }
+
         vec2 folded_local = collective_uv - leader;
         float fold = sin(
           u_time * 0.43
           + collective_phase
           + rank * 4.8
-        ) * (0.13 + band_envelope * 0.29);
+        ) * (0.13 + band_envelope * 0.29)
+          * mix(1.0, 0.58, u_compact);
         collective_uv = leader + rotate_field(fold) * folded_local;
 
         vec2 curl = fractal_curl(
@@ -292,7 +518,7 @@
         float curl_strength = (
           0.008
           + band_envelope * (0.013 + inhale * 0.009)
-        );
+        ) * mix(1.0, 1.12, u_compact);
         collective_uv += rotate_field(heading * 0.24)
           * curl
           * curl_strength;
@@ -300,7 +526,7 @@
         float gesture_pulse = pow(
           max(0.0, sin(u_time * 0.29 + collective_phase)),
           4.0
-        );
+        ) * mix(1.0, 0.38, u_compact);
         float gesture_side = flow_variation < 0.5 ? -1.0 : 1.0;
         collective_uv += normal
           * gesture_side
@@ -311,6 +537,10 @@
           * gesture_pulse
           * sin(rank * 3.14159265)
           * 0.012;
+        if (u_compact > 0.5) {
+          collective_uv.x = clamp(collective_uv.x, 0.17, 0.83);
+          collective_uv.y = clamp(collective_uv.y, 0.57, 0.85);
+        }
 
         murmuration_energy = clamp(
           length(curl) * 0.62
@@ -329,8 +559,9 @@
               + flow_progress * 17.0
             )
           ),
-          18.0
-        ) * (0.3 + murmuration_energy * 0.7);
+          mix(18.0, 28.0, u_compact)
+        ) * (0.3 + murmuration_energy * 0.7)
+          * mix(1.0, 0.7, u_compact);
         flock_position = u_rect.xy + collective_uv * u_rect.zw;
         collective_arrival = smoothstep(0.08, 0.78, u_morph);
         position = mix(base, flock_position, collective_arrival);
@@ -432,6 +663,9 @@
           + u_flock_pass * 0.1
           + murmuration_energy * u_flock_pass * 0.13
           + glint * u_flock_pass * 0.18
+          + u_compact
+            * u_flock_pass
+            * (0.06 + mobile_brightness_wave * 0.08)
         );
 
       float edge_fade = smoothstep(0.0, 0.055, a_uv.x)
@@ -492,12 +726,14 @@
       flock_colour = mix(
         flock_colour,
         flock_slate,
-        cool_wave * 0.13
+        cool_wave * 0.13 * mix(1.0, 0.78, u_compact)
       );
       flock_colour = mix(
         flock_colour,
         flock_blue,
-        cool_wave * (0.08 + (1.0 - warm_wave) * 0.16)
+        cool_wave
+          * (0.08 + (1.0 - warm_wave) * 0.16)
+          * mix(1.0, 0.42, u_compact)
       );
       flock_colour = mix(
         flock_colour,
@@ -509,12 +745,23 @@
           0.92
         )
       );
+      flock_colour = mix(
+        flock_colour,
+        flock_cream,
+        u_compact
+          * (
+            0.055
+            + mobile_reach * 0.055
+            + mobile_brightness_wave * 0.11
+          )
+      );
       flock_colour *= (
         0.98
         + luminance_wave * 0.32
         + pulse * 0.14
         + gravity * 0.08
         + murmuration_energy * 0.13
+        + mobile_brightness_wave * u_compact * 0.18
       );
       v_colour = mix(image_colour, flock_colour, u_flock_pass * 0.96);
       v_colour = mix(v_colour, flock_cream, trail_energy * 0.28);
@@ -527,9 +774,14 @@
               + luminance_wave * 0.07
               + murmuration_energy * 0.055
               + glint * 0.14
+              + u_compact
+                * (
+                  mobile_opening * 0.014
+                  + mobile_brightness_wave * 0.04
+                )
             ),
           0.0,
-          0.42
+          mix(0.42, 0.46, u_compact)
         );
       }
     }
@@ -606,6 +858,7 @@
     flockPass: gl.getUniformLocation(program, 'u_flock_pass'),
     detail: gl.getUniformLocation(program, 'u_detail'),
     trailCount: gl.getUniformLocation(program, 'u_trail_count'),
+    compact: gl.getUniformLocation(program, 'u_compact'),
   };
 
   const regions = [
@@ -640,6 +893,7 @@
 
   let width = window.innerWidth;
   let height = window.innerHeight;
+  let compactMode = width < 700 || window.matchMedia('(pointer: coarse)').matches;
   let dpr = 1;
   let frame = 0;
   let rebuildTimer = 0;
@@ -680,11 +934,10 @@
   };
 
   function targetCount(mode) {
-    const compact = width < 700 || window.matchMedia('(pointer: coarse)').matches;
     const cores = navigator.hardwareConcurrency || 6;
     const memory = navigator.deviceMemory || 6;
     const constrained = cores <= 4 || memory <= 4;
-    if (compact) return Math.round((mode ? 110000 : 55000) * particleScale);
+    if (compactMode) return Math.round((mode ? 110000 : 55000) * particleScale);
     if (constrained) return Math.round((mode ? 180000 : 80000) * particleScale);
     return Math.round((mode ? 300000 : 130000) * particleScale);
   }
@@ -830,22 +1083,23 @@
   function resize() {
     width = window.innerWidth;
     height = window.innerHeight;
-    const compact = width < 700 || window.matchMedia('(pointer: coarse)').matches;
+    compactMode = width < 700 || window.matchMedia('(pointer: coarse)').matches;
     const cores = navigator.hardwareConcurrency || 6;
     const memory = navigator.deviceMemory || 6;
     const constrained = cores <= 4 || memory <= 4;
-    const baseDetail = compact ? 0.62 : constrained ? 0.78 : 1;
+    const baseDetail = compactMode ? 0.62 : constrained ? 0.78 : 1;
     detailLevel = particleScale <= 0.51
       ? 0.28
       : particleScale < 0.9
         ? Math.min(baseDetail, 0.48)
         : baseDetail;
-    dpr = Math.min(window.devicePixelRatio || 1, compact ? 1 : 1.15);
+    dpr = Math.min(window.devicePixelRatio || 1, compactMode ? 1 : 1.15);
     canvas.width = Math.max(1, Math.round(width * dpr));
     canvas.height = Math.max(1, Math.round(height * dpr));
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     gl.viewport(0, 0, canvas.width, canvas.height);
+    canvas.dataset.mobileChoreographyActive = String(compactMode);
     const needsRegionBuild = regions.some((region) => region.count < 1000)
       || Math.abs(width - regionBuildWidth) > 6;
     if (needsRegionBuild) {
@@ -892,13 +1146,13 @@
     gl.uniform1f(uniforms.dpr, dpr);
     gl.uniform1f(uniforms.detail, detailLevel);
     gl.uniform1f(uniforms.trailCount, trailUniformCount);
+    gl.uniform1f(uniforms.compact, compactMode ? 1 : 0);
     gl.uniform1f(uniforms.flockPass, 0);
     gl.drawArrays(gl.POINTS, 0, region.count);
     if (region.mode > 0.5 && morph > 0.12) {
-      const compact = width < 700 || window.matchMedia('(pointer: coarse)').matches;
-      const flockRatio = compact ? 0.15 : 0.18;
+      const flockRatio = compactMode ? 0.15 : 0.18;
       const flockCount = Math.max(
-        compact ? 9000 : 12000,
+        compactMode ? 9000 : 12000,
         Math.round(region.count * flockRatio),
       );
       canvas.dataset.flockParticles = String(flockCount);
@@ -917,8 +1171,7 @@
       && Math.hypot(x - previous.x, y - previous.y) < 12
     ) return;
     pointerTrail.push({ x, y, born: performance.now() });
-    const compact = width < 700 || window.matchMedia('(pointer: coarse)').matches;
-    const maximumPoints = compact ? 140 : 240;
+    const maximumPoints = compactMode ? 140 : 240;
     if (pointerTrail.length > maximumPoints) pointerTrail.shift();
   }
 
@@ -1102,6 +1355,8 @@
   canvas.dataset.fractalOctaves = 'responsive-two-to-three';
   canvas.dataset.sampleOrder = 'golden-coprime-stride';
   canvas.dataset.qualityTier = 'adaptive';
+  canvas.dataset.mobileChoreography = 'gather-split-counterturn-reach-recohere';
+  canvas.dataset.mobileCollectives = 'three-asymmetric-lobes';
   canvas.dataset.imageCycleSeconds = String(cycleSeconds);
   canvas.dataset.particleHoldSeconds = String(particleHoldSeconds);
   canvas.dataset.webglStatus = 'initializing';
