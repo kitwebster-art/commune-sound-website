@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="commune-site-version" content="3.9.0">
+    <meta name="commune-site-version" content="4.0.0">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sober Rave &amp; Conscious Dance Melbourne | Commune Sound</title>
     <meta
@@ -29,9 +29,9 @@
     >
     <meta name="twitter:image" content="https://communesound.com.au/assets/hall-photo-cleaned.jpg">
     <link rel="icon" href="assets/commune-logo.png" type="image/png">
-    <link rel="stylesheet" href="styles-20260717-pricing.css?v=commune-3.9.0">
-    <script src="commune-organism.js?v=commune-3.9.0" defer></script>
-    <script src="commune-realtime.js?v=commune-3.9.0" defer></script>
+    <link rel="stylesheet" href="styles-20260717-pricing.css?v=commune-4.0.0">
+    <script src="commune-organism.js?v=commune-4.0.0" defer></script>
+    <script src="commune-realtime.js?v=commune-4.0.0" defer></script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -120,7 +120,7 @@
       }
     </script>
   </head>
-  <body data-site-version="3.9.0">
+  <body data-site-version="4.0.0">
     <canvas
       class="commune-organism-field"
       data-commune-organism
@@ -141,6 +141,10 @@
       </span>
       <span data-soundscape-label>Sound off</span>
     </button>
+    <a class="mobile-join-dock" href="#join" data-mobile-join-dock>
+      <span>Join Commune Sound</span>
+      <span class="mobile-join-dock-mark" aria-hidden="true">&#8595;</span>
+    </a>
     <main id="top">
       <section class="wordmark-banner" aria-label="Commune Sound" data-particle-region="wordmark">
         <h1 class="sr-only">Commune Sound, sober rave and conscious dance in Melbourne</h1>
@@ -150,6 +154,7 @@
           draggable="false"
           data-particle-logo
         >
+        <p class="mobile-orientation">A sober dance experience</p>
       </section>
 
       <section
@@ -167,7 +172,12 @@
         <p class="venue-signal">sound movement light</p>
       </section>
 
-      <section id="join" class="signup-hero" aria-label="Join Commune Sound future dates list">
+      <section
+        id="join"
+        class="signup-hero"
+        aria-label="Join Commune Sound future dates list"
+        tabindex="-1"
+      >
         <form
           class="signup-form"
           aria-label="Join the Commune Sound mailing list"
@@ -202,6 +212,32 @@
       </footer>
     </main>
     <script>
+      (() => {
+        const dock = document.querySelector('[data-mobile-join-dock]');
+        const join = document.querySelector('#join');
+        if (!(dock instanceof HTMLAnchorElement) || !(join instanceof HTMLElement)) return;
+        if (!('IntersectionObserver' in window)) {
+          dock.hidden = true;
+          dock.setAttribute('aria-hidden', 'true');
+          dock.tabIndex = -1;
+          return;
+        }
+
+        const observer = new IntersectionObserver(([entry]) => {
+          const formReached = (
+            entry.isIntersecting && entry.intersectionRatio >= 0.25
+          ) || entry.boundingClientRect.top < 0;
+          if (formReached && document.activeElement === dock) {
+            join.focus({ preventScroll: true });
+          }
+          dock.dataset.formVisible = String(formReached);
+          dock.setAttribute('aria-hidden', String(formReached));
+          dock.tabIndex = formReached ? -1 : 0;
+        }, { threshold: [0, 0.25, 0.5] });
+
+        observer.observe(join);
+      })();
+
       (() => {
         const form = document.querySelector('[data-mailchimp-ajax="true"]');
         if (!form) return;

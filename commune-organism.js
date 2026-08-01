@@ -47,6 +47,7 @@
     uniform float u_detail;
     uniform float u_trail_count;
     uniform float u_compact;
+    uniform float u_cycle_seconds;
 
     varying vec3 v_colour;
     varying float v_alpha;
@@ -287,13 +288,13 @@
           * (0.003 + band_envelope * 0.005);
 
         if (u_compact > 0.5) {
-          float score_phase = fract(u_time / 22.0);
-          float gather_stage = smoothstep(0.14, 0.28, score_phase);
-          float split_stage = smoothstep(0.28, 0.4, score_phase);
-          float recohere_stage = smoothstep(0.64, 0.78, score_phase);
+          float score_phase = fract(u_time / u_cycle_seconds);
+          float gather_stage = smoothstep(0.0625, 0.1875, score_phase);
+          float split_stage = smoothstep(0.1875, 0.325, score_phase);
+          float recohere_stage = smoothstep(0.59375, 0.78125, score_phase);
           mobile_opening = split_stage * (1.0 - recohere_stage);
-          mobile_reach = smoothstep(0.52, 0.56, score_phase)
-            * (1.0 - smoothstep(0.62, 0.66, score_phase));
+          mobile_reach = smoothstep(0.5125, 0.535, score_phase)
+            * (1.0 - smoothstep(0.575, 0.59375, score_phase));
 
           float stream_id = floor(hash(a_seed * 191.0 + 23.0) * 4.0);
           vec2 stream_origin = stream_id < 0.5
@@ -324,8 +325,8 @@
             : mobile_lobe_id < 1.5
               ? vec2(0.64, 0.74)
               : vec2(0.5, 0.72);
-          float dance_window = smoothstep(0.37, 0.44, score_phase)
-            * (1.0 - smoothstep(0.59, 0.68, score_phase));
+          float dance_window = smoothstep(0.29, 0.37, score_phase)
+            * (1.0 - smoothstep(0.56, 0.64, score_phase));
           lobe_centre += vec2(
             sin(
               u_time * 0.32
@@ -346,8 +347,8 @@
           float propagated_phase = score_phase
             - (rank + 1.0) * 0.0125;
           float turn_stage = smoothstep(
-            0.39,
-            0.52,
+            0.325,
+            0.5125,
             propagated_phase
           );
           float mobile_heading = base_heading + turn_amount * turn_stage;
@@ -859,6 +860,7 @@
     detail: gl.getUniformLocation(program, 'u_detail'),
     trailCount: gl.getUniformLocation(program, 'u_trail_count'),
     compact: gl.getUniformLocation(program, 'u_compact'),
+    cycleSeconds: gl.getUniformLocation(program, 'u_cycle_seconds'),
   };
 
   const regions = [
@@ -893,7 +895,8 @@
 
   let width = window.innerWidth;
   let height = window.innerHeight;
-  let compactMode = width < 700 || window.matchMedia('(pointer: coarse)').matches;
+  let compactMode = width <= 700 || window.matchMedia('(pointer: coarse)').matches;
+  let mobileViewportMode = width <= 700;
   let dpr = 1;
   let frame = 0;
   let rebuildTimer = 0;
@@ -903,8 +906,32 @@
   let regionBuildWidth = 0;
   let performanceFrames = 0;
   let performanceStarted = performance.now();
-  const cycleSeconds = 22;
+  let pausedCanvasCleared = false;
+  const desktopCycleSeconds = 22;
+  const mobileCycleSeconds = 16;
   const particleHoldSeconds = 11;
+  let venueInView = false;
+  let mobileCycleOrigin = performance.now();
+  canvas.dataset.mobileCycleOriginMs = String(mobileCycleOrigin);
+
+  if ('IntersectionObserver' in window) {
+    const venueObserver = new IntersectionObserver(([entry]) => {
+      const nextVenueInView = entry.isIntersecting && entry.intersectionRatio >= 0.35;
+      if (nextVenueInView && !venueInView) {
+        mobileCycleOrigin = performance.now();
+        performanceFrames = 0;
+        performanceStarted = mobileCycleOrigin;
+        canvas.dataset.mobileCycleOriginMs = String(mobileCycleOrigin);
+      }
+      venueInView = nextVenueInView;
+      canvas.dataset.venueInView = String(venueInView);
+    }, { threshold: [0, 0.35, 0.75] });
+    venueObserver.observe(venue);
+  } else {
+    venueInView = true;
+    canvas.dataset.mobileCycleOriginMs = String(mobileCycleOrigin);
+    canvas.dataset.venueInView = 'true';
+  }
 
   const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
   const smoothstep = (minimum, maximum, value) => {
@@ -1083,7 +1110,8 @@
   function resize() {
     width = window.innerWidth;
     height = window.innerHeight;
-    compactMode = width < 700 || window.matchMedia('(pointer: coarse)').matches;
+    compactMode = width <= 700 || window.matchMedia('(pointer: coarse)').matches;
+    mobileViewportMode = width <= 700;
     const cores = navigator.hardwareConcurrency || 6;
     const memory = navigator.deviceMemory || 6;
     const constrained = cores <= 4 || memory <= 4;
@@ -1099,7 +1127,10 @@
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     gl.viewport(0, 0, canvas.width, canvas.height);
-    canvas.dataset.mobileChoreographyActive = String(compactMode);
+    canvas.dataset.mobileChoreographyActive = String(mobileViewportMode);
+    canvas.dataset.imageCycleSeconds = String(
+      mobileViewportMode ? mobileCycleSeconds : desktopCycleSeconds,
+    );
     const needsRegionBuild = regions.some((region) => region.count < 1000)
       || Math.abs(width - regionBuildWidth) > 6;
     if (needsRegionBuild) {
@@ -1146,7 +1177,11 @@
     gl.uniform1f(uniforms.dpr, dpr);
     gl.uniform1f(uniforms.detail, detailLevel);
     gl.uniform1f(uniforms.trailCount, trailUniformCount);
-    gl.uniform1f(uniforms.compact, compactMode ? 1 : 0);
+    gl.uniform1f(uniforms.compact, mobileViewportMode ? 1 : 0);
+    gl.uniform1f(
+      uniforms.cycleSeconds,
+      mobileViewportMode ? mobileCycleSeconds : desktopCycleSeconds,
+    );
     gl.uniform1f(uniforms.flockPass, 0);
     gl.drawArrays(gl.POINTS, 0, region.count);
     if (region.mode > 0.5 && morph > 0.12) {
@@ -1209,7 +1244,19 @@
   function animate(now) {
     frame = window.requestAnimationFrame(animate);
     if (document.hidden || canvas.dataset.webglReady !== 'true') return;
-    const time = now / 1000;
+    if (mobileViewportMode && !venueInView) {
+      if (!pausedCanvasCleared) {
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        pausedCanvasCleared = true;
+      }
+      return;
+    }
+    pausedCanvasCleared = false;
+    const cycleSeconds = mobileViewportMode ? mobileCycleSeconds : desktopCycleSeconds;
+    const time = mobileViewportMode
+      ? Math.max(0, now - mobileCycleOrigin) / 1000
+      : now / 1000;
     if (now - pointer.lastMove > 900 && !pointer.down) pointer.active *= 0.965;
     pointer.velocityX *= 0.84;
     pointer.velocityY *= 0.84;
@@ -1217,7 +1264,15 @@
 
     const cycle = (time % cycleSeconds) / cycleSeconds;
     let baseMorph = 0;
-    if (cycle >= 0.14 && cycle < 0.28) {
+    if (mobileViewportMode) {
+      if (cycle >= 0.0625 && cycle < 0.1875) {
+        baseMorph = smoothstep(0.0625, 0.1875, cycle) * 0.94;
+      } else if (cycle >= 0.1875 && cycle < 0.78125) {
+        baseMorph = 0.94;
+      } else if (cycle >= 0.78125) {
+        baseMorph = (1 - smoothstep(0.78125, 1, cycle)) * 0.94;
+      }
+    } else if (cycle >= 0.14 && cycle < 0.28) {
       baseMorph = smoothstep(0.14, 0.28, cycle) * 0.94;
     } else if (cycle >= 0.28 && cycle < 0.78) {
       baseMorph = 0.94;
@@ -1357,7 +1412,9 @@
   canvas.dataset.qualityTier = 'adaptive';
   canvas.dataset.mobileChoreography = 'gather-split-counterturn-reach-recohere';
   canvas.dataset.mobileCollectives = 'three-asymmetric-lobes';
-  canvas.dataset.imageCycleSeconds = String(cycleSeconds);
+  canvas.dataset.desktopCycleSeconds = String(desktopCycleSeconds);
+  canvas.dataset.mobileCycleSeconds = String(mobileCycleSeconds);
+  canvas.dataset.mobileClock = 'visibility-local';
   canvas.dataset.particleHoldSeconds = String(particleHoldSeconds);
   canvas.dataset.webglStatus = 'initializing';
   resize();

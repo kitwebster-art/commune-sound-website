@@ -473,6 +473,8 @@
 
   let width = window.innerWidth;
   let height = window.innerHeight;
+  let compactFluxMode = width <= 700 || window.matchMedia('(pointer: coarse)').matches;
+  let mobileViewportMode = width <= 700;
   let dpr = 1;
   let maskScale = 0.5;
   let previousTime = performance.now();
@@ -493,9 +495,11 @@
   let formTitleWidth = 1;
   let formTitleHeight = 1;
   const imageCycleSeconds = 22;
+  const mobileImageCycleSeconds = 16;
   const particleHoldSeconds = 11;
   const imageOpacityFloor = 0.075;
   canvas.dataset.imageCycleSeconds = String(imageCycleSeconds);
+  canvas.dataset.mobileImageCycleSeconds = String(mobileImageCycleSeconds);
   canvas.dataset.particleHoldSeconds = String(particleHoldSeconds);
   canvas.dataset.imageOpacityFloor = String(imageOpacityFloor);
   canvas.dataset.glitchMode = 'structural-blocks';
@@ -556,7 +560,9 @@
   function resize() {
     width = window.innerWidth;
     height = window.innerHeight;
-    const compact = width < 700 || window.matchMedia('(pointer: coarse)').matches;
+    compactFluxMode = width <= 700 || window.matchMedia('(pointer: coarse)').matches;
+    mobileViewportMode = width <= 700;
+    const compact = compactFluxMode;
     dpr = Math.min(window.devicePixelRatio || 1, compact ? 1 : 1.1);
     maskScale = compact ? 0.42 : 0.5;
     canvas.width = Math.max(1, Math.round(width * dpr));
@@ -1272,20 +1278,32 @@
     context.restore();
   }
 
-  function calculateFluxState(time) {
+  function calculateFluxState(
+    time,
+    cycleSeconds = imageCycleSeconds,
+    compact = false,
+    absoluteTime = time,
+  ) {
     const slowBreath = 0.5 + Math.sin(time * 0.43 - 0.8) * 0.5;
     const soundBreath = 0.5 + Math.sin(time * Math.PI * 2 * (75 / 60)) * 0.5;
-    const cycle = (time % imageCycleSeconds) / imageCycleSeconds;
+    const cycle = (time % cycleSeconds) / cycleSeconds;
     let particleMorph = 0;
-    if (cycle >= 0.14 && cycle < 0.28) {
-      particleMorph = smoothstep(0.14, 0.28, cycle);
-    } else if (cycle >= 0.28 && cycle < 0.78) {
+    if (compact && cycle >= 0.0625 && cycle < 0.1875) {
+      particleMorph = smoothstep(0.0625, 0.1875, cycle);
+    } else if (compact && cycle >= 0.1875 && cycle < 0.78125) {
       particleMorph = 1;
-    } else if (cycle >= 0.78 && cycle < 0.92) {
+    } else if (compact && cycle >= 0.78125) {
+      particleMorph = 1 - smoothstep(0.78125, 1, cycle);
+    } else if (!compact && cycle >= 0.14 && cycle < 0.28) {
+      particleMorph = smoothstep(0.14, 0.28, cycle);
+    } else if (!compact && cycle >= 0.28 && cycle < 0.78) {
+      particleMorph = 1;
+    } else if (!compact && cycle >= 0.78 && cycle < 0.92) {
       particleMorph = 1 - smoothstep(0.78, 0.92, cycle);
     }
     const imagePresence = 1 - particleMorph;
-    const interactionVisibility = pointer.down || time * 1000 < imageSuppressionHoldUntil
+    const interactionVisibility = pointer.down
+      || absoluteTime * 1000 < imageSuppressionHoldUntil
       ? 0
       : 1 - imageSuppression;
     const visiblePresence = imagePresence * interactionVisibility;
@@ -2015,7 +2033,21 @@
     previousTime = now;
     const frameStep = frameTime / 16.67;
     const time = now / 1000;
-    const flux = calculateFluxState(time);
+    const compactFlux = mobileViewportMode;
+    const mobileCycleOrigin = Number(organismCanvas?.dataset.mobileCycleOriginMs);
+    const venueClockActive = organismCanvas?.dataset.venueInView === 'true';
+    const denseOrganismReady = organismCanvas?.dataset.webglReady === 'true';
+    const fluxTime = compactFlux && venueClockActive && Number.isFinite(mobileCycleOrigin)
+      ? Math.max(0, now - mobileCycleOrigin) / 1000
+      : time;
+    const flux = compactFlux && denseOrganismReady && !venueClockActive
+      ? calculateFluxState(0, mobileImageCycleSeconds, true, time)
+      : calculateFluxState(
+        fluxTime,
+        compactFlux ? mobileImageCycleSeconds : imageCycleSeconds,
+        compactFlux,
+        time,
+      );
     if (frameTime > 27) quality = Math.max(0.56, quality - 0.006);
     if (frameTime < 18) quality = Math.min(1, quality + 0.001);
     performanceFrames += 1;
@@ -2026,7 +2058,7 @@
       performanceFrames = 0;
       performanceTime = 0;
     }
-    updateImageFluxStyles(time, flux);
+    updateImageFluxStyles(fluxTime, flux);
     if (now - lastFluxSoundUpdate > 120) {
       updateFluxSound(flux.logoPresence, flux.venuePresence, flux.soundBreath);
       lastFluxSoundUpdate = now;
@@ -2051,7 +2083,7 @@
     }
     scrollEnergy *= 0.94;
 
-    const useDenseOrganism = organismCanvas?.dataset.webglReady === 'true';
+    const useDenseOrganism = denseOrganismReady;
     if (!useDenseOrganism) {
       const fragmentInterval = quality < 0.72 ? 4 : 2;
       const fragmentPhase = simulationFrame % fragmentInterval;
