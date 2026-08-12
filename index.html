@@ -2,7 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="commune-site-version" content="4.0.0">
+    <meta name="commune-site-version" content="4.1.0">
+    <meta name="commune-signup-endpoint" content="https://commune-sound-signup.commune-sound-signup-worker.workers.dev/subscribe">
+    <meta name="commune-turnstile-sitekey" content="0x4AAAAAAEMwO4bk4jEHgDVY">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sober Rave &amp; Conscious Dance Melbourne | Commune Sound</title>
     <meta
@@ -29,9 +31,11 @@
     >
     <meta name="twitter:image" content="https://communesound.com.au/assets/hall-photo-cleaned.jpg">
     <link rel="icon" href="assets/commune-logo.png" type="image/png">
-    <link rel="stylesheet" href="styles-20260717-pricing.css?v=commune-4.0.0">
-    <script src="commune-organism.js?v=commune-4.0.0" defer></script>
-    <script src="commune-realtime.js?v=commune-4.0.0" defer></script>
+    <link rel="stylesheet" href="styles-20260717-pricing.css?v=commune-4.1.0">
+    <script src="commune-organism.js?v=commune-4.1.0" defer></script>
+    <script src="commune-realtime.js?v=commune-4.1.0" defer></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
+    <script src="commune-signup.js?v=commune-4.1.0" defer></script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -120,7 +124,7 @@
       }
     </script>
   </head>
-  <body data-site-version="4.0.0">
+  <body data-site-version="4.1.0">
     <canvas
       class="commune-organism-field"
       data-commune-organism
@@ -181,25 +185,24 @@
         <form
           class="signup-form"
           aria-label="Join the Commune Sound mailing list"
-          action="https://kitwebster.us2.list-manage.com/subscribe/post?u=2ffca6b3b50c609d67f7c8e4a&amp;id=1b5918783a&amp;f_id=0048c7e3f0"
+          action="#join"
           method="post"
-          data-mailchimp-ajax="true"
+          data-commune-signup="true"
         >
           <p class="form-note">Ticket links, future dates and occasional Commune Sound updates.</p>
-          <input type="hidden" name="EMAILTYPE" value="html">
-          <input type="hidden" name="mc_signupsource" value="commune_sound_website">
-          <input type="hidden" name="tags" value="1841991">
           <label>
             <span>First name</span>
-            <input type="text" name="FNAME" autocomplete="given-name">
+            <input type="text" name="first_name" autocomplete="given-name" maxlength="80">
           </label>
           <label>
             <span>Email</span>
-            <input type="email" name="EMAIL" autocomplete="email" required>
+            <input type="email" name="email" autocomplete="email" maxlength="254" required>
           </label>
-          <div class="mailchimp-honeypot" aria-hidden="true">
-            <input type="text" name="b_2ffca6b3b50c609d67f7c8e4a_1b5918783a" tabindex="-1" value="">
+          <div class="signup-honeypot" aria-hidden="true">
+            <label for="website-field">Website</label>
+            <input id="website-field" type="text" name="website" tabindex="-1" autocomplete="off" value="">
           </div>
+          <div data-turnstile-widget></div>
           <button class="button primary" type="submit">Join Commune Sound</button>
           <p class="form-status" role="status" aria-live="polite"></p>
           <p class="privacy-note">Unsubscribe anytime.</p>
@@ -238,64 +241,6 @@
         observer.observe(join);
       })();
 
-      (() => {
-        const form = document.querySelector('[data-mailchimp-ajax="true"]');
-        if (!form) return;
-
-        const button = form.querySelector('button[type="submit"]');
-        const status = form.querySelector('.form-status');
-
-        const setStatus = (message, state = '') => {
-          status.textContent = message;
-          status.dataset.state = state;
-        };
-
-        form.addEventListener('submit', (event) => {
-          event.preventDefault();
-          setStatus('Joining...', 'loading');
-          button.disabled = true;
-
-          const callbackName = `communeMailchimp${Date.now()}`;
-          const data = new FormData(form);
-          const endpoint = form.action.replace('/post?', '/post-json?');
-          const params = new URLSearchParams(data);
-          params.set('c', callbackName);
-
-          const script = document.createElement('script');
-          let finished = false;
-
-          const cleanup = () => {
-            delete window[callbackName];
-            script.remove();
-          };
-
-          window[callbackName] = (response) => {
-            finished = true;
-            button.disabled = false;
-            cleanup();
-
-            const message = String(response.msg || '').replace(/<[^>]*>/g, ' ');
-            if (response.result === 'success' || message.toLowerCase().includes('already subscribed')) {
-              form.reset();
-              setStatus("You're on the Commune Sound list.", 'success');
-              return;
-            }
-
-            setStatus(message || 'Something went wrong. Please try again.', 'error');
-          };
-
-          script.onerror = () => {
-            if (finished) return;
-            finished = true;
-            button.disabled = false;
-            cleanup();
-            setStatus('Signup failed. Please try again.', 'error');
-          };
-
-          script.src = `${endpoint}&${params.toString()}`;
-          document.body.appendChild(script);
-        });
-      })();
     </script>
   </body>
 </html>

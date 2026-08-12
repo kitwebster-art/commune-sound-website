@@ -1,0 +1,14 @@
+{
+  "name": "commune-sound-signup-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/index.js && node --check ../commune-signup.js && node --check scripts/check-pilot.mjs && node --check scripts/check-production.mjs && node --test test/*.test.mjs",
+    "check:pilot": "node scripts/check-pilot.mjs",
+    "check:production": "node scripts/check-production.mjs",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.120.1"
+  }
+}

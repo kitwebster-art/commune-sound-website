@@ -1,0 +1,4 @@
+RESEND_API_KEY=store-with-wrangler-secret
+RESEND_SEGMENT_ID=store-with-wrangler-secret
+TURNSTILE_SECRET=store-with-wrangler-secret
+HUMANITIX_SHARED_SECRET=store-with-wrangler-secret

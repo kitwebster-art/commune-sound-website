@@ -738,7 +738,7 @@ h1 {
   transform: translateY(0);
 }
 
-.mailchimp-honeypot {
+.signup-honeypot {
   position: absolute;
   left: -5000px;
 }
