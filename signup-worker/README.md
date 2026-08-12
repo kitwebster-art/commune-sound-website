@@ -2,7 +2,7 @@
 
 This Worker is the server-side bridge between the public Commune Sound signup form and the existing Resend `Commune Sound Community` segment.
 
-The approved Free-plan pilot is deployed at `https://commune-sound-signup.commune-sound-signup-worker.workers.dev`. DNS and public website publication remain approval-gated.
+The approved Free-plan service is deployed at `https://commune-sound-signup.commune-sound-signup-worker.workers.dev`. Commune Sound website version 4.1.0 began using it on 12 August 2026 after Kit approved publication. DNS was not changed. Humanitix remains on Mailchimp until its separate consent tests pass.
 
 ## Security and consent contract
 
@@ -36,8 +36,8 @@ npm run check
 5. Completed: the staged site contains the verified Worker endpoint and public Turnstile site key.
 6. Completed: controlled new and duplicate signups passed and their consent properties were verified in Resend and Mission Control.
 7. Remaining: prove explicit re-opt-in safely, without changing a real subscriber unexpectedly.
-8. Remaining: publish the website only with Kit's approval, then visibly verify the live form.
-9. Keep Mailchimp connected until website and Humanitix paths are independently verified.
+8. Completed 12 August 2026: Kit approved publication, website version 4.1.0 was published, GitHub Pages completed successfully, and the live form loaded the approved endpoint, email field, verification response field and enabled submit button without a Mailchimp delivery path or browser error.
+9. Keep Humanitix connected to Mailchimp until its private replacement path is independently verified.
 
 The local Wrangler client is authenticated with least-privilege OAuth and encrypted credential storage. The pilot remains on the Free plan. Do not enable a paid plan, change DNS or publish the website automatically. Measure the pilot before deciding whether the signup bridge needs Workers Paid or a Cloudflare DNS migration.
 
