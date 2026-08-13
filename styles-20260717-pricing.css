@@ -320,6 +320,140 @@ a {
   will-change: opacity, filter, transform;
 }
 
+.current-event {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  padding: clamp(64px, 9vw, 112px) clamp(20px, 6vw, 72px);
+  overflow: hidden;
+  text-align: center;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(212, 79, 36, 0.15), transparent 34%),
+    radial-gradient(circle at 82% 76%, rgba(34, 72, 110, 0.18), transparent 38%),
+    rgba(5, 5, 5, 0.42);
+}
+
+.current-event::before {
+  position: absolute;
+  z-index: -1;
+  inset: clamp(18px, 3vw, 34px);
+  border: 1px solid rgba(245, 222, 194, 0.1);
+  content: "";
+  pointer-events: none;
+}
+
+.event-kicker,
+.event-offer-label,
+.event-offer-detail,
+.event-pricing,
+.signup-heading p {
+  font-weight: 850;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.event-kicker {
+  margin-bottom: clamp(22px, 3vw, 34px);
+  color: var(--banner-amber);
+  font-size: clamp(10px, 1.2vw, 13px);
+}
+
+.current-event h2 {
+  max-width: 9ch;
+  margin-bottom: clamp(22px, 3vw, 30px);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(54px, 9vw, 122px);
+  font-weight: 300;
+  line-height: 0.88;
+  letter-spacing: -0.065em;
+  text-transform: none;
+}
+
+.event-description {
+  max-width: 620px;
+  margin-bottom: clamp(34px, 5vw, 52px);
+  color: rgba(245, 222, 194, 0.8);
+  font-size: clamp(17px, 2vw, 22px);
+  line-height: 1.55;
+  text-wrap: balance;
+}
+
+.event-offer {
+  display: grid;
+  justify-items: center;
+  width: min(100%, 480px);
+  margin-bottom: 26px;
+  padding: 24px 20px 22px;
+  border-top: 1px solid rgba(212, 79, 36, 0.6);
+  border-bottom: 1px solid rgba(34, 72, 110, 0.72);
+  background: rgba(5, 5, 5, 0.24);
+}
+
+.event-offer-label,
+.event-offer-detail,
+.event-pricing {
+  margin: 0;
+  font-size: 10px;
+}
+
+.event-offer-label {
+  color: var(--banner-orange);
+}
+
+.event-offer-price {
+  margin: 3px 0 2px;
+  color: var(--banner-cream);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(68px, 9vw, 108px);
+  font-weight: 250;
+  line-height: 1;
+  letter-spacing: -0.07em;
+}
+
+.event-offer-price span {
+  margin-right: 3px;
+  font-size: 0.42em;
+  vertical-align: 0.74em;
+}
+
+.event-offer-detail {
+  color: rgba(245, 222, 194, 0.58);
+}
+
+.event-ticket-button {
+  width: min(100%, 480px);
+  min-height: 62px;
+  border-radius: 2px;
+  background:
+    linear-gradient(
+      105deg,
+      var(--banner-orange),
+      var(--banner-cream) 38%,
+      var(--banner-slate) 67%,
+      var(--banner-blue)
+    );
+  box-shadow:
+    0 16px 42px rgba(212, 79, 36, 0.19),
+    0 0 34px rgba(34, 72, 110, 0.17);
+  letter-spacing: 0.12em;
+}
+
+.event-ticket-button:hover,
+.event-ticket-button:focus-visible {
+  filter: saturate(1.08) brightness(1.04);
+  outline: 2px solid var(--banner-cream);
+  outline-offset: 4px;
+  transform: translateY(-2px);
+}
+
+.event-pricing {
+  margin-top: 15px;
+  color: rgba(245, 222, 194, 0.46);
+  letter-spacing: 0.08em;
+}
+
 .realtime-ready .wordmark-banner img {
   opacity: var(--logo-image-opacity);
 }
@@ -396,6 +530,27 @@ a {
   content: "";
   pointer-events: none;
   transform: translateX(-50%);
+}
+
+.signup-heading {
+  position: relative;
+  z-index: 2;
+  margin-bottom: clamp(24px, 4vw, 38px);
+}
+
+.signup-heading p {
+  margin-bottom: 8px;
+  color: var(--banner-amber);
+  font-size: 9px;
+}
+
+.signup-heading h2 {
+  margin-bottom: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(34px, 5vw, 64px);
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  text-transform: none;
 }
 
 h1,
@@ -932,6 +1087,50 @@ h1 {
       linear-gradient(to bottom, transparent 0, #000 8%, #000 92%, transparent 100%);
   }
 
+  .current-event {
+    padding: 42px 18px 48px;
+  }
+
+  .current-event::before {
+    inset: 8px;
+  }
+
+  .event-kicker {
+    max-width: 28ch;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  .current-event h2 {
+    margin-bottom: 20px;
+    font-size: clamp(48px, 15vw, 68px);
+  }
+
+  .event-description {
+    margin-bottom: 30px;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .event-offer {
+    margin-bottom: 18px;
+    padding: 20px 12px 18px;
+  }
+
+  .event-offer-price {
+    font-size: 76px;
+  }
+
+  .event-offer-detail,
+  .event-pricing {
+    font-size: 8.5px;
+    line-height: 1.5;
+  }
+
+  .event-ticket-button {
+    min-height: 58px;
+  }
+
   .mobile-orientation {
     position: relative;
     z-index: 2;
@@ -1003,6 +1202,10 @@ h1 {
       radial-gradient(ellipse at 0% 24%, rgba(212, 79, 36, 0.15), transparent 56%),
       radial-gradient(ellipse at 100% 28%, rgba(34, 72, 110, 0.17), transparent 56%),
       rgba(8, 11, 14, 0.94);
+  }
+
+  .signup-heading {
+    margin-bottom: 20px;
   }
 
   .signup-hero::before {
