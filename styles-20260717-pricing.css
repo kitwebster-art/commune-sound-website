@@ -684,12 +684,12 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: clamp(112px, 13vw, 168px);
+  min-height: clamp(100px, 10vw, 136px);
   padding: 24px 4px;
   color: var(--banner-cream);
   cursor: pointer;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(48px, 7vw, 92px);
+  font-size: clamp(34px, 4.8vw, 64px);
   font-weight: 300;
   line-height: 1;
   letter-spacing: -0.055em;
@@ -766,7 +766,7 @@ a {
   margin: 0 0 14px;
   color: var(--banner-cream);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(23px, 2.7vw, 38px);
+  font-size: clamp(20px, 2.1vw, 30px);
   font-weight: 400;
   line-height: 1.16;
   letter-spacing: -0.028em;
@@ -1479,8 +1479,8 @@ h1 {
   }
 
   .site-faq-trigger {
-    min-height: 102px;
-    font-size: clamp(44px, 14vw, 60px);
+    min-height: 88px;
+    font-size: clamp(36px, 11vw, 46px);
   }
 
   .site-faq-item {
@@ -1494,7 +1494,7 @@ h1 {
   }
 
   .site-faq-item h3 {
-    font-size: clamp(21px, 6.4vw, 28px);
+    font-size: clamp(18px, 5.4vw, 23px);
   }
 
   .site-faq-item p {
