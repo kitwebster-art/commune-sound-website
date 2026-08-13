@@ -469,6 +469,93 @@ a {
   letter-spacing: 0.08em;
 }
 
+.first-visit {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  gap: clamp(38px, 7vw, 104px);
+  width: 100%;
+  padding: clamp(72px, 10vw, 132px) clamp(20px, 8vw, 116px);
+  border-top: 1px solid rgba(245, 222, 194, 0.08);
+  background:
+    radial-gradient(circle at 12% 20%, rgba(212, 79, 36, 0.1), transparent 34%),
+    radial-gradient(circle at 88% 76%, rgba(34, 72, 110, 0.12), transparent 38%),
+    rgba(5, 5, 5, 0.28);
+}
+
+.first-visit-heading {
+  align-self: start;
+  max-width: 520px;
+}
+
+.first-visit-heading > p:first-child {
+  margin-bottom: 16px;
+  color: var(--banner-amber);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+
+.first-visit-heading h2 {
+  margin-bottom: 24px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(46px, 7vw, 94px);
+  font-weight: 300;
+  line-height: 0.94;
+  letter-spacing: -0.06em;
+  text-transform: none;
+}
+
+.first-visit-heading > p:last-child {
+  max-width: 44ch;
+  margin-bottom: 0;
+  color: rgba(245, 222, 194, 0.72);
+  font-size: clamp(16px, 1.5vw, 19px);
+  line-height: 1.6;
+}
+
+.first-visit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid rgba(245, 222, 194, 0.18);
+  border-left: 1px solid rgba(245, 222, 194, 0.13);
+}
+
+.first-visit-grid article {
+  min-height: 210px;
+  padding: clamp(24px, 3vw, 38px);
+  border-right: 1px solid rgba(245, 222, 194, 0.13);
+  border-bottom: 1px solid rgba(245, 222, 194, 0.13);
+  background: linear-gradient(145deg, rgba(245, 222, 194, 0.035), rgba(5, 5, 5, 0.12));
+}
+
+.first-visit-grid span {
+  display: block;
+  margin-bottom: 34px;
+  color: var(--banner-orange);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+}
+
+.first-visit-grid h3 {
+  margin: 0 0 10px;
+  color: var(--banner-cream);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(20px, 2vw, 28px);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+}
+
+.first-visit-grid p {
+  max-width: 28ch;
+  margin-bottom: 0;
+  color: rgba(245, 222, 194, 0.58);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
 .realtime-ready .wordmark-banner img {
   opacity: var(--logo-image-opacity);
 }
@@ -1145,6 +1232,35 @@ h1 {
 
   .event-ticket-button {
     min-height: 58px;
+  }
+
+  .first-visit {
+    grid-template-columns: 1fr;
+    gap: 38px;
+    padding: 62px 18px 68px;
+  }
+
+  .first-visit-heading h2 {
+    margin-bottom: 20px;
+    font-size: clamp(48px, 14vw, 68px);
+  }
+
+  .first-visit-heading > p:last-child {
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .first-visit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .first-visit-grid article {
+    min-height: 0;
+    padding: 24px;
+  }
+
+  .first-visit-grid span {
+    margin-bottom: 18px;
   }
 
   .mobile-orientation {
