@@ -567,58 +567,6 @@ a {
   border-left: 1px solid rgba(245, 222, 194, 0.14);
 }
 
-.first-visit {
-  position: relative;
-  width: 100%;
-  padding: clamp(72px, 10vw, 132px) clamp(20px, 8vw, 116px);
-  border-top: 1px solid rgba(245, 222, 194, 0.08);
-  background:
-    radial-gradient(circle at 12% 20%, rgba(212, 79, 36, 0.1), transparent 34%),
-    radial-gradient(circle at 88% 76%, rgba(34, 72, 110, 0.12), transparent 38%),
-    rgba(5, 5, 5, 0.28);
-}
-
-.first-visit-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  border-top: 1px solid rgba(245, 222, 194, 0.18);
-  border-left: 1px solid rgba(245, 222, 194, 0.13);
-}
-
-.first-visit-grid article {
-  min-height: 210px;
-  padding: clamp(24px, 3vw, 38px);
-  border-right: 1px solid rgba(245, 222, 194, 0.13);
-  border-bottom: 1px solid rgba(245, 222, 194, 0.13);
-  background: linear-gradient(145deg, rgba(245, 222, 194, 0.035), rgba(5, 5, 5, 0.12));
-}
-
-.first-visit-grid span {
-  display: block;
-  margin-bottom: 34px;
-  color: var(--banner-orange);
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: 0.2em;
-}
-
-.first-visit-grid h3 {
-  margin: 0 0 10px;
-  color: var(--banner-cream);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(20px, 2vw, 28px);
-  font-weight: 400;
-  letter-spacing: -0.025em;
-}
-
-.first-visit-grid p {
-  max-width: 28ch;
-  margin-bottom: 0;
-  color: rgba(245, 222, 194, 0.58);
-  font-size: 14px;
-  line-height: 1.55;
-}
-
 .realtime-ready .wordmark-banner img {
   opacity: var(--logo-image-opacity);
 }
@@ -1455,23 +1403,6 @@ h1 {
     padding: 28px 0;
     border-top: 1px solid rgba(245, 222, 194, 0.13);
     border-left: 0;
-  }
-
-  .first-visit {
-    padding: 62px 18px 68px;
-  }
-
-  .first-visit-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .first-visit-grid article {
-    min-height: 0;
-    padding: 24px;
-  }
-
-  .first-visit-grid span {
-    margin-bottom: 18px;
   }
 
   .site-faq {
