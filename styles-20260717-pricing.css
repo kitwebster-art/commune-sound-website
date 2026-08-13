@@ -583,9 +583,6 @@ a {
 
 .first-visit {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
-  gap: clamp(38px, 7vw, 104px);
   width: 100%;
   padding: clamp(72px, 10vw, 132px) clamp(20px, 8vw, 116px);
   border-top: 1px solid rgba(245, 222, 194, 0.08);
@@ -593,38 +590,6 @@ a {
     radial-gradient(circle at 12% 20%, rgba(212, 79, 36, 0.1), transparent 34%),
     radial-gradient(circle at 88% 76%, rgba(34, 72, 110, 0.12), transparent 38%),
     rgba(5, 5, 5, 0.28);
-}
-
-.first-visit-heading {
-  align-self: start;
-  max-width: 520px;
-}
-
-.first-visit-heading > p:first-child {
-  margin-bottom: 16px;
-  color: var(--banner-amber);
-  font-size: 9px;
-  font-weight: 850;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-}
-
-.first-visit-heading h2 {
-  margin-bottom: 24px;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(46px, 7vw, 94px);
-  font-weight: 300;
-  line-height: 0.94;
-  letter-spacing: -0.06em;
-  text-transform: none;
-}
-
-.first-visit-heading > p:last-child {
-  max-width: 44ch;
-  margin-bottom: 0;
-  color: rgba(245, 222, 194, 0.72);
-  font-size: clamp(16px, 1.5vw, 19px);
-  line-height: 1.6;
 }
 
 .first-visit-grid {
@@ -1384,19 +1349,7 @@ h1 {
   }
 
   .first-visit {
-    grid-template-columns: 1fr;
-    gap: 38px;
     padding: 62px 18px 68px;
-  }
-
-  .first-visit-heading h2 {
-    margin-bottom: 20px;
-    font-size: clamp(48px, 14vw, 68px);
-  }
-
-  .first-visit-heading > p:last-child {
-    font-size: 16px;
-    line-height: 1.55;
   }
 
   .first-visit-grid {
