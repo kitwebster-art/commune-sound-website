@@ -567,20 +567,6 @@ a {
   border-left: 1px solid rgba(245, 222, 194, 0.14);
 }
 
-.philosophy-closing {
-  width: min(100%, 1160px);
-  margin: clamp(52px, 7vw, 82px) 0 0;
-  padding-top: clamp(28px, 4vw, 42px);
-  color: var(--banner-cream);
-  border-top: 1px solid rgba(245, 222, 194, 0.18);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(24px, 3.8vw, 52px);
-  font-weight: 300;
-  line-height: 1.15;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
-}
-
 .first-visit {
   position: relative;
   width: 100%;
@@ -1315,8 +1301,7 @@ h1 {
 
   .philosophy-kicker,
   .philosophy h2,
-  .philosophy-copy,
-  .philosophy-closing {
+  .philosophy-copy {
     width: 100%;
   }
 
@@ -1340,12 +1325,6 @@ h1 {
     padding: 28px 0;
     border-top: 1px solid rgba(245, 222, 194, 0.13);
     border-left: 0;
-  }
-
-  .philosophy-closing {
-    margin-top: 20px;
-    padding-top: 30px;
-    font-size: clamp(30px, 9vw, 40px);
   }
 
   .first-visit {
