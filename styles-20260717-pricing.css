@@ -458,6 +458,86 @@ a {
   letter-spacing: 0.08em;
 }
 
+.philosophy {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  padding: clamp(84px, 12vw, 156px) clamp(20px, 9vw, 132px);
+  overflow: hidden;
+  text-align: center;
+  border-top: 1px solid rgba(245, 222, 194, 0.08);
+  background:
+    radial-gradient(ellipse at 20% 18%, rgba(212, 79, 36, 0.13), transparent 38%),
+    radial-gradient(ellipse at 80% 82%, rgba(34, 72, 110, 0.15), transparent 40%),
+    rgba(7, 9, 12, 0.7);
+}
+
+.philosophy::before {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: min(84vw, 1040px);
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--banner-orange), var(--banner-blue), transparent);
+  content: "";
+  transform: translateX(-50%);
+}
+
+.philosophy-kicker {
+  margin-bottom: 18px;
+  color: var(--banner-amber);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.philosophy h2 {
+  max-width: 10ch;
+  margin-bottom: clamp(42px, 6vw, 72px);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(52px, 8vw, 112px);
+  font-weight: 300;
+  line-height: 0.93;
+  letter-spacing: -0.06em;
+  text-transform: none;
+}
+
+.philosophy-copy {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(26px, 4vw, 56px);
+  width: min(100%, 1160px);
+  text-align: left;
+}
+
+.philosophy-copy p {
+  margin: 0;
+  color: rgba(245, 222, 194, 0.72);
+  font-size: clamp(15px, 1.35vw, 18px);
+  line-height: 1.72;
+}
+
+.philosophy-copy p + p {
+  padding-left: clamp(24px, 3vw, 48px);
+  border-left: 1px solid rgba(245, 222, 194, 0.14);
+}
+
+.philosophy-closing {
+  width: min(100%, 1160px);
+  margin: clamp(52px, 7vw, 82px) 0 0;
+  padding-top: clamp(28px, 4vw, 42px);
+  color: var(--banner-cream);
+  border-top: 1px solid rgba(245, 222, 194, 0.18);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(24px, 3.8vw, 52px);
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
 .first-visit {
   position: relative;
   display: grid;
@@ -1216,6 +1296,46 @@ h1 {
 
   .event-ticket-button {
     min-height: 58px;
+  }
+
+  .philosophy {
+    padding: 68px 18px 76px;
+    text-align: left;
+  }
+
+  .philosophy-kicker,
+  .philosophy h2,
+  .philosophy-copy,
+  .philosophy-closing {
+    width: 100%;
+  }
+
+  .philosophy h2 {
+    margin-bottom: 36px;
+    font-size: clamp(50px, 15vw, 70px);
+  }
+
+  .philosophy-copy {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .philosophy-copy p {
+    padding: 0 0 28px;
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .philosophy-copy p + p {
+    padding: 28px 0;
+    border-top: 1px solid rgba(245, 222, 194, 0.13);
+    border-left: 0;
+  }
+
+  .philosophy-closing {
+    margin-top: 20px;
+    padding-top: 30px;
+    font-size: clamp(30px, 9vw, 40px);
   }
 
   .first-visit {
