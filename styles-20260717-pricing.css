@@ -346,6 +346,7 @@ a {
 
 .event-kicker,
 .event-offer-label,
+.event-offer-countdown,
 .event-offer-detail,
 .event-pricing,
 .signup-heading p {
@@ -392,6 +393,7 @@ a {
 }
 
 .event-offer-label,
+.event-offer-countdown,
 .event-offer-detail,
 .event-pricing {
   margin: 0;
@@ -400,6 +402,15 @@ a {
 
 .event-offer-label {
   color: var(--banner-orange);
+}
+
+.event-offer-countdown {
+  margin: 2px 0 10px;
+  color: var(--banner-cream);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .event-offer-price {
@@ -416,6 +427,10 @@ a {
   margin-right: 3px;
   font-size: 0.42em;
   vertical-align: 0.74em;
+}
+
+.event-offer-price b {
+  font: inherit;
 }
 
 .event-offer-detail {
@@ -1122,6 +1137,7 @@ h1 {
   }
 
   .event-offer-detail,
+  .event-offer-countdown,
   .event-pricing {
     font-size: 8.5px;
     line-height: 1.5;

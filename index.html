@@ -2,14 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="commune-site-version" content="4.2.0">
+    <meta name="commune-site-version" content="4.2.1">
     <meta name="commune-signup-endpoint" content="https://commune-sound-signup.commune-sound-signup-worker.workers.dev/subscribe">
     <meta name="commune-turnstile-sitekey" content="0x4AAAAAAEMwO4bk4jEHgDVY">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Commune Sound, 27 August | Sober Dance Melbourne</title>
     <meta
       name="description"
-      content="Commune Sound returns to St Brigid's Hall on Thursday 27 August. Book this week for $20. Ecstatic dance, somatic movement and immersive electronic sound."
+      content="Commune Sound returns to St Brigid's Hall on Thursday 27 August for ecstatic dance, somatic movement and immersive electronic sound."
     >
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://communesound.com.au/">
@@ -19,7 +19,7 @@
     <meta property="og:title" content="Commune Sound, Thursday 27 August">
     <meta
       property="og:description"
-      content="Book this week for $20. Two spacious hours of ecstatic dance, somatic movement and immersive electronic sound in Fitzroy North."
+      content="Two spacious hours of ecstatic dance, somatic movement and immersive electronic sound in Fitzroy North."
     >
     <meta property="og:image" content="https://communesound.com.au/assets/hall-photo-cleaned.jpg">
     <meta property="og:image:alt" content="St Brigid's Hall lit for Commune Sound in Fitzroy North, Melbourne">
@@ -27,15 +27,16 @@
     <meta name="twitter:title" content="Commune Sound, Thursday 27 August">
     <meta
       name="twitter:description"
-      content="Book this week for $20. Two spacious hours of ecstatic dance, somatic movement and immersive electronic sound in Fitzroy North."
+      content="Two spacious hours of ecstatic dance, somatic movement and immersive electronic sound in Fitzroy North."
     >
     <meta name="twitter:image" content="https://communesound.com.au/assets/hall-photo-cleaned.jpg">
     <link rel="icon" href="assets/commune-logo.png" type="image/png">
-    <link rel="stylesheet" href="styles-20260717-pricing.css?v=commune-4.2.0">
-    <script src="commune-organism.js?v=commune-4.2.0" defer></script>
-    <script src="commune-realtime.js?v=commune-4.2.0" defer></script>
+    <link rel="stylesheet" href="styles-20260717-pricing.css?v=commune-4.2.1">
+    <script src="commune-organism.js?v=commune-4.2.1" defer></script>
+    <script src="commune-realtime.js?v=commune-4.2.1" defer></script>
+    <script src="commune-offer.js?v=commune-4.2.1" defer></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
-    <script src="commune-signup.js?v=commune-4.2.0" defer></script>
+    <script src="commune-signup.js?v=commune-4.2.1" defer></script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -74,16 +75,34 @@
             "organizer": {
               "@id": "https://communesound.com.au/#organization"
             },
-            "offers": {
-              "@type": "AggregateOffer",
-              "url": "https://events.humanitix.com/commune-sound-16-july/tickets?dateId=6a5efc4cdf00fb34b14e7c1d",
-              "priceCurrency": "AUD",
-              "lowPrice": "20",
-              "highPrice": "40",
-              "offerCount": "3",
-              "availability": "https://schema.org/InStock",
-              "validFrom": "2026-07-01T00:00:00+10:00"
-            }
+            "offers": [
+              {
+                "@type": "Offer",
+                "name": "Book This Week",
+                "url": "https://events.humanitix.com/commune-sound-16-july/tickets?dateId=6a5efc4cdf00fb34b14e7c1d",
+                "price": "20",
+                "priceCurrency": "AUD",
+                "priceValidUntil": "2026-08-16T23:59:00+10:00",
+                "availability": "https://schema.org/InStock"
+              },
+              {
+                "@type": "Offer",
+                "name": "General Admission",
+                "url": "https://events.humanitix.com/commune-sound-16-july/tickets?dateId=6a5efc4cdf00fb34b14e7c1d",
+                "price": "25",
+                "priceCurrency": "AUD",
+                "validFrom": "2026-08-17T00:00:00+10:00",
+                "availability": "https://schema.org/InStock"
+              },
+              {
+                "@type": "Offer",
+                "name": "Two Dancers",
+                "url": "https://events.humanitix.com/commune-sound-16-july/tickets?dateId=6a5efc4cdf00fb34b14e7c1d",
+                "price": "40",
+                "priceCurrency": "AUD",
+                "availability": "https://schema.org/InStock"
+              }
+            ]
           },
           {
             "@type": "Event",
@@ -124,7 +143,7 @@
       }
     </script>
   </head>
-  <body data-site-version="4.2.0">
+  <body data-site-version="4.2.1">
     <canvas
       class="commune-organism-field"
       data-commune-organism
@@ -150,7 +169,7 @@
       href="https://events.humanitix.com/commune-sound-16-july/tickets?dateId=6a5efc4cdf00fb34b14e7c1d"
       aria-label="Get tickets for Commune Sound on 27 August"
     >
-      <span>Get $20 tickets</span>
+      <span data-ticket-button-label>Get $20 tickets</span>
       <span class="mobile-join-dock-mark" aria-hidden="true">&#8599;</span>
     </a>
     <main id="top">
@@ -173,15 +192,16 @@
           somatic movement and immersive electronic sound.
         </p>
         <div class="event-offer" aria-label="Current ticket offer">
-          <p class="event-offer-label">Book by Sunday night</p>
-          <p class="event-offer-price"><span>$</span>20</p>
+          <p class="event-offer-label" data-offer-label>Book by Sunday night</p>
+          <p class="event-offer-price"><span>$</span><b data-offer-price>20</b></p>
+          <p class="event-offer-countdown" data-offer-countdown>Offer ends Sunday at 11:59pm</p>
           <p class="event-offer-detail">Limited tickets · 7:30pm to 9:30pm</p>
         </div>
         <a
           class="button primary event-ticket-button"
           href="https://events.humanitix.com/commune-sound-16-july/tickets?dateId=6a5efc4cdf00fb34b14e7c1d"
-        >Get $20 tickets</a>
-        <p class="event-pricing">$25 general admission from Monday · $40 for two dancers</p>
+        ><span data-ticket-button-label>Get $20 tickets</span></a>
+        <p class="event-pricing" data-event-pricing>$25 general admission from Monday · $40 for two dancers</p>
       </section>
 
       <section
