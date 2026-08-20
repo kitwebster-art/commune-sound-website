@@ -1,0 +1,103 @@
+:root {
+  --portal-progress: 0;
+  --portal-red: #ff274d;
+  --portal-blue: #244dff;
+  --portal-cyan: #21dcff;
+  --portal-cream: #f5dec2;
+}
+
+.portal-study-loading {
+  min-height: 100vh;
+  background: #010104;
+}
+
+.portal-study-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  color: rgba(235, 245, 255, 0.7);
+  background:
+    radial-gradient(circle at 50% 44%, #000 0 7%, rgba(36, 77, 255, 0.17) 12%, transparent 30%),
+    #010104;
+  font: 800 10px/1.2 Inter, sans-serif;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.portal-study-ready .portal-study-loader {
+  display: none;
+}
+
+.portal-field {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 800ms ease;
+}
+
+.portal-field-ready .portal-field {
+  opacity: 1;
+}
+
+.portal-study-ready main::before {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(0, 0, 0, calc(var(--portal-progress) * 0.46)), transparent 24%),
+    radial-gradient(ellipse at 18% 32%, rgba(255, 39, 77, 0.055), transparent 31%),
+    radial-gradient(ellipse at 82% 48%, rgba(36, 77, 255, 0.065), transparent 34%);
+}
+
+.portal-study-ready .current-event {
+  background:
+    linear-gradient(to bottom, rgba(2, 2, 6, 0.22), rgba(2, 2, 4, 0.7)),
+    radial-gradient(circle at 50% -14%, rgba(33, 220, 255, 0.055), transparent 36%);
+}
+
+.portal-study-ready .wordmark-banner::after {
+  opacity: calc(0.32 + var(--portal-progress) * 0.34);
+}
+
+.portal-debug-hud {
+  position: fixed;
+  z-index: 30;
+  right: 12px;
+  bottom: 12px;
+  max-width: min(340px, calc(100vw - 24px));
+  padding: 10px 12px;
+  border: 1px solid rgba(33, 220, 255, 0.28);
+  color: rgba(230, 245, 255, 0.86);
+  background: rgba(0, 2, 8, 0.82);
+  font: 700 9px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.portal-static-field {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 27%, #000 0 7%, rgba(33, 220, 255, 0.08) 9%, rgba(36, 77, 255, 0.08) 16%, transparent 31%),
+    radial-gradient(circle at 43% 22%, rgba(255, 39, 77, 0.09), transparent 22%);
+  pointer-events: none;
+}
+
+@media (max-width: 700px) {
+  .portal-field {
+    mix-blend-mode: normal;
+  }
+
+  .portal-debug-hud {
+    right: 8px;
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    left: 8px;
+    max-width: none;
+  }
+}
