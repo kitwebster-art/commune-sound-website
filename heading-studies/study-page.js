@@ -3,7 +3,7 @@
   if (!(root instanceof HTMLElement) || !window.CommuneHeadingStudies) return;
   const optionId = new URLSearchParams(location.search).get('option') || document.body.dataset.option;
   const { option } = window.CommuneHeadingStudies.create({ container: root, optionId });
-  document.querySelector('[data-study-number]').textContent = `${option.number} / 10`;
+  document.querySelector('[data-study-number]').textContent = `${option.number} / ${window.CommuneHeadingStudies.options.length}`;
   document.querySelector('[data-study-family]').textContent = option.family;
   document.querySelector('[data-study-title]').textContent = option.title;
   document.querySelector('[data-study-description]').textContent = option.description;

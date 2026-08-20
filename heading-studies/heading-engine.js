@@ -10,7 +10,13 @@
     { id: 'folded-modules', number: '07', family: 'Folded alphabet', title: 'Folded Modules', description: 'Every letter is assembled from hard folded slabs and diagonal joints.' },
     { id: 'negative-machines', number: '08', family: 'Negative-space alphabet', title: 'Negative Machines', description: 'Heavy geometric letter machines are cut open by sharp black channels.' },
     { id: 'instrument-glyphs', number: '09', family: 'Technical alphabet', title: 'Instrument Glyphs', description: 'A calibrated custom alphabet behaves like a set of audio instruments.' },
-    { id: 'signal-organisms', number: '10', family: 'Living signal alphabet', title: 'Signal Organisms', description: 'Hand-drawn letter paths host particles, pulses and orbiting signal nodes.' }
+    { id: 'signal-organisms', number: '10', family: 'Living signal alphabet', title: 'Signal Organisms', description: 'Hand-drawn letter paths host particles, pulses and orbiting signal nodes.' },
+    { id: 'circuit-choreography', number: '11', family: 'Instrument-panel alphabet', title: 'Circuit Choreography', description: 'Letters are assembled as playable diagrams of rails, meters, gates and signal junctions.' },
+    { id: 'contour-flux', number: '12', family: 'Topographic alphabet', title: 'Contour Flux', description: 'Elastic letter paths spread into a moving field of tightly spaced contours.' },
+    { id: 'lattice-relay', number: '13', family: 'Constructed lattice alphabet', title: 'Lattice Relay', description: 'Triangulated strokes and cross-braced joints make each letter feel engineered in space.' },
+    { id: 'aperture-sequence', number: '14', family: 'Radial aperture alphabet', title: 'Aperture Sequence', description: 'Broken rings, rotating sectors and open counters turn the wordmark into a sequence of lenses.' },
+    { id: 'split-monoliths', number: '15', family: 'Cut-volume alphabet', title: 'Split Monoliths', description: 'Massive geometric letter bodies are sliced into offset slabs with luminous internal edges.' },
+    { id: 'kinetic-notation', number: '16', family: 'Movement-score alphabet', title: 'Kinetic Notation', description: 'Directional strokes, beat marks and small waveforms draw the title like a choreographic score.' }
   ]);
 
   const WORDS = Object.freeze([
@@ -128,6 +134,72 @@
     D: 'M10 12V132H43A47 60 0 0 0 43 12ZM44 72H92'
   });
 
+  const CIRCUIT = Object.freeze({
+    C: 'M92 27A46 58 0 1 0 92 117M18 72H47M47 72V52M47 72V92',
+    O: 'M50 8A41 64 0 1 0 50 136A41 64 0 1 0 50 8M50 30A21 42 0 1 1 50 114A21 42 0 1 1 50 30M8 72H29M71 72H92',
+    M: 'M8 132V12L50 78L92 12V132M8 40H27M73 40H92M50 78V112',
+    U: 'M9 12V94A41 40 0 0 0 91 94V12M30 12V88A20 20 0 0 0 70 88V12M50 109V140',
+    N: 'M9 132V12L91 132V12M9 48H26M74 96H91M50 72V100',
+    E: 'M92 12H9V132H92M9 72H76M50 52V92M73 12V31M73 113V132',
+    S: 'M90 25C70 4 27 8 12 34C1 56 24 68 50 72C80 77 96 93 83 119C70 141 28 138 9 117M50 55V89M32 72H68',
+    D: 'M9 12V132H43A47 60 0 0 0 43 12ZM43 35A24 37 0 0 1 43 109M43 72H92'
+  });
+
+  const CONTOUR = Object.freeze({
+    C: 'M92 31C74 1 34 0 13 34C-3 61 2 116 38 136C63 150 89 131 95 103',
+    O: 'M49 5C18 3 3 34 9 76C15 123 37 142 66 136C96 129 101 83 88 38C80 11 64 5 49 5Z',
+    M: 'M6 134C11 94 1 46 13 15C20-3 34 11 41 33L52 70L66 25C73 4 91 3 93 25L95 134',
+    U: 'M7 9C10 44 2 90 15 116C29 145 65 145 83 118C98 95 89 46 93 9',
+    N: 'M6 134C11 91 1 45 13 16C19 2 32 9 41 30L77 113C85 132 96 120 93 98L89 8',
+    E: 'M94 13C71 18 34 4 17 20C3 34 10 111 17 127C32 140 73 126 95 132M12 72C35 60 56 83 80 69',
+    S: 'M94 28C72 0 26 2 9 37C-3 62 30 70 53 74C84 79 99 98 82 124C65 149 21 138 4 109',
+    D: 'M7 8C14 46 1 102 13 136C36 127 66 144 85 115C103 87 97 38 73 17C52 0 30 16 7 8Z'
+  });
+
+  const LATTICE = Object.freeze({
+    C: 'M92 16H33L7 43V104L33 130H92M7 43L92 130M7 104L92 16',
+    O: 'M33 12H67L93 40V104L67 132H33L7 104V40ZM33 12L67 132M67 12L33 132M7 40L93 104M93 40L7 104',
+    M: 'M7 132V12L50 78L93 12V132M7 12L50 132L93 12M7 132L50 78L93 132',
+    U: 'M7 12V104L33 132H67L93 104V12M7 12L67 132M93 12L33 132M7 104H93',
+    N: 'M7 132V12L93 132V12M7 12L93 74M7 70L93 132M50 43V101',
+    E: 'M93 12H7V132H93M7 72H76M7 12L76 72M7 132L76 72',
+    S: 'M93 12H31L7 38V70H70L93 94V108L69 132H7M7 38L93 108M7 70L69 132',
+    D: 'M7 12V132H64L93 103V41L64 12ZM7 12L93 103M7 132L93 41M36 40V104'
+  });
+
+  const APERTURE = Object.freeze({
+    C: 'M91 25A46 62 0 1 0 91 119M73 45A25 40 0 1 0 73 99M50 8V32M50 112V136',
+    O: 'M50 7A43 65 0 1 0 50 137A43 65 0 1 0 50 7M50 29A21 43 0 1 1 50 115A21 43 0 1 1 50 29M7 72H29M71 72H93',
+    M: 'M7 132V15L50 88L93 15V132M28 132V74L50 111L72 74V132M50 88V55',
+    U: 'M7 12V88A43 47 0 0 0 93 88V12M28 12V86A22 25 0 0 0 72 86V12M50 111V137',
+    N: 'M7 132V12L93 132V12M28 132V65L72 121V12M50 72A18 18 0 1 0 50 71',
+    E: 'M94 12H7V132H94M7 72H79M30 35H86M30 109H86M7 72A32 32 0 0 0 39 40',
+    S: 'M91 27A46 31 0 0 0 8 46C8 67 29 70 53 74C80 78 95 91 91 110A46 31 0 0 1 8 116M50 55A18 18 0 1 0 50 89',
+    D: 'M7 12V132H43A43 60 0 0 0 43 12ZM28 34V110H42A23 38 0 0 0 42 34ZM43 52A20 20 0 1 1 43 92'
+  });
+
+  const SPLIT = Object.freeze({
+    C: 'M94 12H22L6 28V116L22 132H94V103H39V41H94ZM6 72H63',
+    O: 'M20 12H80L94 26V118L80 132H20L6 118V26ZM39 41V103H61V41ZM6 72H94',
+    M: 'M6 132V12H33L50 50L67 12H94V132H68V62L50 103L32 62V132ZM6 72H36M64 72H94',
+    U: 'M6 12H34V102H66V12H94V118L80 132H20L6 118ZM6 72H34M66 72H94',
+    N: 'M6 132V12H32L68 78V12H94V132H68L32 66V132ZM6 72H35M65 72H94',
+    E: 'M94 12H6V132H94V103H39V84H79V58H39V41H94ZM6 72H79',
+    S: 'M94 12H20L6 26V78H66V103H6V132H80L94 118V52H34V41H94ZM6 72H66',
+    D: 'M6 12V132H76L94 114V30L76 12ZM39 41H61V103H39ZM6 72H39M61 72H94'
+  });
+
+  const NOTATION = Object.freeze({
+    C: 'M91 27A47 58 0 1 0 91 117M18 52L7 72L18 92M69 28L82 18L91 27',
+    O: 'M50 8A41 64 0 1 0 50 136A41 64 0 1 0 50 8M50 8V31M50 113V136M9 72H29M71 72H91',
+    M: 'M8 132V12L50 82L92 12V132M8 112L22 98M78 98L92 112M50 82V112',
+    U: 'M9 12V95A41 39 0 0 0 91 95V12M9 35L23 49M77 49L91 35M50 115V140',
+    N: 'M9 132V12L91 132V12M9 91L23 105M77 39L91 53M42 62L58 82',
+    E: 'M92 12H9V132H92M9 72H76M60 12V30M60 114V132M76 62V82',
+    S: 'M90 26C70 5 28 7 12 34C1 56 24 68 50 72C80 77 96 93 83 119C70 141 28 138 9 117M22 25L34 38M66 106L79 119',
+    D: 'M9 12V132H43A47 60 0 0 0 43 12ZM43 30V48M43 96V114M72 45L86 33M72 99L86 111'
+  });
+
   const optionById = (id) => OPTIONS.find((option) => option.id === id) || OPTIONS[0];
   const glyphInstances = (alphabet, className, extra = '') => WORDS.map((word, row) => word.letters.map((letter, index) => {
     const x = word.x + index * word.step;
@@ -175,6 +247,12 @@
   const buildNegative = () => `<g class="negative-machines">${glyphInstances(BLOCK, 'machine-block')}${glyphInstances(BLOCK, 'machine-cut')}${repeatGlyphs(BLOCK, 'machine-echo', 3, 5, 4)}</g>`;
   const buildInstrument = () => `<g class="instrument-glyphs"><path class="calibration" d="M50 54H1150M50 510H1150M62 42V520M1138 42V520M600 42V520"/>${glyphInstances(TECH, 'instrument-path')}${glyphInstances(TECH, 'instrument-pulse')}${deterministicNodes(46, 31)}</g>`;
   const buildOrganisms = () => `<g class="signal-organisms">${glyphInstances(ORGANIC, 'organism-halo')}${glyphInstances(ORGANIC, 'organism-body')}${glyphInstances(ORGANIC, 'organism-flow')}${deterministicNodes(72, 47)}<circle class="organism-orbit orbit-a" cx="265" cy="175" r="140"/><circle class="organism-orbit orbit-b" cx="910" cy="400" r="126"/></g>`;
+  const buildCircuit = () => `<g class="circuit-choreography"><path class="circuit-grid" d="M48 48H1152M48 280H1152M48 512H1152M120 36V524M600 36V524M1080 36V524"/>${glyphInstances(CIRCUIT, 'circuit-rail')}${glyphInstances(CIRCUIT, 'circuit-signal')}${deterministicNodes(58, 83)}</g>`;
+  const buildContour = () => `<g class="contour-flux">${repeatGlyphs(CONTOUR, 'contour-line', 13, 2.6, -2.3)}${glyphInstances(CONTOUR, 'contour-core')}</g>`;
+  const buildLattice = () => `<g class="lattice-relay">${glyphInstances(LATTICE, 'lattice-shadow')}${glyphInstances(LATTICE, 'lattice-beam')}${glyphInstances(LATTICE, 'lattice-thread')}</g>`;
+  const buildAperture = () => `<g class="aperture-sequence">${glyphInstances(APERTURE, 'aperture-halo')}${glyphInstances(APERTURE, 'aperture-ring')}${glyphInstances(APERTURE, 'aperture-index')}${deterministicNodes(32, 113)}</g>`;
+  const buildSplit = () => `<g class="split-monoliths">${glyphInstances(SPLIT, 'split-shadow')}${glyphInstances(SPLIT, 'split-body')}${glyphInstances(SPLIT, 'split-cut')}</g>`;
+  const buildNotation = () => `<g class="kinetic-notation"><path class="score-line" d="M48 278H1152M48 290H1152"/>${glyphInstances(NOTATION, 'notation-stroke')}${glyphInstances(NOTATION, 'notation-beat')}${deterministicNodes(38, 167)}</g>`;
 
   const composition = (id) => ({
     'parallel-ritual': buildParallel,
@@ -186,7 +264,13 @@
     'folded-modules': buildFolded,
     'negative-machines': buildNegative,
     'instrument-glyphs': buildInstrument,
-    'signal-organisms': buildOrganisms
+    'signal-organisms': buildOrganisms,
+    'circuit-choreography': buildCircuit,
+    'contour-flux': buildContour,
+    'lattice-relay': buildLattice,
+    'aperture-sequence': buildAperture,
+    'split-monoliths': buildSplit,
+    'kinetic-notation': buildNotation
   }[id] || buildParallel)();
 
   const alphabetForOption = (id) => ({
@@ -199,7 +283,13 @@
     'folded-modules': FOLD,
     'negative-machines': BLOCK,
     'instrument-glyphs': TECH,
-    'signal-organisms': ORGANIC
+    'signal-organisms': ORGANIC,
+    'circuit-choreography': CIRCUIT,
+    'contour-flux': CONTOUR,
+    'lattice-relay': LATTICE,
+    'aperture-sequence': APERTURE,
+    'split-monoliths': SPLIT,
+    'kinetic-notation': NOTATION
   }[id] || ROUND);
 
   const create = ({ container, optionId }) => {

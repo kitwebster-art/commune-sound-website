@@ -76,6 +76,35 @@ a { color:inherit; }
 .organism-flow { stroke:#d3ff7d; stroke-width:2.2; stroke-dasharray:1 10; animation:dash 6s linear infinite; }
 .organism-orbit { fill:none; stroke:rgba(114,255,208,.38); stroke-width:1.5; stroke-dasharray:4 9; transform-origin:center; animation:orbit 18s linear infinite; }.orbit-b { animation-direction:reverse; animation-duration:13s; }
 
+/* 11 custom instrument-panel alphabet */
+.circuit-grid { fill:none; stroke:rgba(105,76,255,.2); stroke-width:1; stroke-dasharray:3 10; }
+.circuit-rail { stroke:#72ffd0; stroke-width:11; stroke-linecap:butt; stroke-linejoin:round; }
+.circuit-signal { stroke:#d3ff7d; stroke-width:2.2; stroke-dasharray:14 5 2 5; animation:dash 7s linear infinite; }
+
+/* 12 custom topographic alphabet */
+.contour-line { stroke:url(#spectrum); stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round; opacity:.78; }
+.contour-core { stroke:#f7efff; stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round; filter:url(#glow); }
+
+/* 13 custom triangulated lattice alphabet */
+.lattice-shadow { stroke:#000; stroke-width:29; stroke-linecap:square; stroke-linejoin:miter; transform:translate(8px,10px); }
+.lattice-beam { stroke:#694cff; stroke-width:21; stroke-linecap:square; stroke-linejoin:miter; opacity:.7; }
+.lattice-thread { stroke:#d3ff7d; stroke-width:2; stroke-linecap:square; stroke-linejoin:miter; }
+
+/* 14 custom radial aperture alphabet */
+.aperture-halo { stroke:#694cff; stroke-width:30; stroke-linecap:butt; stroke-linejoin:round; opacity:.18; filter:url(#glow); }
+.aperture-ring { stroke:#72ffd0; stroke-width:12; stroke-linecap:butt; stroke-linejoin:round; }
+.aperture-index { stroke:#d3ff7d; stroke-width:2; stroke-dasharray:1 9; animation:dash 10s linear infinite; }
+
+/* 15 custom cut-volume alphabet */
+.split-shadow { stroke:#000; stroke-width:55; stroke-linecap:square; stroke-linejoin:miter; transform:translate(11px,13px); }
+.split-body { stroke:url(#fold); stroke-width:47; stroke-linecap:square; stroke-linejoin:miter; }
+.split-cut { stroke:#030207; stroke-width:8; stroke-linecap:square; stroke-linejoin:miter; stroke-dasharray:44 16; }
+
+/* 16 custom movement-score alphabet */
+.score-line { fill:none; stroke:rgba(247,239,255,.12); stroke-width:1; }
+.notation-stroke { stroke:#f7efff; stroke-width:8; stroke-linecap:round; stroke-linejoin:round; }
+.notation-beat { stroke:#d3ff7d; stroke-width:2; stroke-dasharray:2 9; animation:dash 6s linear infinite; }
+
 .diagnostic-skeleton { display:none; }.skeleton-path { fill:none; stroke:#d3ff7d; stroke-width:4; stroke-linecap:round; stroke-linejoin:round; }
 .heading-art[data-debug-mode="skeleton"] > g:not(.diagnostic-skeleton) { display:none; }.heading-art[data-debug-mode="skeleton"] .diagnostic-skeleton { display:block; }
 .heading-art[data-motion-mode="off"] * { animation:none!important; }
