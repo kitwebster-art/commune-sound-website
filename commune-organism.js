@@ -653,14 +653,14 @@
       );
       gl_Position = vec4(clip, 0.0, 1.0);
 
-      float base_size = mix(1.02, 1.58, perspective);
+      float base_size = mix(1.08, 1.72, perspective);
       gl_PointSize = u_dpr
         * base_size
         * (
           1.0
-          + u_morph * 0.38
+          + u_morph * 0.5
           + gravity * 0.46
-          + trail_energy * 0.5
+          + trail_energy * 0.68
           + u_flock_pass * 0.1
           + murmuration_energy * u_flock_pass * 0.13
           + glint * u_flock_pass * 0.18
@@ -703,6 +703,38 @@
       image_colour *= (
         0.94
         + luminance_wave * mix(0.12, 0.23, u_morph)
+      );
+      vec3 neon_blue = vec3(0.016, 0.29, 1.0);
+      vec3 neon_cyan = vec3(0.0, 0.91, 1.0);
+      vec3 neon_red = vec3(1.0, 0.015, 0.16);
+      vec3 neon_white = vec3(0.95, 0.98, 1.0);
+      float neon_band = 0.5 + 0.5 * sin(
+        position.x * 0.018
+        + position.y * 0.011
+        - u_time * 0.64
+        + a_seed * 7.0
+      );
+      float neon_red_mix = smoothstep(0.38, 0.78, neon_band);
+      vec3 neon_colour = mix(neon_blue, neon_red, neon_red_mix);
+      float cyan_glint = pow(
+        max(
+          0.0,
+          sin(
+            a_seed * 127.0
+            + u_time * 1.14
+            + position.x * 0.009
+          )
+        ),
+        12.0
+      );
+      neon_colour = mix(neon_colour, neon_cyan, cyan_glint * 0.82);
+      float neon_strength = u_morph
+        * (0.5 + freedom * 0.34)
+        * (0.84 + luminance_wave * 0.16);
+      image_colour = mix(
+        image_colour,
+        neon_colour * (0.88 + luminance_wave * 0.34 + pulse * 0.18),
+        clamp(neon_strength, 0.0, 0.82)
       );
       vec3 flock_ember = vec3(0.831, 0.31, 0.141);
       vec3 flock_apricot = vec3(0.941, 0.631, 0.424);
@@ -765,7 +797,8 @@
         + mobile_brightness_wave * u_compact * 0.18
       );
       v_colour = mix(image_colour, flock_colour, u_flock_pass * 0.96);
-      v_colour = mix(v_colour, flock_cream, trail_energy * 0.28);
+      vec3 trail_colour = mix(neon_cyan, neon_white, pulse * 0.42);
+      v_colour = mix(v_colour, trail_colour, trail_energy * 0.48);
       if (u_flock_pass > 0.5) {
         v_alpha = clamp(
           collective_arrival
@@ -1184,18 +1217,7 @@
     );
     gl.uniform1f(uniforms.flockPass, 0);
     gl.drawArrays(gl.POINTS, 0, region.count);
-    if (region.mode > 0.5 && morph > 0.12) {
-      const flockRatio = compactMode ? 0.15 : 0.18;
-      const flockCount = Math.max(
-        compactMode ? 9000 : 12000,
-        Math.round(region.count * flockRatio),
-      );
-      canvas.dataset.flockParticles = String(flockCount);
-      gl.uniform1f(uniforms.flockPass, 1);
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-      gl.drawArrays(gl.POINTS, 0, Math.min(region.count, flockCount));
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    }
+    canvas.dataset.flockParticles = '0';
   }
 
   function addTrailPoint(x, y, force = false) {
@@ -1400,18 +1422,18 @@
 
   gl.disable(gl.DEPTH_TEST);
   gl.disable(gl.CULL_FACE);
-  canvas.dataset.engine = 'webgl-fractal-murmuration';
+  canvas.dataset.engine = 'webgl-neon-fractal-flow';
   canvas.dataset.interactionMode = 'particle-trail-curl-wake';
   canvas.dataset.particleTrailHoldSeconds = '8';
   canvas.dataset.particleTrailFadeSeconds = '6';
   canvas.dataset.mobileTouchMode = 'tap-particles-pan-scroll';
-  canvas.dataset.brightnessMode = 'banner-spectrum-wave-glints';
-  canvas.dataset.figureMode = 'murmuration-curl-collectives';
+  canvas.dataset.brightnessMode = 'neon-blue-red-cyan-wave';
+  canvas.dataset.figureMode = 'none';
   canvas.dataset.fractalOctaves = 'responsive-two-to-three';
   canvas.dataset.sampleOrder = 'golden-coprime-stride';
   canvas.dataset.qualityTier = 'adaptive';
-  canvas.dataset.mobileChoreography = 'gather-split-counterturn-reach-recohere';
-  canvas.dataset.mobileCollectives = 'three-asymmetric-lobes';
+  canvas.dataset.mobileChoreography = 'none';
+  canvas.dataset.mobileCollectives = 'disabled';
   canvas.dataset.desktopCycleSeconds = String(desktopCycleSeconds);
   canvas.dataset.mobileCycleSeconds = String(mobileCycleSeconds);
   canvas.dataset.mobileClock = 'visibility-local';
