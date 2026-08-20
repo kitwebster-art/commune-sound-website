@@ -376,6 +376,24 @@
   pointer-events: none;
 }
 
+html[data-portal-background="velvet-interference"] .portal-static-field {
+  background:
+    repeating-radial-gradient(ellipse at 42% 34%, rgba(210, 92, 255, 0.12) 0 2px, transparent 3px 13px),
+    radial-gradient(ellipse 72% 66% at 34% 42%, rgba(255, 62, 198, 0.2), transparent 72%),
+    radial-gradient(ellipse 64% 72% at 76% 62%, rgba(74, 225, 255, 0.16), transparent 76%),
+    #03020d;
+}
+
+html[data-portal-background="holographic-grain"] .portal-static-field {
+  background:
+    radial-gradient(circle at 22% 26%, rgba(255, 233, 247, 0.08) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 68% 72%, rgba(74, 225, 255, 0.07) 0 1px, transparent 1.5px),
+    radial-gradient(ellipse 82% 66% at 36% 42%, rgba(255, 62, 198, 0.22), transparent 76%),
+    radial-gradient(ellipse 70% 82% at 78% 64%, rgba(74, 225, 255, 0.14), transparent 78%),
+    #03020a;
+  background-size: 7px 7px, 11px 11px, auto, auto, auto;
+}
+
 @media (max-width: 700px) {
   .portal-field {
     mix-blend-mode: normal;
