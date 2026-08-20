@@ -16,7 +16,7 @@ without changing `/portal/` or the live homepage.
   texture through every section, zero horizontal overflow at 390 pixels.
 - Allowed divergence: each option changes the field structure, surface scale and
   highlight behaviour while retaining the same page content and image grade.
-- Frame budget: 17 ms desktop, 24 ms mobile. The fragment field renders at 0.78
+- Frame budget: 17 ms desktop, 24 ms mobile. The fragment field renders at 0.70
   desktop scale and 0.66 mobile scale.
 
 ## Field bundle
