@@ -1,8 +1,8 @@
 (() => {
-  const VERSION = 'portal-study-1.6.1';
+  const VERSION = 'portal-study-1.7.0';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
-  const DEBUG_MODES = Object.freeze({ final: 0, density: 1, volume: 2, depth: 3, 'no-post': 4, liquid: 5, contrast: 6 });
+  const DEBUG_MODES = Object.freeze({ final: 0, density: 1, volume: 2, depth: 3, 'no-post': 4, liquid: 5, contrast: 6, 'logo-edges': 7, 'logo-depth': 8 });
   const debugName = DEBUG_MODES[params.get('debug')] === undefined ? 'final' : params.get('debug');
   const debugMode = DEBUG_MODES[debugName];
   const fixedTime = Number.parseFloat(params.get('time'));
@@ -31,10 +31,9 @@
   };
 
   const installImageDepth = () => {
-    const logo = document.querySelector('[data-particle-logo]');
     const venue = document.querySelector('[data-particle-venue]');
-    if (!(logo instanceof HTMLImageElement) || !(venue instanceof HTMLImageElement)) {
-      throw new Error('Portal image anchors missing');
+    if (!(venue instanceof HTMLImageElement)) {
+      throw new Error('Portal venue anchor missing');
     }
 
     const createEcho = (source, className) => {
@@ -48,13 +47,8 @@
       return echo;
     };
 
-    const logoFar = createEcho(logo, 'portal-wordmark-echo portal-wordmark-echo--far');
-    const logoNear = createEcho(logo, 'portal-wordmark-echo portal-wordmark-echo--near');
-    logo.before(logoFar, logoNear);
-
     const venueEcho = createEcho(venue, 'portal-venue-echo');
     venue.before(venueEcho);
-    logo.closest('.wordmark-banner')?.classList.add('portal-image-depth');
     venue.closest('.venue-photo')?.classList.add('portal-image-depth');
     document.documentElement.classList.add('portal-image-depth-ready');
   };
@@ -102,11 +96,11 @@
 
     const canvas = document.createElement('canvas');
     canvas.className = 'portal-field';
-    canvas.dataset.portalField = 'full-frame-volumetric-shared-flow';
+    canvas.dataset.portalField = 'full-frame-liquid-chrome';
     canvas.dataset.seed = seed.toFixed(2);
     canvas.dataset.debugMode = debugName;
     canvas.dataset.backend = 'webgl-fragment-plane';
-    canvas.dataset.referenceMechanism = 'unified-iridescent-volume|projected-particle-depth|open-liquid-glass-folds';
+    canvas.dataset.referenceMechanism = 'shared-low-frequency-warp|marbled-phase|specular-edge|particle-wordmark';
     canvas.setAttribute('aria-hidden', 'true');
     realtimeVignette.after(canvas);
 
@@ -231,118 +225,51 @@
         vec2 p = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / min(u_resolution.x, u_resolution.y);
         float aspect = u_resolution.x / u_resolution.y;
         float portrait = 1.0 - smoothstep(0.72, 0.92, aspect);
-        p.y -= mix(0.02, -0.10, portrait);
+        p.y -= mix(0.02, -0.08, portrait);
         vec2 pointer = (u_pointer - 0.5) * vec2(u_resolution.x / u_resolution.y, 1.0);
         vec2 parallax = pointer * u_pointer_energy;
-        p -= parallax * 0.018;
+        p -= parallax * 0.028;
 
-        float reveal = mix(0.36, 1.0, smoothstep(0.015, 0.28, u_progress));
         vec3 hot_pink = vec3(1.0, 0.045, 0.62);
         vec3 violet = vec3(0.32, 0.075, 1.0);
         vec3 cyan = vec3(0.12, 0.82, 1.0);
         vec3 pearl = vec3(1.0, 0.84, 0.96);
-        vec3 far_colour = vec3(0.0);
-        vec3 near_colour = vec3(0.0);
-        float far_alpha = 0.0;
-        float near_alpha = 0.0;
-        float density_sum = 0.0;
-        float depth_sum = 0.0;
-
-        for (int step_index = 0; step_index < 10; step_index++) {
-          float layer = (float(step_index) + 0.5) / 10.0;
-          float z = mix(-1.35, 1.35, layer);
-          float perspective = 1.0 + z * 0.18;
-          vec2 sample_p = p / perspective;
-          sample_p += parallax * mix(-0.19, 0.24, layer);
-          sample_p = rotate2d(sample_p, z * 0.27 + u_time * 0.014);
-          vec3 q = vec3(sample_p * mix(1.06, 1.28, portrait), z);
-          q.xy += vec2(z * 0.12, -z * 0.055);
-
-          float flow = field3d(q + vec3(0.0, 0.0, u_seed * 0.017));
-          float angle = atan(q.y, q.x);
-          float radial = length(q.xy * vec2(0.74, 1.12));
-          float plume = smoothstep(0.31, 0.68, flow)
-            * (1.0 - smoothstep(0.38, 2.32, radial));
-          float filament_field = fbm_fast(rotate2d(q.xy, z * 0.8) * 4.8 + vec2(z * 1.8, -u_time * 0.12));
-          float filaments = pow(smoothstep(0.46, 0.73, filament_field), 4.0)
-            * pow(smoothstep(0.24, 0.64, flow), 2.0)
-            * (1.0 - smoothstep(0.24, 2.05, radial));
-          float diagonal_coordinate = q.y * 0.68 + q.x * 0.22
-            + sin(q.x * 1.35 - z * 1.7 + u_time * 0.055) * 0.3;
-          float stream = (1.0 - smoothstep(0.08, 0.58, abs(diagonal_coordinate)))
-            * smoothstep(0.27, 0.6, flow) * 0.78;
-          float haze = smoothstep(0.22, 0.64, flow) * (1.0 - smoothstep(0.55, 2.55, radial));
-          float density = clamp(plume * 0.76 + filaments * 0.92 + stream * 0.86 + haze * 0.24, 0.0, 1.0);
-          density *= 0.205;
-
-          float colour_phase = smoothstep(0.34, 0.66, 0.5 + 0.5 * sin(angle * 1.35 - z * 2.2 + flow * 4.0 + u_time * 0.075));
-          vec3 layer_colour = mix(violet, hot_pink, colour_phase);
-          layer_colour = mix(layer_colour, cyan, filaments * 0.88 + max(z, 0.0) * 0.16);
-          layer_colour = mix(layer_colour, pearl, filaments * max(z, 0.0) * 0.52 + haze * smoothstep(0.5, 0.72, flow) * 0.16);
-          layer_colour *= mix(0.48, 1.32, layer);
-
-          if (step_index < 5) {
-            far_colour += (1.0 - far_alpha) * layer_colour * density;
-            far_alpha += (1.0 - far_alpha) * density;
-          } else {
-            near_colour += (1.0 - near_alpha) * layer_colour * density;
-            near_alpha += (1.0 - near_alpha) * density;
-          }
-          density_sum += density;
-          depth_sum += density * layer;
-        }
-
-        vec2 ambient_coordinate = rotate2d(p, -0.31);
-        float ambient_field = fbm(ambient_coordinate * 0.74 + vec2(u_time * 0.018, -u_time * 0.012));
-        float sweep = smoothstep(-1.3, 0.9, ambient_coordinate.x + ambient_coordinate.y * 0.48);
-        vec3 ambient_colour = mix(violet * 0.42, hot_pink * 0.36, smoothstep(0.38, 0.62, sweep)) * (0.28 + ambient_field * 0.62);
-        ambient_colour += cyan * pow(smoothstep(0.48, 0.76, ambient_field), 2.2) * 0.2;
-        float ambient_alpha = smoothstep(0.18, 0.65, ambient_field) * 0.5 + 0.09;
-
-        vec3 raw_colour = ambient_colour;
-        raw_colour += far_colour * 1.14;
-        raw_colour += near_colour * 1.28;
-
-        vec2 shadow_coordinate = rotate2d(p + parallax * 0.03, 0.41);
-        float shadow_macro = fbm_fast(
-          shadow_coordinate * 0.72 + vec2(-u_time * 0.008, u_time * 0.006)
+        vec2 warp_a = vec2(
+          fbm(p * 0.56 + vec2(u_time * 0.045, -u_time * 0.032) + u_seed * 0.013),
+          fbm(p * 0.56 + vec2(8.1 - u_time * 0.026, 3.7 + u_time * 0.045) + u_seed * 0.019)
         );
-        float shadow_wave = 0.5 + 0.5 * sin(
-          shadow_coordinate.x * 1.35 - shadow_coordinate.y * 0.62 + u_time * 0.012
+        vec2 q = p * mix(0.82, 0.92, portrait) + (warp_a - 0.5) * 1.15 + parallax * 0.08;
+        float primary = fbm(q * 1.12 - vec2(u_time * 0.014, u_time * 0.007));
+        float marble = 0.5 + 0.5 * sin(
+          q.x * 3.4 - q.y * 2.2 + primary * 8.8 + sin(q.y * 2.4) * 1.4
         );
-        float shadow_field = mix(shadow_macro, shadow_wave, 0.22);
-        float black_pockets = smoothstep(0.47, 0.69, shadow_field);
-        float centre_guard = smoothstep(0.12, 0.54, length(p * vec2(0.76, 1.0)));
-        black_pockets *= mix(0.42, 1.0, centre_guard);
-        raw_colour *= 1.0 - black_pockets * mix(0.76, 0.8, portrait);
+        float specular_edge = 1.0 - smoothstep(0.025, 0.14, abs(marble - 0.58));
+        float highlight = pow(specular_edge, 2.2);
 
-        vec2 liquid_p = p + parallax * 0.075;
-        float liquid_warp = fbm_fast(liquid_p * 0.92 + vec2(u_time * 0.018, -u_time * 0.012));
-        vec4 liquid_a = liquid_fold(liquid_p, -0.23, mix(0.11, 0.22, portrait), 0.4, 0.18, liquid_warp);
-        vec4 liquid_b = liquid_fold(liquid_p, 0.94, mix(0.38, 0.16, portrait), 2.1, 0.115, liquid_warp);
-        vec4 liquid_c = liquid_fold(liquid_p, 0.31, mix(-0.55, -0.74, portrait), 4.2, 0.21, liquid_warp);
-        vec3 liquid_colour = liquid_a.rgb + liquid_b.rgb + liquid_c.rgb;
-        float liquid_mask = clamp(liquid_a.a + liquid_b.a + liquid_c.a, 0.0, 0.62);
-        raw_colour *= 1.0 - liquid_mask * 0.11;
-        raw_colour += liquid_colour * mix(0.58, 0.45, portrait);
+        vec3 accent = mix(violet, hot_pink, smoothstep(0.08, 0.72, marble));
+        accent = mix(accent, cyan, smoothstep(0.68, 0.96, marble));
+        accent = mix(accent, pearl, pow(max(0.0, marble - 0.78) / 0.22, 3.0) * 0.58);
+        vec3 raw_colour = accent * (0.14 + marble * 0.5);
 
-        vec3 final_colour = raw_colour;
-        final_colour += near_colour * near_alpha * 0.28;
-        final_colour += far_colour * far_alpha * 0.08;
-        float vignette = 1.0 - smoothstep(1.0, 2.2, length(p));
-        final_colour *= 0.68 + vignette * 0.32;
+        float black_field = fbm(rotate2d(p * 0.42 + vec2(7.3, -2.6), 0.28) - vec2(u_time * 0.01, u_time * 0.006));
+        float black_pockets = smoothstep(0.48, 0.74, black_field);
+        float centre_guard = smoothstep(0.08, 0.56, length(p * vec2(0.72, 1.0)));
+        black_pockets *= mix(0.34, 1.0, centre_guard);
+        vec3 no_post = raw_colour * (1.0 - black_pockets * 0.8);
+        vec3 final_colour = no_post + vec3(0.88, 0.92, 1.0) * highlight * 0.92;
+        final_colour += accent * highlight * 0.12;
+        float vignette = 1.0 - smoothstep(0.76, 1.85, length(p));
+        final_colour *= 0.55 + vignette * 0.45;
 
-        if (u_debug == 1) final_colour = vec3(clamp(density_sum * 0.7, 0.0, 1.0));
-        if (u_debug == 2) final_colour = vec3(far_alpha, ambient_alpha, near_alpha);
-        if (u_debug == 3) final_colour = vec3(far_alpha, near_alpha, depth_sum / max(density_sum, 0.001));
-        if (u_debug == 4) final_colour = ambient_colour + far_colour * 1.14 + near_colour * 1.28;
-        if (u_debug == 5) final_colour = liquid_colour;
+        if (u_debug == 1) final_colour = vec3(primary, marble, highlight);
+        if (u_debug == 2) final_colour = vec3(warp_a, primary);
+        if (u_debug == 3) final_colour = vec3(marble);
+        if (u_debug == 4) final_colour = no_post;
+        if (u_debug == 5) final_colour = vec3(highlight);
         if (u_debug == 6) final_colour = vec3(1.0 - black_pockets);
+        if (u_debug == 7 || u_debug == 8) final_colour *= 0.2;
 
-        float volume_alpha = clamp(far_alpha * 0.72 + near_alpha + ambient_alpha, 0.0, 0.97);
-        float alpha = reveal * volume_alpha;
-        if (u_debug > 0) alpha = max(alpha, reveal * 0.92);
-        gl_FragColor = vec4(final_colour, alpha);
+        gl_FragColor = vec4(max(final_colour, 0.0), 0.97);
       }
     `;
 
@@ -577,13 +504,13 @@
     resize();
     updateProgress();
     canvas.dataset.webglStatus = 'rendering';
-    canvas.dataset.visualContract = 'continuous-iridescent-field|distributed-black-negative-space|no-central-void|no-closed-pill-shapes|projected-3d-particles|cool-toned-feathered-wordmark|mobile-composed';
-    canvas.dataset.liquidMechanism = 'open-flow-ribbons|shared-low-frequency-warp|rgb-dispersion|internal-caustic-bands|pointer-parallax';
+    canvas.dataset.visualContract = 'full-frame-liquid-chrome|distributed-black-negative-space|no-central-void|particle-only-wordmark|crisp-anchored-logo-edges|mobile-composed';
+    canvas.dataset.liquidMechanism = 'shared-low-frequency-warp|marbled-phase|specular-edge|pointer-parallax';
     canvas.dataset.contrastMechanism = 'shared-low-frequency-shadow-field|off-centre-black-pockets|centre-guard';
     canvas.dataset.liquidDivergence = 'stylised-screen-space-optics-not-physical-raytraced-transmission';
     canvas.dataset.debugModes = Object.keys(DEBUG_MODES).join('|');
     canvas.dataset.frameBudgetMs = compact ? '24' : '17';
-    canvas.dataset.parallaxMode = 'differential-volume|projected-particle-depth|chromatic-image-depth';
+    canvas.dataset.parallaxMode = 'liquid-field|projected-particle-depth|particle-wordmark-depth';
     document.documentElement.classList.add('portal-field-ready');
     requestAnimationFrame(render);
   };
@@ -595,6 +522,11 @@
       const source = new DOMParser().parseFromString(await response.text(), 'text/html');
       source.querySelectorAll('script').forEach((script) => script.remove());
       rewriteBodyAssets(source.body);
+      const sourceLogo = source.querySelector('[data-particle-logo]');
+      if (!(sourceLogo instanceof HTMLImageElement)) throw new Error('Portal source wordmark missing');
+      sourceLogo.removeAttribute('srcset');
+      sourceLogo.setAttribute('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1204" height="488" viewBox="0 0 1204 488"/%3E');
+      sourceLogo.classList.add('portal-wordmark-placeholder');
 
       const fragment = document.createDocumentFragment();
       [...source.body.children].forEach((child) => fragment.append(document.importNode(child, true)));
@@ -607,9 +539,12 @@
       document.body.classList.remove('portal-study-loading');
       document.documentElement.classList.add('portal-study-ready');
 
+      if (typeof window.installPortalParticleWordmark !== 'function') {
+        throw new Error('Particle wordmark renderer missing');
+      }
+      window.installPortalParticleWordmark({ seed });
       installImageDepth();
       installPortal();
-      await loadScript(`../commune-organism.js?v=commune-${SOURCE_VERSION}`);
       await loadScript(`../commune-realtime.js?v=commune-${SOURCE_VERSION}`);
       await loadScript('../commune-offer.js?v=commune-4.6.2');
       await loadScript('https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit');
