@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = 'portal-study-1.4.0';
+  const VERSION = 'portal-study-1.5.0';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
   const DEBUG_MODES = Object.freeze({ final: 0, density: 1, volume: 2, depth: 3, 'no-post': 4, liquid: 5 });
@@ -106,7 +106,7 @@
     canvas.dataset.seed = seed.toFixed(2);
     canvas.dataset.debugMode = debugName;
     canvas.dataset.backend = 'webgl-fragment-plane';
-    canvas.dataset.referenceMechanism = 'layered-volume|projected-particle-depth|prismatic-liquid-glass-shells';
+    canvas.dataset.referenceMechanism = 'unified-iridescent-volume|projected-particle-depth|open-liquid-glass-folds';
     canvas.setAttribute('aria-hidden', 'true');
     realtimeVignette.after(canvas);
 
@@ -197,41 +197,33 @@
         return broad * 0.68 + detail * 0.32;
       }
 
-      float sd_round_box(vec2 p, vec2 half_size, float radius) {
-        vec2 q = abs(p) - half_size + radius;
-        return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - radius;
-      }
+      vec4 liquid_fold(vec2 p, float rotation, float offset, float phase, float width, float shared_warp) {
+        vec2 q = rotate2d(p, rotation);
+        float centre = q.y
+          + sin(q.x * 1.28 + phase + u_time * 0.038) * 0.24
+          + sin(q.x * 0.57 - phase * 1.4 - u_time * 0.022) * 0.13
+          + (shared_warp - 0.5) * 0.24
+          - offset;
+        float sdf = abs(centre) - width;
+        float inside = 1.0 - smoothstep(-0.026, 0.035, sdf);
+        float magenta_edge = exp(-abs(sdf + 0.019) * 46.0);
+        float pearl_edge = exp(-abs(sdf) * 54.0);
+        float cyan_edge = exp(-abs(sdf - 0.019) * 46.0);
+        vec3 spectral_edge = vec3(magenta_edge, pearl_edge * 0.72 + cyan_edge * 0.22, cyan_edge);
 
-      vec4 liquid_lens(vec2 p, vec2 centre, vec2 half_size, float radius, float rotation, float phase) {
-        vec2 q = rotate2d(p - centre, rotation);
-        q.x += sin(q.y * 2.4 + u_time * 0.085 + phase) * 0.022;
-        q.y += sin(q.x * 2.1 - u_time * 0.065 + phase * 1.7) * 0.015;
+        float inner_rim = exp(-abs(sdf + 0.058) * 31.0) * inside;
+        float travelling_glint = exp(-abs(sdf + 0.024) * 68.0)
+          * (0.54 + 0.46 * sin(q.x * 1.7 - u_time * 0.07 + phase)) * inside;
+        float inner_coordinate = centre + sin(q.x * 1.9 + phase) * 0.052;
+        float caustic_a = exp(-abs(inner_coordinate + width * 0.34) * 31.0) * inside;
+        float caustic_b = exp(-abs(inner_coordinate - width * 0.21) * 38.0) * inside;
 
-        float sdf = sd_round_box(q, half_size, radius);
-        float inside = 1.0 - smoothstep(-0.015, 0.026, sdf);
-        float red_edge = exp(-abs(sd_round_box(q + vec2(0.018, 0.004), half_size, radius)) * 43.0);
-        float green_edge = exp(-abs(sd_round_box(q, half_size, radius)) * 48.0);
-        float blue_edge = exp(-abs(sd_round_box(q - vec2(0.018, 0.004), half_size, radius)) * 43.0);
-        vec3 spectral_edge = vec3(red_edge, green_edge, blue_edge);
-
-        float inner_rim = exp(-abs(sdf + 0.055) * 34.0) * inside;
-        float top_glint = exp(-abs(sdf + 0.022) * 74.0)
-          * smoothstep(-0.18, half_size.y, q.y) * inside;
-        float bowed = q.y + q.x * q.x * 1.62 + sin(q.x * 3.1 + phase) * 0.026;
-        float caustic_a = exp(-abs(bowed + half_size.y * 0.31) * 33.0) * inside;
-        float caustic_b = exp(-abs(bowed - half_size.y * 0.18) * 42.0) * inside;
-        float caustic_c = exp(-abs(q.y + q.x * q.x * 0.88 - half_size.y * 0.48) * 38.0) * inside;
-
-        vec3 rainbow_a = vec3(1.0, 0.055, 0.14) * caustic_a;
-        rainbow_a += vec3(1.0, 0.72, 0.02) * exp(-abs(bowed + half_size.y * 0.24) * 38.0) * inside;
-        rainbow_a += vec3(0.08, 1.0, 0.38) * exp(-abs(bowed + half_size.y * 0.17) * 40.0) * inside;
-        vec3 rainbow_b = vec3(0.05, 0.28, 1.0) * caustic_b;
-        rainbow_b += vec3(0.66, 0.08, 1.0) * caustic_c;
-
-        vec3 contribution = spectral_edge * 0.78;
-        contribution += vec3(0.98, 0.95, 0.9) * (inner_rim * 0.2 + top_glint * 0.58);
-        contribution += rainbow_a * 0.38 + rainbow_b * 0.34;
-        float optical_mask = inside * 0.15 + max(max(red_edge, green_edge), blue_edge) * 0.3;
+        vec3 contribution = spectral_edge * 0.68;
+        contribution += vec3(1.0, 0.88, 0.97) * (inner_rim * 0.18 + travelling_glint * 0.48);
+        contribution += vec3(1.0, 0.12, 0.68) * caustic_a * 0.24;
+        contribution += vec3(0.2, 0.88, 1.0) * caustic_b * 0.24;
+        contribution += vec3(0.74, 1.0, 0.24) * caustic_a * caustic_b * 0.22;
+        float optical_mask = inside * 0.11 + max(max(magenta_edge, pearl_edge), cyan_edge) * 0.25;
         return vec4(contribution, optical_mask);
       }
 
@@ -245,10 +237,10 @@
         p -= parallax * 0.018;
 
         float reveal = mix(0.36, 1.0, smoothstep(0.015, 0.28, u_progress));
-        vec3 red = vec3(1.0, 0.035, 0.16);
-        vec3 blue = vec3(0.055, 0.18, 1.0);
-        vec3 cyan = vec3(0.04, 0.86, 1.0);
-        vec3 cream = vec3(0.96, 0.84, 0.68);
+        vec3 hot_pink = vec3(1.0, 0.045, 0.62);
+        vec3 violet = vec3(0.32, 0.075, 1.0);
+        vec3 cyan = vec3(0.12, 0.82, 1.0);
+        vec3 pearl = vec3(1.0, 0.84, 0.96);
         vec3 far_colour = vec3(0.0);
         vec3 near_colour = vec3(0.0);
         float far_alpha = 0.0;
@@ -284,9 +276,9 @@
           density *= 0.205;
 
           float colour_phase = smoothstep(0.34, 0.66, 0.5 + 0.5 * sin(angle * 1.35 - z * 2.2 + flow * 4.0 + u_time * 0.075));
-          vec3 layer_colour = mix(blue, red, colour_phase);
+          vec3 layer_colour = mix(violet, hot_pink, colour_phase);
           layer_colour = mix(layer_colour, cyan, filaments * 0.88 + max(z, 0.0) * 0.16);
-          layer_colour = mix(layer_colour, cream, filaments * max(z, 0.0) * 0.52 + haze * smoothstep(0.5, 0.72, flow) * 0.16);
+          layer_colour = mix(layer_colour, pearl, filaments * max(z, 0.0) * 0.52 + haze * smoothstep(0.5, 0.72, flow) * 0.16);
           layer_colour *= mix(0.48, 1.32, layer);
 
           if (step_index < 5) {
@@ -303,7 +295,7 @@
         vec2 ambient_coordinate = rotate2d(p, -0.31);
         float ambient_field = fbm(ambient_coordinate * 0.74 + vec2(u_time * 0.018, -u_time * 0.012));
         float sweep = smoothstep(-1.3, 0.9, ambient_coordinate.x + ambient_coordinate.y * 0.48);
-        vec3 ambient_colour = mix(blue * 0.42, red * 0.36, smoothstep(0.38, 0.62, sweep)) * (0.28 + ambient_field * 0.62);
+        vec3 ambient_colour = mix(violet * 0.42, hot_pink * 0.36, smoothstep(0.38, 0.62, sweep)) * (0.28 + ambient_field * 0.62);
         ambient_colour += cyan * pow(smoothstep(0.48, 0.76, ambient_field), 2.2) * 0.2;
         float ambient_alpha = smoothstep(0.18, 0.65, ambient_field) * 0.5 + 0.09;
 
@@ -312,24 +304,14 @@
         raw_colour += near_colour * 1.28;
 
         vec2 liquid_p = p + parallax * 0.075;
-        vec2 lens_a_centre = mix(vec2(-0.72, 0.03), vec2(-0.45, 0.18), portrait);
-        vec2 lens_b_centre = mix(vec2(0.76, 0.08), vec2(0.47, -0.28), portrait);
-        vec2 lens_c_centre = mix(vec2(0.14, -0.68), vec2(0.02, 0.92), portrait);
-        vec2 lens_side_size = mix(vec2(0.29, 0.6), vec2(0.23, 0.54), portrait);
-        vec4 liquid_a = liquid_lens(liquid_p, lens_a_centre, lens_side_size, 0.25, -0.18, 0.4);
-        vec4 liquid_b = liquid_lens(liquid_p, lens_b_centre, lens_side_size * vec2(0.92, 1.08), 0.24, 0.16, 2.1);
-        vec4 liquid_c = liquid_lens(
-          liquid_p,
-          lens_c_centre,
-          mix(vec2(0.5, 0.24), vec2(0.3, 0.46), portrait),
-          mix(0.2, 0.26, portrait),
-          mix(-0.06, 0.03, portrait),
-          4.2
-        );
+        float liquid_warp = fbm_fast(liquid_p * 0.92 + vec2(u_time * 0.018, -u_time * 0.012));
+        vec4 liquid_a = liquid_fold(liquid_p, -0.23, mix(0.11, 0.22, portrait), 0.4, 0.18, liquid_warp);
+        vec4 liquid_b = liquid_fold(liquid_p, 0.94, mix(0.38, 0.16, portrait), 2.1, 0.115, liquid_warp);
+        vec4 liquid_c = liquid_fold(liquid_p, 0.31, mix(-0.55, -0.74, portrait), 4.2, 0.21, liquid_warp);
         vec3 liquid_colour = liquid_a.rgb + liquid_b.rgb + liquid_c.rgb;
         float liquid_mask = clamp(liquid_a.a + liquid_b.a + liquid_c.a, 0.0, 0.62);
-        raw_colour *= 1.0 - liquid_mask * 0.16;
-        raw_colour += liquid_colour * mix(0.62, 0.48, portrait);
+        raw_colour *= 1.0 - liquid_mask * 0.11;
+        raw_colour += liquid_colour * mix(0.58, 0.45, portrait);
 
         vec3 final_colour = raw_colour;
         final_colour += near_colour * near_alpha * 0.28;
@@ -403,12 +385,13 @@
       };
     })();
     const particlePalette = [
-      [36, 77, 255],
-      [33, 220, 255],
-      [255, 39, 77],
-      [245, 222, 194]
+      [255, 62, 198],
+      [119, 79, 255],
+      [74, 225, 255],
+      [206, 255, 104],
+      [255, 228, 246]
     ];
-    const particleCount = compact ? 180 : 320;
+    const particleCount = compact ? 150 : 260;
     const particles = Array.from({ length: particleCount }, (_, index) => ({
       x: seededRandom() * 2.0 - 1.0,
       y: seededRandom() * 2.0 - 1.0,
@@ -420,7 +403,7 @@
       colour: particlePalette[index % particlePalette.length]
     }));
     particleCanvas.dataset.particleCount = String(particleCount);
-    let renderScale = quality === 'low' ? 0.6 : 0.86;
+    let renderScale = quality === 'low' ? 0.56 : 0.74;
     let pointerX = 0.5;
     let pointerY = 0.5;
     let pointerTarget = 0;
@@ -580,8 +563,8 @@
     resize();
     updateProgress();
     canvas.dataset.webglStatus = 'rendering';
-    canvas.dataset.visualContract = 'full-viewport-volume|no-central-void|projected-3d-particles|prismatic-liquid-lenses|mobile-composed';
-    canvas.dataset.liquidMechanism = 'rounded-sdf-shells|rgb-dispersion|internal-caustic-bands|pointer-parallax';
+    canvas.dataset.visualContract = 'continuous-iridescent-field|no-central-void|no-closed-pill-shapes|projected-3d-particles|feathered-wordmark|mobile-composed';
+    canvas.dataset.liquidMechanism = 'open-flow-ribbons|shared-low-frequency-warp|rgb-dispersion|internal-caustic-bands|pointer-parallax';
     canvas.dataset.liquidDivergence = 'stylised-screen-space-optics-not-physical-raytraced-transmission';
     canvas.dataset.debugModes = Object.keys(DEBUG_MODES).join('|');
     canvas.dataset.frameBudgetMs = compact ? '24' : '17';
