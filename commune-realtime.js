@@ -433,14 +433,14 @@
     || !formTitleMaskContext
   ) return;
 
-  const palette = [13, 30, 167, 201, 210];
+  const palette = [352, 4, 220, 193, 315];
   const bannerParticlePalette = [
-    { hue: 13, saturation: 71, lightness: 49 },
-    { hue: 33, saturation: 62, lightness: 86 },
-    { hue: 29, saturation: 53, lightness: 73 },
-    { hue: 167, saturation: 4, lightness: 57 },
-    { hue: 201, saturation: 22, lightness: 43 },
-    { hue: 210, saturation: 53, lightness: 28 },
+    { hue: 352, saturation: 100, lightness: 56 },
+    { hue: 4, saturation: 100, lightness: 61 },
+    { hue: 220, saturation: 100, lightness: 60 },
+    { hue: 193, saturation: 100, lightness: 57 },
+    { hue: 315, saturation: 100, lightness: 61 },
+    { hue: 210, saturation: 38, lightness: 92 },
   ];
   const compactTitlePalette = [1, 1, 2, 0, 1, 4];
   const particles = [];
@@ -706,7 +706,7 @@
     formTitleParticles.length = targets.length;
     formTitleCanvas.dataset.maskCandidates = String(candidates.length);
     formTitleCanvas.dataset.particles = String(formTitleParticles.length);
-    formTitleCanvas.dataset.palette = 'd44f24-f5dec2-e1b791-8e9795-567486-22486e';
+    formTitleCanvas.dataset.palette = 'ff003d-ff301f-0057ff-00dfff-ff2bd6-eff8ff';
     const ready = formTitleParticles.length > 80;
     formTitleCanvas.dataset.ready = String(ready);
     document.documentElement.classList.toggle('form-title-particles-ready', ready);
@@ -1554,7 +1554,7 @@
 
         const edgeParticleCount = 1;
         const edgeHue = mode === 'venue'
-          ? (centreU < 0.48 ? 24 + depth * 10 : 194 - depth * 12)
+          ? (centreU < 0.48 ? 354 + depth * 8 : 220 - depth * 16)
           : palette[(row + column) % palette.length];
         for (let edgeParticle = 0; edgeParticle < edgeParticleCount; edgeParticle += 1) {
           const edgeSeed = hashNoise(
