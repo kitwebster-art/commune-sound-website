@@ -1,9 +1,15 @@
 :root {
   --portal-progress: 0;
-  --portal-red: #ff274d;
-  --portal-blue: #244dff;
-  --portal-cyan: #21dcff;
-  --portal-cream: #f5dec2;
+  --orange: #ff3ec6;
+  --pink: #b64dff;
+  --cyan: #4ae1ff;
+  --banner-orange: #ff69ce;
+  --banner-pink: #d255ff;
+  --banner-blue: #694cff;
+  --banner-cyan: #4ae1ff;
+  --banner-amber: #d3ff7d;
+  --banner-slate: #a4dff1;
+  --banner-cream: #ffe9f7;
   --portal-parallax-x: 0px;
   --portal-parallax-y: 0px;
 }
@@ -21,8 +27,8 @@
   place-items: center;
   color: rgba(235, 245, 255, 0.7);
   background:
-    radial-gradient(ellipse 64% 72% at 42% 38%, rgba(36, 77, 255, 0.2), transparent 78%),
-    radial-gradient(ellipse 58% 30% at 58% 53%, rgba(255, 39, 77, 0.13), transparent 72%),
+    radial-gradient(ellipse 64% 72% at 42% 38%, rgba(119, 79, 255, 0.2), transparent 78%),
+    radial-gradient(ellipse 58% 30% at 58% 53%, rgba(255, 62, 198, 0.13), transparent 72%),
     #010104;
   font: 800 10px/1.2 Inter, sans-serif;
   letter-spacing: 0.24em;
@@ -91,15 +97,19 @@
 
 .portal-image-depth-ready .wordmark-banner img[data-particle-logo] {
   z-index: 3;
-  opacity: max(0.56, var(--logo-image-opacity));
+  opacity: max(0.66, var(--logo-image-opacity));
+  -webkit-mask-image: radial-gradient(ellipse 68% 70% at 50% 50%, #000 42%, rgba(0, 0, 0, 0.9) 56%, rgba(0, 0, 0, 0.18) 70%, transparent 78%);
+  mask-image: radial-gradient(ellipse 68% 70% at 50% 50%, #000 42%, rgba(0, 0, 0, 0.9) 56%, rgba(0, 0, 0, 0.18) 70%, transparent 78%);
+  mix-blend-mode: screen;
   filter:
     saturate(var(--logo-flux-saturate))
     saturate(1.08)
     contrast(var(--logo-flux-contrast))
-    contrast(1.06)
+    contrast(1.34)
+    brightness(0.94)
     blur(var(--logo-flux-blur))
-    drop-shadow(-12px 4px 24px rgba(36, 77, 255, 0.2))
-    drop-shadow(12px -4px 24px rgba(255, 39, 77, 0.18));
+    drop-shadow(-12px 4px 24px rgba(119, 79, 255, 0.2))
+    drop-shadow(12px -4px 24px rgba(255, 62, 198, 0.2));
 }
 
 .portal-wordmark-echo {
@@ -145,6 +155,7 @@
 }
 
 .portal-study-ready .current-event::before {
+  border: 0;
   background: rgba(0, 0, 0, 0.08);
   box-shadow:
     inset 0 0 90px rgba(0, 0, 0, 0.12),
@@ -155,48 +166,37 @@
   position: relative;
   overflow: hidden;
   border: 2px solid transparent;
-  border-radius: clamp(30px, 4.6vw, 48px);
+  border-radius: clamp(12px, 1.8vw, 22px);
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.065), rgba(0, 0, 0, 0.76) 36%, rgba(4, 4, 11, 0.9)) padding-box,
     conic-gradient(
       from 205deg,
-      rgba(36, 77, 255, 0.88),
-      rgba(33, 220, 255, 0.86),
-      rgba(122, 255, 92, 0.72),
-      rgba(255, 208, 43, 0.8),
-      rgba(255, 39, 77, 0.9),
-      rgba(177, 51, 255, 0.88),
-      rgba(36, 77, 255, 0.88)
+      rgba(119, 79, 255, 0.88),
+      rgba(74, 225, 255, 0.86),
+      rgba(206, 255, 104, 0.72),
+      rgba(255, 228, 246, 0.82),
+      rgba(255, 62, 198, 0.9),
+      rgba(182, 77, 255, 0.88),
+      rgba(119, 79, 255, 0.88)
     ) border-box;
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.4),
-    inset 18px 0 42px rgba(36, 77, 255, 0.08),
-    inset -18px 0 42px rgba(255, 39, 77, 0.08),
+    inset 18px 0 42px rgba(119, 79, 255, 0.08),
+    inset -18px 0 42px rgba(255, 62, 198, 0.08),
     0 28px 90px rgba(0, 0, 0, 0.3),
     0 0 34px rgba(108, 80, 255, 0.11);
   -webkit-backdrop-filter: blur(15px) saturate(1.35);
   backdrop-filter: blur(15px) saturate(1.35);
 }
 
-.portal-study-ready .event-offer::before {
-  position: absolute;
-  inset: 7px 14% auto;
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.84), transparent);
-  box-shadow: 0 9px 26px rgba(255, 255, 255, 0.18);
-  content: "";
-  pointer-events: none;
-}
-
 .portal-study-ready .button.primary.event-ticket-button,
 .portal-study-ready .signup-hero .button.primary,
 .portal-study-ready .mobile-join-dock {
-  border-radius: 999px;
+  border-radius: 6px;
   box-shadow:
     0 16px 44px rgba(0, 0, 0, 0.34),
-    -4px 0 18px rgba(36, 77, 255, 0.14),
-    4px 0 18px rgba(255, 39, 77, 0.13);
+    -4px 0 18px rgba(119, 79, 255, 0.14),
+    4px 0 18px rgba(255, 62, 198, 0.13);
 }
 
 .portal-study-ready .event-kicker,
@@ -233,8 +233,8 @@
     contrast(var(--venue-flux-contrast))
     contrast(1.08)
     blur(var(--venue-flux-blur))
-    drop-shadow(-18px 5px 34px rgba(36, 77, 255, 0.25))
-    drop-shadow(18px -5px 34px rgba(255, 39, 77, 0.22));
+    drop-shadow(-18px 5px 34px rgba(119, 79, 255, 0.24))
+    drop-shadow(18px -5px 34px rgba(255, 62, 198, 0.22));
 }
 
 .portal-venue-echo {
@@ -269,10 +269,10 @@
   overflow: hidden;
   padding: 0 clamp(20px, 3.2vw, 38px);
   border: 1px solid transparent;
-  border-radius: clamp(26px, 4vw, 46px);
+  border-radius: clamp(12px, 1.8vw, 22px);
   background:
-    linear-gradient(150deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.38) 48%, rgba(36, 77, 255, 0.045)) padding-box,
-    linear-gradient(105deg, rgba(255, 39, 77, 0.34), rgba(255, 255, 255, 0.18) 36%, rgba(33, 220, 255, 0.35) 72%, rgba(118, 54, 255, 0.4)) border-box;
+    linear-gradient(150deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.38) 48%, rgba(119, 79, 255, 0.045)) padding-box,
+    linear-gradient(105deg, rgba(255, 62, 198, 0.34), rgba(255, 255, 255, 0.18) 36%, rgba(74, 225, 255, 0.35) 72%, rgba(119, 79, 255, 0.4)) border-box;
   box-shadow:
     inset 0 1px rgba(255, 255, 255, 0.14),
     0 24px 80px rgba(0, 0, 0, 0.18);
@@ -282,10 +282,10 @@
 
 .portal-study-ready .signup-form {
   border: 1px solid transparent;
-  border-radius: clamp(28px, 4vw, 44px);
+  border-radius: clamp(12px, 1.8vw, 22px);
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(4, 4, 12, 0.66) 58%, rgba(0, 0, 0, 0.8)) padding-box,
-    linear-gradient(118deg, rgba(255, 62, 111, 0.56), rgba(255, 227, 176, 0.38) 30%, rgba(50, 228, 255, 0.48) 66%, rgba(78, 62, 255, 0.62)) border-box;
+    linear-gradient(118deg, rgba(255, 62, 198, 0.56), rgba(255, 228, 246, 0.38) 30%, rgba(74, 225, 255, 0.48) 66%, rgba(119, 79, 255, 0.62)) border-box;
   box-shadow:
     inset 0 1px rgba(255, 255, 255, 0.18),
     0 30px 100px rgba(0, 0, 0, 0.28),
@@ -295,7 +295,13 @@
 }
 
 .portal-study-ready .signup-form input {
-  border-radius: 999px;
+  border-radius: 6px;
+}
+
+.portal-study-ready .philosophy,
+.portal-study-ready .site-faq,
+.portal-study-ready .signup-hero {
+  border-top: 0;
 }
 
 .portal-study-ready .signup-hero {
@@ -305,7 +311,7 @@
 }
 
 .portal-study-ready .wordmark-banner::after {
-  opacity: calc(0.32 + var(--portal-progress) * 0.34);
+  display: none;
 }
 
 .portal-debug-hud {
@@ -315,7 +321,7 @@
   bottom: 12px;
   max-width: min(340px, calc(100vw - 24px));
   padding: 10px 12px;
-  border: 1px solid rgba(33, 220, 255, 0.28);
+  border: 1px solid rgba(74, 225, 255, 0.28);
   color: rgba(230, 245, 255, 0.86);
   background: rgba(0, 2, 8, 0.82);
   font: 700 9px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -329,9 +335,9 @@
   z-index: 0;
   inset: 0;
   background:
-    radial-gradient(ellipse 74% 64% at 45% 38%, rgba(33, 220, 255, 0.11), rgba(36, 77, 255, 0.09) 46%, transparent 100%),
-    radial-gradient(ellipse 76% 34% at 62% 48%, rgba(255, 39, 77, 0.12), transparent 74%),
-    radial-gradient(ellipse 45% 80% at 24% 72%, rgba(36, 77, 255, 0.1), transparent 76%);
+    radial-gradient(ellipse 74% 64% at 45% 38%, rgba(74, 225, 255, 0.11), rgba(119, 79, 255, 0.09) 46%, transparent 100%),
+    radial-gradient(ellipse 76% 34% at 62% 48%, rgba(255, 62, 198, 0.12), transparent 74%),
+    radial-gradient(ellipse 45% 80% at 24% 72%, rgba(119, 79, 255, 0.1), transparent 76%);
   pointer-events: none;
 }
 
@@ -351,7 +357,7 @@
 
   .portal-study-ready .event-offer {
     border-width: 1px;
-    border-radius: 30px;
+    border-radius: 14px;
     -webkit-backdrop-filter: blur(9px) saturate(1.22);
     backdrop-filter: blur(9px) saturate(1.22);
   }
@@ -363,15 +369,16 @@
   }
 
   .portal-image-depth-ready .wordmark-banner img[data-particle-logo] {
-    opacity: max(0.64, var(--logo-image-opacity));
+    opacity: max(0.7, var(--logo-image-opacity));
     filter:
       saturate(var(--logo-flux-saturate))
       saturate(1.04)
       contrast(var(--logo-flux-contrast))
-      contrast(1.08)
+      contrast(1.34)
+      brightness(0.94)
       blur(var(--logo-flux-blur))
-      drop-shadow(-7px 3px 16px rgba(36, 77, 255, 0.2))
-      drop-shadow(7px -3px 16px rgba(255, 39, 77, 0.18));
+      drop-shadow(-7px 3px 16px rgba(119, 79, 255, 0.2))
+      drop-shadow(7px -3px 16px rgba(255, 62, 198, 0.2));
   }
 
   .portal-wordmark-echo--far {
@@ -392,8 +399,8 @@
       contrast(var(--venue-flux-contrast))
       contrast(1.08)
       blur(var(--venue-flux-blur))
-      drop-shadow(-10px 3px 22px rgba(36, 77, 255, 0.22))
-      drop-shadow(10px -3px 22px rgba(255, 39, 77, 0.2));
+      drop-shadow(-10px 3px 22px rgba(119, 79, 255, 0.22))
+      drop-shadow(10px -3px 22px rgba(255, 62, 198, 0.2));
   }
 
   .portal-venue-echo {
@@ -411,7 +418,7 @@
 
   .portal-study-ready .site-faq-shell,
   .portal-study-ready .signup-form {
-    border-radius: 28px;
+    border-radius: 14px;
     -webkit-backdrop-filter: blur(8px) saturate(1.12);
     backdrop-filter: blur(8px) saturate(1.12);
   }
