@@ -1,8 +1,8 @@
 (() => {
-  const VERSION = 'portal-study-1.2.0';
+  const VERSION = 'portal-study-1.3.0';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
-  const DEBUG_MODES = Object.freeze({ final: 0, density: 1, core: 2, depth: 3, 'no-post': 4 });
+  const DEBUG_MODES = Object.freeze({ final: 0, density: 1, volume: 2, depth: 3, 'no-post': 4 });
   const debugName = DEBUG_MODES[params.get('debug')] === undefined ? 'final' : params.get('debug');
   const debugMode = DEBUG_MODES[debugName];
   const fixedTime = Number.parseFloat(params.get('time'));
@@ -102,11 +102,11 @@
 
     const canvas = document.createElement('canvas');
     canvas.className = 'portal-field';
-    canvas.dataset.portalField = 'volumetric-dark-mass-shared-flow';
+    canvas.dataset.portalField = 'full-frame-volumetric-shared-flow';
     canvas.dataset.seed = seed.toFixed(2);
     canvas.dataset.debugMode = debugName;
     canvas.dataset.backend = 'webgl-fragment-plane';
-    canvas.dataset.referenceMechanism = 'irregular-dark-mass-layered-volumetric-flow';
+    canvas.dataset.referenceMechanism = 'layered-volumetric-field-with-projected-particle-depth';
     canvas.setAttribute('aria-hidden', 'true');
     realtimeVignette.after(canvas);
 
@@ -197,20 +197,6 @@
         return broad * 0.68 + detail * 0.32;
       }
 
-      float dark_mass_sdf(vec2 p, float scale) {
-        vec2 q = rotate2d(p - vec2(-0.08, -0.035), -0.24);
-        float broad = length(q * vec2(0.66, 1.26)) - scale;
-        float shoulder = length((q - vec2(-scale * 0.68, scale * 0.22)) * vec2(0.88, 1.42)) - scale * 0.76;
-        float lower = length((q - vec2(scale * 0.48, -scale * 0.36)) * vec2(0.8, 1.08)) - scale * 0.72;
-        float wing = length((q - vec2(scale * 0.72, scale * 0.28)) * vec2(1.22, 0.84)) - scale * 0.48;
-        float union_shape = min(min(broad, shoulder), min(lower, wing));
-        float bite = length((q - vec2(scale * 0.44, scale * 0.46)) * vec2(0.9, 1.36)) - scale * 0.31;
-        union_shape = max(union_shape, -bite);
-        float boundary = fbm(q * 1.85 + vec2(u_seed * 0.031, -u_time * 0.018)) - 0.5;
-        float folds = sin(q.x * 4.2 - q.y * 3.1 + boundary * 4.0) * 0.045;
-        return union_shape + boundary * 0.19 + folds;
-      }
-
       void main() {
         vec2 p = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / min(u_resolution.x, u_resolution.y);
         float aspect = u_resolution.x / u_resolution.y;
@@ -221,12 +207,6 @@
         p -= parallax * 0.018;
 
         float reveal = mix(0.36, 1.0, smoothstep(0.015, 0.28, u_progress));
-        float mass_scale = mix(0.39, 0.68, smoothstep(0.0, 0.46, u_progress));
-        mass_scale *= mix(1.0, 0.78, portrait);
-        float core_sdf = dark_mass_sdf(p, mass_scale);
-        float core = 1.0 - smoothstep(-0.045, 0.055, core_sdf);
-        float edge = 1.0 - smoothstep(0.0, 0.17, abs(core_sdf));
-
         vec3 red = vec3(1.0, 0.035, 0.16);
         vec3 blue = vec3(0.055, 0.18, 1.0);
         vec3 cyan = vec3(0.04, 0.86, 1.0);
@@ -251,28 +231,24 @@
           float flow = field3d(q + vec3(0.0, 0.0, u_seed * 0.017));
           float angle = atan(q.y, q.x);
           float radial = length(q.xy * vec2(0.74, 1.12));
-          float shell_radius = mass_scale * (1.02 + z * 0.12)
-            + (flow - 0.5) * 0.38
-            + sin(angle * 3.0 - z * 2.7 + u_time * 0.11) * 0.075;
-          float shell = (1.0 - smoothstep(0.045, 0.32, abs(radial - shell_radius)))
-            * smoothstep(0.24, 0.62, flow);
           float plume = smoothstep(0.31, 0.68, flow)
-            * (1.0 - smoothstep(mass_scale * 0.52, mass_scale + 1.7, radial));
+            * (1.0 - smoothstep(0.38, 2.32, radial));
           float filament_field = fbm_fast(rotate2d(q.xy, z * 0.8) * 4.8 + vec2(z * 1.8, -u_time * 0.12));
           float filaments = pow(smoothstep(0.46, 0.73, filament_field), 4.0)
             * pow(smoothstep(0.24, 0.64, flow), 2.0)
-            * (1.0 - smoothstep(mass_scale * 0.38, mass_scale + 1.5, radial));
+            * (1.0 - smoothstep(0.24, 2.05, radial));
           float diagonal_coordinate = q.y * 0.68 + q.x * 0.22
             + sin(q.x * 1.35 - z * 1.7 + u_time * 0.055) * 0.3;
           float stream = (1.0 - smoothstep(0.08, 0.58, abs(diagonal_coordinate)))
             * smoothstep(0.27, 0.6, flow) * 0.78;
-          float density = clamp(shell * (0.18 + flow * 0.66) + plume * 0.68 + filaments * 0.9 + stream, 0.0, 1.0);
-          density *= 0.22;
+          float haze = smoothstep(0.22, 0.64, flow) * (1.0 - smoothstep(0.55, 2.55, radial));
+          float density = clamp(plume * 0.76 + filaments * 0.92 + stream * 0.86 + haze * 0.24, 0.0, 1.0);
+          density *= 0.205;
 
           float colour_phase = smoothstep(0.34, 0.66, 0.5 + 0.5 * sin(angle * 1.35 - z * 2.2 + flow * 4.0 + u_time * 0.075));
           vec3 layer_colour = mix(blue, red, colour_phase);
           layer_colour = mix(layer_colour, cyan, filaments * 0.88 + max(z, 0.0) * 0.16);
-          layer_colour = mix(layer_colour, cream, filaments * max(z, 0.0) * 0.52 + shell * smoothstep(0.5, 0.72, flow) * 0.34);
+          layer_colour = mix(layer_colour, cream, filaments * max(z, 0.0) * 0.52 + haze * smoothstep(0.5, 0.72, flow) * 0.16);
           layer_colour *= mix(0.48, 1.32, layer);
 
           if (step_index < 5) {
@@ -294,16 +270,8 @@
         float ambient_alpha = smoothstep(0.18, 0.65, ambient_field) * 0.5 + 0.09;
 
         vec3 raw_colour = ambient_colour;
-        raw_colour += far_colour * 1.18 * (1.0 - core * 0.9);
-        raw_colour *= 1.0 - core * 0.93;
-        raw_colour += vec3(0.0008, 0.0012, 0.004) * core;
-        raw_colour += near_colour * 1.24 * mix(0.2, 1.0, 1.0 - core * 0.78);
-        vec2 rim_direction = normalize(rotate2d(p - vec2(-0.08, -0.035), -0.24) + vec2(0.0001));
-        float rim_light = smoothstep(-0.35, 0.88, dot(rim_direction, normalize(vec2(-0.72, 0.69))));
-        float rim_shadow = 1.0 - rim_light;
-        raw_colour *= 1.0 - edge * rim_shadow * 0.1;
-        raw_colour += mix(cyan, cream, rim_light * 0.62) * edge * rim_light * 0.22;
-        raw_colour += red * edge * rim_shadow * 0.075;
+        raw_colour += far_colour * 1.14;
+        raw_colour += near_colour * 1.28;
 
         vec3 final_colour = raw_colour;
         final_colour += near_colour * near_alpha * 0.28;
@@ -312,12 +280,12 @@
         final_colour *= 0.68 + vignette * 0.32;
 
         if (u_debug == 1) final_colour = vec3(clamp(density_sum * 0.7, 0.0, 1.0));
-        if (u_debug == 2) final_colour = vec3(edge, core, max(0.0, core_sdf));
+        if (u_debug == 2) final_colour = vec3(far_alpha, ambient_alpha, near_alpha);
         if (u_debug == 3) final_colour = vec3(far_alpha, near_alpha, depth_sum / max(density_sum, 0.001));
         if (u_debug == 4) final_colour = raw_colour;
 
         float volume_alpha = clamp(far_alpha * 0.72 + near_alpha + ambient_alpha, 0.0, 0.97);
-        float alpha = reveal * max(volume_alpha, core * 0.985);
+        float alpha = reveal * volume_alpha;
         if (u_debug > 0) alpha = max(alpha, reveal * 0.92);
         gl_FragColor = vec4(final_colour, alpha);
       }
@@ -355,6 +323,44 @@
     const quality = requestedQuality === 'low' || requestedQuality === 'high'
       ? requestedQuality
       : compact || constrained ? 'low' : 'high';
+    const particleCanvas = document.createElement('canvas');
+    particleCanvas.className = 'portal-particle-depth';
+    particleCanvas.dataset.particleBackend = 'canvas2d-perspective';
+    particleCanvas.dataset.particleDepthPlanes = 'far|middle|near';
+    particleCanvas.dataset.particleMotion = 'projected-flow-trails';
+    particleCanvas.dataset.seed = seed.toFixed(2);
+    particleCanvas.setAttribute('aria-hidden', 'true');
+    canvas.after(particleCanvas);
+    const particleContext = particleCanvas.getContext('2d', { alpha: true });
+
+    const seededRandom = (() => {
+      let state = (Math.floor(seed * 1009) ^ 0x6d2b79f5) >>> 0;
+      return () => {
+        state += 0x6d2b79f5;
+        let value = state;
+        value = Math.imul(value ^ (value >>> 15), value | 1);
+        value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+        return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+      };
+    })();
+    const particlePalette = [
+      [36, 77, 255],
+      [33, 220, 255],
+      [255, 39, 77],
+      [245, 222, 194]
+    ];
+    const particleCount = compact ? 180 : 320;
+    const particles = Array.from({ length: particleCount }, (_, index) => ({
+      x: seededRandom() * 2.0 - 1.0,
+      y: seededRandom() * 2.0 - 1.0,
+      z: seededRandom(),
+      speed: 0.025 + seededRandom() * 0.055,
+      phase: seededRandom() * Math.PI * 2,
+      phase2: seededRandom() * Math.PI * 2,
+      size: 0.55 + seededRandom() * 1.45,
+      colour: particlePalette[index % particlePalette.length]
+    }));
+    particleCanvas.dataset.particleCount = String(particleCount);
     let renderScale = quality === 'low' ? 0.6 : 0.86;
     let pointerX = 0.5;
     let pointerY = 0.5;
@@ -374,6 +380,15 @@
       canvas.height = Math.max(1, Math.round(innerHeight * dpr));
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
+      if (particleContext) {
+        const particleDpr = Math.min(devicePixelRatio || 1, compact ? 1.2 : 1.5);
+        particleCanvas.width = Math.max(1, Math.round(innerWidth * particleDpr));
+        particleCanvas.height = Math.max(1, Math.round(innerHeight * particleDpr));
+        particleCanvas.style.width = `${innerWidth}px`;
+        particleCanvas.style.height = `${innerHeight}px`;
+        particleContext.setTransform(particleDpr, 0, 0, particleDpr, 0, 0);
+        particleCanvas.dataset.renderScale = particleDpr.toFixed(2);
+      }
       canvas.dataset.renderScale = dpr.toFixed(2);
       canvas.dataset.qualityTier = quality;
     };
@@ -392,6 +407,59 @@
       pointerX = event.clientX / Math.max(innerWidth, 1);
       pointerY = 1 - event.clientY / Math.max(innerHeight, 1);
       pointerTarget = event.pointerType === 'touch' ? 0.7 : 0.38;
+    };
+
+    const projectParticle = (particle, seconds, offset = 0) => {
+      const travel = particle.z + seconds * particle.speed + offset;
+      const depthPhase = travel - Math.floor(travel);
+      const depth = 7.4 - depthPhase * 6.05;
+      const perspective = 1 / depth;
+      const flowTime = seconds * 0.16;
+      const bendX = Math.sin(particle.y * 2.8 + particle.phase + flowTime) * (0.18 + depthPhase * 0.34);
+      const bendY = Math.cos(particle.x * 2.2 + particle.phase2 - flowTime * 0.78) * (0.14 + depthPhase * 0.28);
+      const aspect = innerWidth / Math.max(innerHeight, 1);
+      const worldX = particle.x * (2.8 + depth * 0.52) * aspect + bendX;
+      const worldY = particle.y * (2.6 + depth * 0.5) + bendY;
+      const pointerDepth = (depthPhase - 0.5) * pointerEnergy;
+      return {
+        x: innerWidth * 0.5 + (worldX * perspective + (pointerX - 0.5) * pointerDepth * 0.42) * innerHeight * 0.5,
+        y: innerHeight * 0.5 - (worldY * perspective + (pointerY - 0.5) * pointerDepth * 0.34) * innerHeight * 0.5,
+        depthPhase,
+        wrapped: depthPhase < 0.018
+      };
+    };
+
+    const drawParticles = (seconds) => {
+      if (!particleContext) return;
+      particleContext.clearRect(0, 0, innerWidth, innerHeight);
+      particleContext.globalCompositeOperation = 'lighter';
+      const reveal = 0.28 + progress * 0.72;
+      for (const particle of particles) {
+        const current = projectParticle(particle, seconds);
+        if (current.x < -40 || current.x > innerWidth + 40 || current.y < -40 || current.y > innerHeight + 40) continue;
+        const previous = projectParticle(particle, seconds, -particle.speed * 1.4);
+        const near = smoothstep(0.05, 0.98, current.depthPhase);
+        const alpha = (0.1 + near * 0.64) * reveal;
+        const radius = particle.size * (0.4 + near * near * (compact ? 3.0 : 4.2));
+        const [red, green, blue] = particle.colour;
+        particleContext.strokeStyle = `rgba(${red}, ${green}, ${blue}, ${alpha * 0.42})`;
+        particleContext.lineWidth = Math.max(0.45, radius * 0.46);
+        particleContext.beginPath();
+        particleContext.moveTo(current.wrapped ? current.x : previous.x, current.wrapped ? current.y : previous.y);
+        particleContext.lineTo(current.x, current.y);
+        particleContext.stroke();
+        if (near > 0.62) {
+          particleContext.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha * 0.12})`;
+          particleContext.beginPath();
+          particleContext.arc(current.x, current.y, radius * 2.5, 0, Math.PI * 2);
+          particleContext.fill();
+        }
+        particleContext.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+        particleContext.beginPath();
+        particleContext.arc(current.x, current.y, radius, 0, Math.PI * 2);
+        particleContext.fill();
+      }
+      particleContext.globalCompositeOperation = 'source-over';
     };
 
     const render = (time) => {
@@ -415,6 +483,7 @@
         gl.uniform2f(uniforms.pointer, pointerX, pointerY);
         gl.uniform1f(uniforms.pointerEnergy, pointerEnergy);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
+        drawParticles(Number.isFinite(fixedTime) ? fixedTime : time * 0.001);
         samples += 1;
         elapsed += delta;
         if (elapsed >= 1200) {
@@ -452,10 +521,10 @@
     resize();
     updateProgress();
     canvas.dataset.webglStatus = 'rendering';
-    canvas.dataset.visualContract = 'full-viewport-volumetric-field|irregular-dark-mass|layered-depth-flow|mobile-composed';
+    canvas.dataset.visualContract = 'full-viewport-volumetric-field|no-central-void|projected-3d-particle-depth|mobile-composed';
     canvas.dataset.debugModes = Object.keys(DEBUG_MODES).join('|');
     canvas.dataset.frameBudgetMs = compact ? '24' : '17';
-    canvas.dataset.parallaxMode = 'differential-volume|chromatic-image-depth';
+    canvas.dataset.parallaxMode = 'differential-volume|projected-particle-depth|chromatic-image-depth';
     document.documentElement.classList.add('portal-field-ready');
     requestAnimationFrame(render);
   };
