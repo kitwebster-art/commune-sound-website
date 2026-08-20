@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = 'texture-studies-1.0.0';
+  const VERSION = 'texture-studies-1.0.1';
   const SOURCE_VERSION = '4.7.0';
   const PRESETS = Object.freeze({
     'velvet-interference': { number: '01', label: 'Velvet Interference', mode: 0, seed: 17 },
@@ -288,7 +288,7 @@
     let previous = performance.now();
     let sampleFrames = 0;
     let sampleTime = 0;
-    let renderScale = innerWidth <= 700 ? 0.66 : 0.78;
+    let renderScale = innerWidth <= 700 ? 0.66 : 0.7;
 
     const resize = () => {
       const scale = Math.min(devicePixelRatio || 1, renderScale);
