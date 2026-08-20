@@ -21,7 +21,7 @@
   place-items: center;
   color: rgba(235, 245, 255, 0.7);
   background:
-    radial-gradient(ellipse 34% 46% at 47% 43%, #000 0 38%, rgba(36, 77, 255, 0.2) 55%, transparent 100%),
+    radial-gradient(ellipse 64% 72% at 42% 38%, rgba(36, 77, 255, 0.2), transparent 78%),
     radial-gradient(ellipse 58% 30% at 58% 53%, rgba(255, 39, 77, 0.13), transparent 72%),
     #010104;
   font: 800 10px/1.2 Inter, sans-serif;
@@ -45,6 +45,23 @@
   transition: opacity 800ms ease;
   transform: translateZ(0);
   will-change: opacity;
+}
+
+.portal-particle-depth {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 900ms ease 120ms;
+  transform: translateZ(0);
+}
+
+.portal-field-ready .portal-particle-depth {
+  opacity: 0.92;
 }
 
 .portal-field-ready .portal-field {
@@ -231,7 +248,7 @@
   z-index: 0;
   inset: 0;
   background:
-    radial-gradient(ellipse 42% 58% at 45% 38%, #000 0 36%, rgba(33, 220, 255, 0.11) 48%, rgba(36, 77, 255, 0.09) 66%, transparent 100%),
+    radial-gradient(ellipse 74% 64% at 45% 38%, rgba(33, 220, 255, 0.11), rgba(36, 77, 255, 0.09) 46%, transparent 100%),
     radial-gradient(ellipse 76% 34% at 62% 48%, rgba(255, 39, 77, 0.12), transparent 74%),
     radial-gradient(ellipse 45% 80% at 24% 72%, rgba(36, 77, 255, 0.1), transparent 76%);
   pointer-events: none;
