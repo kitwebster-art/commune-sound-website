@@ -1,13 +1,38 @@
 (() => {
-  const VERSION = 'portal-study-1.7.0';
+  const VERSION = 'portal-study-1.8.0';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
+  const BACKGROUNDS = Object.freeze([
+    Object.freeze({ name: 'velvet-interference', label: 'Velvet Interference', mode: 0, seed: 17 }),
+    Object.freeze({ name: 'liquid-chrome', label: 'Liquid Chrome', mode: 1, seed: 29 }),
+    Object.freeze({ name: 'holographic-grain', label: 'Holographic Grain', mode: 2, seed: 43 })
+  ]);
+  const now = new Date();
+  const localDayNumber = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
+  const scheduledBackground = BACKGROUNDS[((localDayNumber % BACKGROUNDS.length) + BACKGROUNDS.length) % BACKGROUNDS.length];
+  const backgroundOverride = BACKGROUNDS.find(({ name }) => name === params.get('background'));
+  const background = backgroundOverride || scheduledBackground;
+  const localDateKey = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0')
+  ].join('-');
+  document.documentElement.dataset.portalBackground = background.name;
   const DEBUG_MODES = Object.freeze({ final: 0, density: 1, volume: 2, depth: 3, 'no-post': 4, liquid: 5, contrast: 6, 'logo-edges': 7, 'logo-depth': 8 });
   const debugName = DEBUG_MODES[params.get('debug')] === undefined ? 'final' : params.get('debug');
   const debugMode = DEBUG_MODES[debugName];
   const fixedTime = Number.parseFloat(params.get('time'));
-  const seed = Number.isFinite(Number.parseFloat(params.get('seed'))) ? Number.parseFloat(params.get('seed')) : 17.0;
+  const seedOverride = Number.parseFloat(params.get('seed'));
+  const fieldSeed = Number.isFinite(seedOverride) ? seedOverride : background.seed;
+  const wordmarkSeed = Number.isFinite(seedOverride) ? seedOverride : 17.0;
   const requestedQuality = params.get('quality');
+
+  const scheduleDailyBackgroundRefresh = () => {
+    if (backgroundOverride) return;
+    const nextMidnight = new Date();
+    nextMidnight.setHours(24, 0, 0, 250);
+    setTimeout(() => location.reload(), Math.max(1000, nextMidnight.getTime() - Date.now()));
+  };
 
   const loadScript = (src) => new Promise((resolve, reject) => {
     const script = document.createElement('script');
@@ -96,11 +121,17 @@
 
     const canvas = document.createElement('canvas');
     canvas.className = 'portal-field';
-    canvas.dataset.portalField = 'full-frame-liquid-chrome';
-    canvas.dataset.seed = seed.toFixed(2);
+    canvas.dataset.portalField = `full-frame-${background.name}`;
+    canvas.dataset.backgroundName = background.name;
+    canvas.dataset.backgroundLabel = background.label;
+    canvas.dataset.backgroundMode = String(background.mode);
+    canvas.dataset.rotationDate = localDateKey;
+    canvas.dataset.rotationSchedule = 'velvet-interference|liquid-chrome|holographic-grain';
+    canvas.dataset.rotationSource = backgroundOverride ? 'query-override' : 'local-calendar-day';
+    canvas.dataset.seed = fieldSeed.toFixed(2);
     canvas.dataset.debugMode = debugName;
     canvas.dataset.backend = 'webgl-fragment-plane';
-    canvas.dataset.referenceMechanism = 'shared-low-frequency-warp|marbled-phase|specular-edge|particle-wordmark';
+    canvas.dataset.referenceMechanism = 'shared-low-frequency-warp|daily-material-mode|distributed-black-negative-space|particle-wordmark';
     canvas.setAttribute('aria-hidden', 'true');
     realtimeVignette.after(canvas);
 
@@ -134,6 +165,7 @@
       uniform float u_time;
       uniform float u_progress;
       uniform float u_seed;
+      uniform int u_mode;
       uniform int u_debug;
 
       float hash21(vec2 p) {
@@ -183,6 +215,16 @@
         return mat2(c, -s, s, c) * p;
       }
 
+      vec3 palette(float phase) {
+        vec3 hot_pink = vec3(1.0, 0.045, 0.62);
+        vec3 violet = vec3(0.32, 0.075, 1.0);
+        vec3 cyan = vec3(0.12, 0.82, 1.0);
+        vec3 pearl = vec3(1.0, 0.84, 0.96);
+        vec3 colour = mix(violet, hot_pink, smoothstep(0.08, 0.72, phase));
+        colour = mix(colour, cyan, smoothstep(0.68, 0.96, phase));
+        return mix(colour, pearl, pow(max(0.0, phase - 0.78) / 0.22, 3.0) * 0.58);
+      }
+
       float field3d(vec3 p) {
         vec2 layer_a = rotate2d(p.xy, p.z * 0.62 + u_time * 0.035);
         vec2 layer_b = rotate2d(p.yx, -p.z * 0.41 - u_time * 0.024);
@@ -230,40 +272,56 @@
         vec2 parallax = pointer * u_pointer_energy;
         p -= parallax * 0.028;
 
-        vec3 hot_pink = vec3(1.0, 0.045, 0.62);
-        vec3 violet = vec3(0.32, 0.075, 1.0);
-        vec3 cyan = vec3(0.12, 0.82, 1.0);
-        vec3 pearl = vec3(1.0, 0.84, 0.96);
         vec2 warp_a = vec2(
           fbm(p * 0.56 + vec2(u_time * 0.045, -u_time * 0.032) + u_seed * 0.013),
           fbm(p * 0.56 + vec2(8.1 - u_time * 0.026, 3.7 + u_time * 0.045) + u_seed * 0.019)
         );
         vec2 q = p * mix(0.82, 0.92, portrait) + (warp_a - 0.5) * 1.15 + parallax * 0.08;
         float primary = fbm(q * 1.12 - vec2(u_time * 0.014, u_time * 0.007));
-        float marble = 0.5 + 0.5 * sin(
-          q.x * 3.4 - q.y * 2.2 + primary * 8.8 + sin(q.y * 2.4) * 1.4
-        );
-        float specular_edge = 1.0 - smoothstep(0.025, 0.14, abs(marble - 0.58));
-        float highlight = pow(specular_edge, 2.2);
+        float detail = 0.0;
+        float highlight = 0.0;
+        vec3 raw_colour = vec3(0.0);
 
-        vec3 accent = mix(violet, hot_pink, smoothstep(0.08, 0.72, marble));
-        accent = mix(accent, cyan, smoothstep(0.68, 0.96, marble));
-        accent = mix(accent, pearl, pow(max(0.0, marble - 0.78) / 0.22, 3.0) * 0.58);
-        vec3 raw_colour = accent * (0.14 + marble * 0.5);
+        if (u_mode == 0) {
+          float fold = 0.5 + 0.5 * sin((q.x * 1.1 + q.y * 0.62 + primary * 2.5) * 5.2);
+          float warp_thread = 0.5 + 0.5 * sin(q.x * 92.0 + q.y * 10.0 + primary * 8.0);
+          float weft_thread = 0.5 + 0.5 * sin(q.y * 104.0 - q.x * 8.0 - primary * 7.0);
+          detail = pow(warp_thread * weft_thread, 3.4);
+          highlight = pow(smoothstep(0.66, 0.96, fold), 3.0) + detail * 0.34;
+          raw_colour = palette(fold * 0.76 + primary * 0.22) * (0.18 + fold * 0.72);
+          raw_colour += vec3(0.22, 0.18, 0.42) * detail;
+        } else if (u_mode == 1) {
+          float marble = 0.5 + 0.5 * sin(
+            q.x * 3.4 - q.y * 2.2 + primary * 8.8 + sin(q.y * 2.4) * 1.4
+          );
+          float specular_edge = 1.0 - smoothstep(0.025, 0.14, abs(marble - 0.58));
+          detail = marble;
+          highlight = pow(specular_edge, 2.2);
+          raw_colour = palette(marble) * (0.14 + marble * 0.5);
+          raw_colour += vec3(0.88, 0.92, 1.0) * highlight * 0.92;
+        } else {
+          float cloud = fbm(q * 0.68 + vec2(u_time * 0.0045, -u_time * 0.0063));
+          float grain = hash21(gl_FragCoord.xy + floor(u_time * 12.0));
+          float glint = pow(max(0.0, grain - 0.986) / 0.014, 2.0);
+          detail = grain;
+          highlight = glint;
+          raw_colour = palette(fract(cloud * 1.45 + q.x * 0.12 - q.y * 0.08));
+          raw_colour *= 0.23 + smoothstep(0.18, 0.9, cloud) * 0.72;
+          raw_colour += (grain - 0.5) * 0.11 + vec3(1.0, 0.76, 0.96) * glint;
+        }
 
         float black_field = fbm(rotate2d(p * 0.42 + vec2(7.3, -2.6), 0.28) - vec2(u_time * 0.01, u_time * 0.006));
         float black_pockets = smoothstep(0.48, 0.74, black_field);
         float centre_guard = smoothstep(0.08, 0.56, length(p * vec2(0.72, 1.0)));
         black_pockets *= mix(0.34, 1.0, centre_guard);
         vec3 no_post = raw_colour * (1.0 - black_pockets * 0.8);
-        vec3 final_colour = no_post + vec3(0.88, 0.92, 1.0) * highlight * 0.92;
-        final_colour += accent * highlight * 0.12;
+        vec3 final_colour = no_post + palette(primary) * highlight * 0.17;
         float vignette = 1.0 - smoothstep(0.76, 1.85, length(p));
         final_colour *= 0.55 + vignette * 0.45;
 
-        if (u_debug == 1) final_colour = vec3(primary, marble, highlight);
+        if (u_debug == 1) final_colour = vec3(primary, detail, highlight);
         if (u_debug == 2) final_colour = vec3(warp_a, primary);
-        if (u_debug == 3) final_colour = vec3(marble);
+        if (u_debug == 3) final_colour = vec3(detail);
         if (u_debug == 4) final_colour = no_post;
         if (u_debug == 5) final_colour = vec3(highlight);
         if (u_debug == 6) final_colour = vec3(1.0 - black_pockets);
@@ -297,6 +355,7 @@
       time: gl.getUniformLocation(program, 'u_time'),
       progress: gl.getUniformLocation(program, 'u_progress'),
       seed: gl.getUniformLocation(program, 'u_seed'),
+      mode: gl.getUniformLocation(program, 'u_mode'),
       debug: gl.getUniformLocation(program, 'u_debug')
     };
 
@@ -310,13 +369,13 @@
     particleCanvas.dataset.particleBackend = 'canvas2d-perspective';
     particleCanvas.dataset.particleDepthPlanes = 'far|middle|near';
     particleCanvas.dataset.particleMotion = 'projected-flow-trails';
-    particleCanvas.dataset.seed = seed.toFixed(2);
+    particleCanvas.dataset.seed = wordmarkSeed.toFixed(2);
     particleCanvas.setAttribute('aria-hidden', 'true');
     canvas.after(particleCanvas);
     const particleContext = particleCanvas.getContext('2d', { alpha: true });
 
     const seededRandom = (() => {
-      let state = (Math.floor(seed * 1009) ^ 0x6d2b79f5) >>> 0;
+      let state = (Math.floor(wordmarkSeed * 1009) ^ 0x6d2b79f5) >>> 0;
       return () => {
         state += 0x6d2b79f5;
         let value = state;
@@ -461,7 +520,8 @@
         gl.useProgram(program);
         gl.uniform1f(uniforms.time, Number.isFinite(fixedTime) ? fixedTime : time * 0.001);
         gl.uniform1f(uniforms.progress, progress);
-        gl.uniform1f(uniforms.seed, seed);
+        gl.uniform1f(uniforms.seed, fieldSeed);
+        gl.uniform1i(uniforms.mode, background.mode);
         gl.uniform1i(uniforms.debug, debugMode);
         gl.uniform2f(uniforms.pointer, pointerX, pointerY);
         gl.uniform1f(uniforms.pointerEnergy, pointerEnergy);
@@ -493,7 +553,7 @@
     if (debugMode !== 0) {
       const hud = document.createElement('div');
       hud.className = 'portal-debug-hud';
-      hud.textContent = `Portal debug: ${debugName} | seed ${seed} | ${quality} tier`;
+      hud.textContent = `Portal debug: ${debugName} | ${background.label} | seed ${fieldSeed} | ${quality} tier`;
       document.body.append(hud);
     }
 
@@ -504,13 +564,13 @@
     resize();
     updateProgress();
     canvas.dataset.webglStatus = 'rendering';
-    canvas.dataset.visualContract = 'full-frame-liquid-chrome|distributed-black-negative-space|no-central-void|particle-only-wordmark|crisp-anchored-logo-edges|mobile-composed';
-    canvas.dataset.liquidMechanism = 'shared-low-frequency-warp|marbled-phase|specular-edge|pointer-parallax';
+    canvas.dataset.visualContract = 'daily-three-background-rotation|distributed-black-negative-space|no-central-void|particle-only-wordmark|crisp-anchored-logo-edges|mobile-composed';
+    canvas.dataset.backgroundMechanism = 'shared-low-frequency-warp|woven-interference-or-marble-or-chromatic-grain|pointer-parallax';
     canvas.dataset.contrastMechanism = 'shared-low-frequency-shadow-field|off-centre-black-pockets|centre-guard';
     canvas.dataset.liquidDivergence = 'stylised-screen-space-optics-not-physical-raytraced-transmission';
     canvas.dataset.debugModes = Object.keys(DEBUG_MODES).join('|');
     canvas.dataset.frameBudgetMs = compact ? '24' : '17';
-    canvas.dataset.parallaxMode = 'liquid-field|projected-particle-depth|particle-wordmark-depth';
+    canvas.dataset.parallaxMode = 'rotating-material-field|projected-particle-depth|particle-wordmark-depth';
     document.documentElement.classList.add('portal-field-ready');
     requestAnimationFrame(render);
   };
@@ -536,19 +596,22 @@
       if (!eventDescription) throw new Error('Portal event description missing');
       eventDescription.textContent = 'For two hours, the hall comes alive with an eclectic mix of electronic and acoustic music from around the world, with space to listen, move and follow your own rhythm.';
       document.body.dataset.siteVersion = VERSION;
+      document.body.dataset.portalBackground = background.name;
+      document.body.dataset.portalBackgroundDate = localDateKey;
       document.body.classList.remove('portal-study-loading');
       document.documentElement.classList.add('portal-study-ready');
 
       if (typeof window.installPortalParticleWordmark !== 'function') {
         throw new Error('Particle wordmark renderer missing');
       }
-      window.installPortalParticleWordmark({ seed });
+      window.installPortalParticleWordmark({ seed: wordmarkSeed });
       installImageDepth();
       installPortal();
       await loadScript(`../commune-realtime.js?v=commune-${SOURCE_VERSION}`);
       await loadScript('../commune-offer.js?v=commune-4.6.2');
       await loadScript('https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit');
       await loadScript('../commune-signup.js?v=commune-4.2.1');
+      scheduleDailyBackgroundRefresh();
     } catch (error) {
       document.body.dataset.portalStudyError = error.message;
       const loader = document.querySelector('.portal-study-loader');
