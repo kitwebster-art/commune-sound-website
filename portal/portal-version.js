@@ -1,8 +1,8 @@
 (() => {
-  const VERSION = 'portal-study-1.5.2';
+  const VERSION = 'portal-study-1.6.0';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
-  const DEBUG_MODES = Object.freeze({ final: 0, density: 1, volume: 2, depth: 3, 'no-post': 4, liquid: 5 });
+  const DEBUG_MODES = Object.freeze({ final: 0, density: 1, volume: 2, depth: 3, 'no-post': 4, liquid: 5, contrast: 6 });
   const debugName = DEBUG_MODES[params.get('debug')] === undefined ? 'final' : params.get('debug');
   const debugMode = DEBUG_MODES[debugName];
   const fixedTime = Number.parseFloat(params.get('time'));
@@ -222,7 +222,7 @@
         contribution += vec3(1.0, 0.88, 0.97) * (inner_rim * 0.18 + travelling_glint * 0.48);
         contribution += vec3(1.0, 0.12, 0.68) * caustic_a * 0.24;
         contribution += vec3(0.2, 0.88, 1.0) * caustic_b * 0.24;
-        contribution += vec3(0.74, 1.0, 0.24) * caustic_a * caustic_b * 0.22;
+        contribution += vec3(0.74, 0.3, 1.0) * caustic_a * caustic_b * 0.22;
         float optical_mask = inside * 0.11 + max(max(magenta_edge, pearl_edge), cyan_edge) * 0.25;
         return vec4(contribution, optical_mask);
       }
@@ -303,6 +303,19 @@
         raw_colour += far_colour * 1.14;
         raw_colour += near_colour * 1.28;
 
+        vec2 shadow_coordinate = rotate2d(p + parallax * 0.03, 0.41);
+        float shadow_macro = fbm_fast(
+          shadow_coordinate * 0.72 + vec2(-u_time * 0.008, u_time * 0.006)
+        );
+        float shadow_wave = 0.5 + 0.5 * sin(
+          shadow_coordinate.x * 1.35 - shadow_coordinate.y * 0.62 + u_time * 0.012
+        );
+        float shadow_field = mix(shadow_macro, shadow_wave, 0.22);
+        float black_pockets = smoothstep(0.47, 0.69, shadow_field);
+        float centre_guard = smoothstep(0.12, 0.54, length(p * vec2(0.76, 1.0)));
+        black_pockets *= mix(0.42, 1.0, centre_guard);
+        raw_colour *= 1.0 - black_pockets * mix(0.76, 0.8, portrait);
+
         vec2 liquid_p = p + parallax * 0.075;
         float liquid_warp = fbm_fast(liquid_p * 0.92 + vec2(u_time * 0.018, -u_time * 0.012));
         vec4 liquid_a = liquid_fold(liquid_p, -0.23, mix(0.11, 0.22, portrait), 0.4, 0.18, liquid_warp);
@@ -324,6 +337,7 @@
         if (u_debug == 3) final_colour = vec3(far_alpha, near_alpha, depth_sum / max(density_sum, 0.001));
         if (u_debug == 4) final_colour = ambient_colour + far_colour * 1.14 + near_colour * 1.28;
         if (u_debug == 5) final_colour = liquid_colour;
+        if (u_debug == 6) final_colour = vec3(1.0 - black_pockets);
 
         float volume_alpha = clamp(far_alpha * 0.72 + near_alpha + ambient_alpha, 0.0, 0.97);
         float alpha = reveal * volume_alpha;
@@ -388,7 +402,7 @@
       [255, 62, 198],
       [119, 79, 255],
       [74, 225, 255],
-      [206, 255, 104],
+      [210, 92, 255],
       [255, 228, 246]
     ];
     const particleCount = compact ? 150 : 260;
@@ -563,8 +577,9 @@
     resize();
     updateProgress();
     canvas.dataset.webglStatus = 'rendering';
-    canvas.dataset.visualContract = 'continuous-iridescent-field|no-central-void|no-closed-pill-shapes|projected-3d-particles|feathered-wordmark|mobile-composed';
+    canvas.dataset.visualContract = 'continuous-iridescent-field|distributed-black-negative-space|no-central-void|no-closed-pill-shapes|projected-3d-particles|cool-toned-feathered-wordmark|mobile-composed';
     canvas.dataset.liquidMechanism = 'open-flow-ribbons|shared-low-frequency-warp|rgb-dispersion|internal-caustic-bands|pointer-parallax';
+    canvas.dataset.contrastMechanism = 'shared-low-frequency-shadow-field|off-centre-black-pockets|centre-guard';
     canvas.dataset.liquidDivergence = 'stylised-screen-space-optics-not-physical-raytraced-transmission';
     canvas.dataset.debugModes = Object.keys(DEBUG_MODES).join('|');
     canvas.dataset.frameBudgetMs = compact ? '24' : '17';
