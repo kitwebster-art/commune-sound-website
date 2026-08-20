@@ -1,0 +1,108 @@
+:root {
+  --texture-study-accent: #ff3ec6;
+  --texture-study-secondary: #4ae1ff;
+}
+
+.texture-study-field {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 700ms ease;
+  transform: translateZ(0);
+}
+
+.texture-study-field-ready .texture-study-field {
+  opacity: 1;
+}
+
+.texture-study-ready main {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+.texture-study-ready main::before {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.14));
+}
+
+.texture-study-ready .current-event,
+.texture-study-ready .philosophy,
+.texture-study-ready .site-faq,
+.texture-study-ready .signup-hero {
+  background: rgba(1, 1, 5, 0.1);
+}
+
+.texture-study-ready .wordmark-banner,
+.texture-study-ready .venue-photo {
+  isolation: isolate;
+}
+
+.texture-study-ready .wordmark-banner img[data-particle-logo] {
+  filter:
+    grayscale(0.94)
+    sepia(0.12)
+    hue-rotate(225deg)
+    saturate(var(--logo-flux-saturate))
+    saturate(1.22)
+    contrast(var(--logo-flux-contrast))
+    contrast(1.34)
+    brightness(0.94)
+    blur(var(--logo-flux-blur))
+    drop-shadow(-12px 4px 24px rgba(119, 79, 255, 0.2))
+    drop-shadow(12px -4px 24px rgba(255, 62, 198, 0.2));
+}
+
+.texture-study-ready .venue-photo img[data-particle-venue] {
+  filter:
+    saturate(var(--venue-flux-saturate))
+    grayscale(0.52)
+    sepia(0.34)
+    hue-rotate(218deg)
+    saturate(1.65)
+    contrast(var(--venue-flux-contrast))
+    contrast(1.05)
+    brightness(1.02)
+    blur(var(--venue-flux-blur))
+    drop-shadow(-18px 5px 34px rgba(119, 79, 255, 0.26))
+    drop-shadow(18px -5px 34px rgba(255, 62, 198, 0.22));
+}
+
+.texture-static-fallback {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 24% 30%, rgba(119, 79, 255, 0.34), transparent 58%),
+    radial-gradient(ellipse at 76% 62%, rgba(255, 62, 198, 0.26), transparent 54%),
+    radial-gradient(ellipse at 54% 88%, rgba(74, 225, 255, 0.18), transparent 52%),
+    #010105;
+  pointer-events: none;
+}
+
+@media (max-width: 700px) {
+  .texture-study-ready .venue-photo img[data-particle-venue] {
+    filter:
+      saturate(var(--venue-flux-saturate))
+      grayscale(0.48)
+      sepia(0.32)
+      hue-rotate(218deg)
+      saturate(1.6)
+      contrast(var(--venue-flux-contrast))
+      contrast(1.05)
+      brightness(1.03)
+      blur(var(--venue-flux-blur))
+      drop-shadow(-10px 3px 22px rgba(119, 79, 255, 0.22))
+      drop-shadow(10px -3px 22px rgba(255, 62, 198, 0.2));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .texture-study-field {
+    display: none;
+  }
+}
