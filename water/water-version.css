@@ -1,0 +1,134 @@
+:root {
+  --water-cyan: #21dcff;
+  --water-blue: #244dff;
+  --water-red: #ff274d;
+}
+
+.water-study-loading {
+  min-height: 100vh;
+  background: #020207;
+}
+
+.water-study-loader {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(233, 245, 255, 0.72);
+  background:
+    radial-gradient(circle at 28% 36%, rgba(255, 39, 77, 0.16), transparent 32%),
+    radial-gradient(circle at 72% 62%, rgba(33, 220, 255, 0.15), transparent 36%),
+    #020207;
+  font: 800 10px/1.2 Inter, sans-serif;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.water-study-ready .water-study-loader {
+  display: none;
+}
+
+.water-study-ready main::before {
+  background:
+    radial-gradient(ellipse at 16% 24%, rgba(255, 39, 77, 0.075), transparent 33%),
+    radial-gradient(ellipse at 82% 50%, rgba(36, 77, 255, 0.085), transparent 38%),
+    repeating-radial-gradient(
+      ellipse at 68% 52%,
+      rgba(33, 220, 255, 0.018) 0 1px,
+      transparent 2px 34px
+    );
+}
+
+.water-study-ready .venue-photo {
+  overflow: hidden;
+  background:
+    linear-gradient(to bottom, var(--ink) 0, transparent 180px),
+    linear-gradient(to bottom, transparent 68%, var(--ink) 100%),
+    radial-gradient(circle at 16% 12%, rgba(255, 39, 77, 0.17), transparent 32%),
+    radial-gradient(circle at 84% 86%, rgba(36, 77, 255, 0.2), transparent 36%),
+    rgba(3, 6, 15, 0.28);
+}
+
+.water-ripple-surface {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  pointer-events: none;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 4%, #000 96%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 4%, #000 96%, transparent 100%);
+  mask-composite: intersect;
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+
+.water-ripple-ready .water-ripple-surface {
+  opacity: 0.88;
+}
+
+.water-ripple-ready .venue-photo > img {
+  opacity: 0.025;
+}
+
+.water-study-label {
+  position: absolute;
+  z-index: 4;
+  top: clamp(44px, 7vw, 92px);
+  left: calc(50% - min(calc(50% - var(--venue-gutter)), 425px) + 14px);
+  margin: 0;
+  color: rgba(224, 248, 255, 0.72);
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 850;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.water-study-label::before {
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  margin-right: 8px;
+  background: linear-gradient(to right, var(--water-red), var(--water-cyan));
+  vertical-align: middle;
+  content: "";
+}
+
+@media (max-width: 700px) {
+  .water-study-ready .venue-photo {
+    background:
+      linear-gradient(to bottom, transparent 72%, rgba(3, 5, 12, 0.9) 100%),
+      radial-gradient(circle at 12% 18%, rgba(255, 39, 77, 0.16), transparent 36%),
+      radial-gradient(circle at 86% 78%, rgba(36, 77, 255, 0.22), transparent 40%);
+  }
+
+  .water-ripple-surface {
+    -webkit-mask-image:
+      linear-gradient(to right, transparent 0, #000 3%, #000 97%, transparent 100%),
+      linear-gradient(to bottom, transparent 0, #000 5%, #000 95%, transparent 100%);
+    mask-image:
+      linear-gradient(to right, transparent 0, #000 3%, #000 97%, transparent 100%),
+      linear-gradient(to bottom, transparent 0, #000 5%, #000 95%, transparent 100%);
+  }
+
+  .water-study-label {
+    top: 24px;
+    left: calc(50% - var(--mobile-stage-width) / 2 + 12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .water-ripple-surface {
+    display: none;
+  }
+
+  .water-ripple-ready .venue-photo > img {
+    opacity: 0.22;
+    filter: saturate(1.3) contrast(1.1) hue-rotate(5deg);
+  }
+}
