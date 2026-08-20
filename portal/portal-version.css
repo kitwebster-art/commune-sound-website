@@ -87,7 +87,9 @@
 .portal-study-ready .wordmark-banner {
   overflow: hidden;
   background:
-    linear-gradient(to bottom, rgba(1, 1, 4, 0.04) 45%, rgba(1, 1, 4, 0.16) 100%),
+    radial-gradient(ellipse 38% 64% at 42% 45%, rgba(119, 79, 255, 0.16), transparent 76%),
+    radial-gradient(ellipse 34% 56% at 64% 52%, rgba(255, 62, 198, 0.12), transparent 78%),
+    linear-gradient(to bottom, rgba(1, 1, 4, 0.04) 45%, rgba(1, 1, 4, 0.2) 100%),
     transparent;
 }
 
@@ -102,8 +104,11 @@
   mask-image: radial-gradient(ellipse 68% 70% at 50% 50%, #000 42%, rgba(0, 0, 0, 0.9) 56%, rgba(0, 0, 0, 0.18) 70%, transparent 78%);
   mix-blend-mode: screen;
   filter:
+    grayscale(0.94)
+    sepia(0.12)
+    hue-rotate(225deg)
     saturate(var(--logo-flux-saturate))
-    saturate(1.08)
+    saturate(1.22)
     contrast(var(--logo-flux-contrast))
     contrast(1.34)
     brightness(0.94)
@@ -130,7 +135,7 @@
 
 .portal-wordmark-echo--far {
   opacity: 0.22 !important;
-  filter: blur(32px) saturate(1.8) contrast(1.22) hue-rotate(18deg) !important;
+  filter: grayscale(1) sepia(0.25) hue-rotate(225deg) blur(32px) saturate(2.2) contrast(1.22) !important;
   transform:
     translate(-50%, -50%)
     translate(calc(var(--portal-parallax-x) * -1.35), calc(var(--portal-parallax-y) * -1.1))
@@ -140,7 +145,7 @@
 .portal-wordmark-echo--near {
   z-index: 2 !important;
   opacity: 0.13 !important;
-  filter: blur(9px) saturate(1.7) contrast(1.12) hue-rotate(-24deg) !important;
+  filter: grayscale(1) sepia(0.22) hue-rotate(245deg) blur(9px) saturate(2) contrast(1.12) !important;
   transform:
     translate(-50%, -50%)
     translate(calc(var(--portal-parallax-x) * 0.78), calc(var(--portal-parallax-y) * 0.66))
@@ -173,7 +178,7 @@
       from 205deg,
       rgba(119, 79, 255, 0.88),
       rgba(74, 225, 255, 0.86),
-      rgba(206, 255, 104, 0.72),
+      rgba(210, 92, 255, 0.72),
       rgba(255, 228, 246, 0.82),
       rgba(255, 62, 198, 0.9),
       rgba(182, 77, 255, 0.88),
@@ -382,8 +387,11 @@
   .portal-image-depth-ready .wordmark-banner img[data-particle-logo] {
     opacity: max(0.7, var(--logo-image-opacity));
     filter:
+      grayscale(0.94)
+      sepia(0.12)
+      hue-rotate(225deg)
       saturate(var(--logo-flux-saturate))
-      saturate(1.04)
+      saturate(1.18)
       contrast(var(--logo-flux-contrast))
       contrast(1.34)
       brightness(0.94)
@@ -394,12 +402,12 @@
 
   .portal-wordmark-echo--far {
     opacity: 0.18 !important;
-    filter: blur(22px) saturate(1.65) contrast(1.16) hue-rotate(18deg) !important;
+    filter: grayscale(1) sepia(0.25) hue-rotate(225deg) blur(22px) saturate(2) contrast(1.16) !important;
   }
 
   .portal-wordmark-echo--near {
     opacity: 0.1 !important;
-    filter: blur(7px) saturate(1.5) contrast(1.1) hue-rotate(-24deg) !important;
+    filter: grayscale(1) sepia(0.22) hue-rotate(245deg) blur(7px) saturate(1.85) contrast(1.1) !important;
   }
 
   .portal-image-depth-ready .venue-photo img[data-particle-venue] {
