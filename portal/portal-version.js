@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = 'portal-study-1.8.0';
+  const VERSION = 'portal-study-1.9.0';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
   const BACKGROUNDS = Object.freeze([
@@ -564,7 +564,7 @@
     resize();
     updateProgress();
     canvas.dataset.webglStatus = 'rendering';
-    canvas.dataset.visualContract = 'daily-three-background-rotation|distributed-black-negative-space|no-central-void|particle-only-wordmark|crisp-anchored-logo-edges|mobile-composed';
+    canvas.dataset.visualContract = 'daily-three-background-rotation|distributed-black-negative-space|no-central-void|original-banner-exact-letter-mask|purple-green-particle-wordmark|mobile-composed';
     canvas.dataset.backgroundMechanism = 'shared-low-frequency-warp|woven-interference-or-marble-or-chromatic-grain|pointer-parallax';
     canvas.dataset.contrastMechanism = 'shared-low-frequency-shadow-field|off-centre-black-pockets|centre-guard';
     canvas.dataset.liquidDivergence = 'stylised-screen-space-optics-not-physical-raytraced-transmission';
@@ -604,7 +604,7 @@
       if (typeof window.installPortalParticleWordmark !== 'function') {
         throw new Error('Particle wordmark renderer missing');
       }
-      window.installPortalParticleWordmark({ seed: wordmarkSeed });
+      await window.installPortalParticleWordmark({ seed: wordmarkSeed });
       installImageDepth();
       installPortal();
       await loadScript(`../commune-realtime.js?v=commune-${SOURCE_VERSION}`);

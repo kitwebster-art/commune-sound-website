@@ -112,6 +112,17 @@
   transform: translateZ(0);
 }
 
+.portal-wordmark-mask {
+  position: absolute;
+  z-index: 3;
+  display: block;
+  margin: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  filter: saturate(1.28) contrast(1.08);
+  transform: translateZ(0);
+}
+
 .portal-study-ready .wordmark-banner::before {
   display: none;
 }
