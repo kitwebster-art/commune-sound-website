@@ -212,6 +212,11 @@
   text-shadow: 0 2px 18px rgba(0, 0, 0, 0.95);
 }
 
+.portal-study-ready .event-description {
+  max-width: 760px;
+  text-wrap: balance;
+}
+
 .portal-study-ready .philosophy {
   background:
     linear-gradient(108deg, rgba(2, 2, 5, 0.2), rgba(2, 2, 5, 0.06) 58%, rgba(2, 2, 5, 0.18)),
@@ -360,6 +365,12 @@
     border-radius: 14px;
     -webkit-backdrop-filter: blur(9px) saturate(1.22);
     backdrop-filter: blur(9px) saturate(1.22);
+  }
+
+  .portal-study-ready .event-description {
+    max-width: 34ch;
+    font-size: 15px;
+    line-height: 1.55;
   }
 
   .portal-study-ready .philosophy,
