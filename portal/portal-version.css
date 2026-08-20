@@ -230,7 +230,9 @@
 
 .portal-study-ready .venue-photo {
   background:
-    linear-gradient(to bottom, rgba(1, 1, 4, 0.14), transparent 26%, transparent 74%, rgba(1, 1, 4, 0.16)),
+    radial-gradient(ellipse at 18% 38%, rgba(72, 41, 202, 0.25), transparent 46%),
+    radial-gradient(ellipse at 82% 70%, rgba(231, 38, 163, 0.18), transparent 44%),
+    linear-gradient(to bottom, rgba(1, 1, 4, 0.24), transparent 26%, transparent 72%, rgba(1, 1, 4, 0.3)),
     transparent;
 }
 
@@ -239,11 +241,15 @@
   opacity: max(0.5, var(--venue-image-opacity));
   filter:
     saturate(var(--venue-flux-saturate))
-    saturate(1.12)
+    grayscale(0.52)
+    sepia(0.34)
+    hue-rotate(218deg)
+    saturate(1.65)
     contrast(var(--venue-flux-contrast))
-    contrast(1.08)
+    contrast(1.05)
+    brightness(1.02)
     blur(var(--venue-flux-blur))
-    drop-shadow(-18px 5px 34px rgba(119, 79, 255, 0.24))
+    drop-shadow(-18px 5px 34px rgba(119, 79, 255, 0.26))
     drop-shadow(18px -5px 34px rgba(255, 62, 198, 0.22));
 }
 
@@ -262,7 +268,7 @@
   pointer-events: none;
   -webkit-mask-image: radial-gradient(ellipse, #000 24%, rgba(0, 0, 0, 0.8) 54%, transparent 79%) !important;
   mask-image: radial-gradient(ellipse, #000 24%, rgba(0, 0, 0, 0.8) 54%, transparent 79%) !important;
-  filter: blur(28px) saturate(1.72) contrast(1.18) !important;
+  filter: grayscale(1) sepia(0.32) hue-rotate(205deg) blur(28px) saturate(2.1) contrast(1.18) !important;
   mix-blend-mode: screen;
   transform:
     translateX(-50%)
@@ -414,9 +420,13 @@
     opacity: max(0.58, var(--venue-image-opacity));
     filter:
       saturate(var(--venue-flux-saturate))
-      saturate(1.08)
+      grayscale(0.48)
+      sepia(0.32)
+      hue-rotate(218deg)
+      saturate(1.6)
       contrast(var(--venue-flux-contrast))
-      contrast(1.08)
+      contrast(1.05)
+      brightness(1.03)
       blur(var(--venue-flux-blur))
       drop-shadow(-10px 3px 22px rgba(119, 79, 255, 0.22))
       drop-shadow(10px -3px 22px rgba(255, 62, 198, 0.2));
@@ -425,7 +435,7 @@
   .portal-venue-echo {
     top: 30px;
     opacity: 0.24 !important;
-    filter: blur(20px) saturate(1.58) contrast(1.14) !important;
+    filter: grayscale(1) sepia(0.3) hue-rotate(205deg) blur(20px) saturate(1.95) contrast(1.14) !important;
   }
 
   .portal-debug-hud {
