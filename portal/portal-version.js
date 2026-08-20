@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = 'portal-study-1.1.0';
+  const VERSION = 'portal-study-1.2.0';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
   const DEBUG_MODES = Object.freeze({ final: 0, density: 1, core: 2, depth: 3, 'no-post': 4 });
@@ -28,6 +28,35 @@
       if (href?.startsWith('#')) return;
       if (href && !/^(?:[a-z]+:|\/|#)/i.test(href)) anchor.setAttribute('href', `../${href}`);
     });
+  };
+
+  const installImageDepth = () => {
+    const logo = document.querySelector('[data-particle-logo]');
+    const venue = document.querySelector('[data-particle-venue]');
+    if (!(logo instanceof HTMLImageElement) || !(venue instanceof HTMLImageElement)) {
+      throw new Error('Portal image anchors missing');
+    }
+
+    const createEcho = (source, className) => {
+      const echo = source.cloneNode(false);
+      echo.removeAttribute('data-particle-logo');
+      echo.removeAttribute('data-particle-venue');
+      echo.removeAttribute('alt');
+      echo.className = className;
+      echo.setAttribute('aria-hidden', 'true');
+      echo.setAttribute('draggable', 'false');
+      return echo;
+    };
+
+    const logoFar = createEcho(logo, 'portal-wordmark-echo portal-wordmark-echo--far');
+    const logoNear = createEcho(logo, 'portal-wordmark-echo portal-wordmark-echo--near');
+    logo.before(logoFar, logoNear);
+
+    const venueEcho = createEcho(venue, 'portal-venue-echo');
+    venue.before(venueEcho);
+    logo.closest('.wordmark-banner')?.classList.add('portal-image-depth');
+    venue.closest('.venue-photo')?.classList.add('portal-image-depth');
+    document.documentElement.classList.add('portal-image-depth-ready');
   };
 
   const createShader = (gl, type, source) => {
@@ -188,7 +217,8 @@
         float portrait = 1.0 - smoothstep(0.72, 0.92, aspect);
         p.y -= mix(0.02, -0.10, portrait);
         vec2 pointer = (u_pointer - 0.5) * vec2(u_resolution.x / u_resolution.y, 1.0);
-        p -= pointer * u_pointer_energy * 0.048;
+        vec2 parallax = pointer * u_pointer_energy;
+        p -= parallax * 0.018;
 
         float reveal = mix(0.36, 1.0, smoothstep(0.015, 0.28, u_progress));
         float mass_scale = mix(0.39, 0.68, smoothstep(0.0, 0.46, u_progress));
@@ -213,6 +243,7 @@
           float z = mix(-1.35, 1.35, layer);
           float perspective = 1.0 + z * 0.18;
           vec2 sample_p = p / perspective;
+          sample_p += parallax * mix(-0.19, 0.24, layer);
           sample_p = rotate2d(sample_p, z * 0.27 + u_time * 0.014);
           vec3 q = vec3(sample_p * mix(1.06, 1.28, portrait), z);
           q.xy += vec2(z * 0.12, -z * 0.055);
@@ -335,7 +366,7 @@
     let samples = 0;
     let elapsed = 0;
     let active = true;
-    let adaptiveReduced = false;
+    let adaptiveStage = 0;
 
     const resize = () => {
       const dpr = Math.min(devicePixelRatio || 1, renderScale);
@@ -370,6 +401,10 @@
       pointerEnergy += (pointerTarget - pointerEnergy) * Math.min(1, delta * 0.009);
       pointerTarget *= Math.pow(0.99, delta / 16.67);
       document.documentElement.style.setProperty('--portal-progress', progress.toFixed(4));
+      const parallaxX = (pointerX - 0.5) * pointerEnergy;
+      const parallaxY = (0.5 - pointerY) * pointerEnergy;
+      document.documentElement.style.setProperty('--portal-parallax-x', `${(parallaxX * 34).toFixed(2)}px`);
+      document.documentElement.style.setProperty('--portal-parallax-y', `${(parallaxY * 24).toFixed(2)}px`);
 
       if (active && !document.hidden) {
         gl.useProgram(program);
@@ -385,10 +420,15 @@
         if (elapsed >= 1200) {
           const fps = samples * 1000 / elapsed;
           canvas.dataset.fps = fps.toFixed(1);
-          if (fps < 25 && renderScale > 0.5 && !adaptiveReduced) {
+          if (fps < 31 && renderScale > 0.5 && adaptiveStage === 0) {
             renderScale = 0.48;
-            adaptiveReduced = true;
-            canvas.dataset.adaptiveReduction = 'true';
+            adaptiveStage = 1;
+            canvas.dataset.adaptiveReduction = 'stage-1';
+            resize();
+          } else if (fps < 32 && renderScale > 0.4 && adaptiveStage === 1) {
+            renderScale = 0.38;
+            adaptiveStage = 2;
+            canvas.dataset.adaptiveReduction = 'stage-2';
             resize();
           }
           samples = 0;
@@ -415,6 +455,7 @@
     canvas.dataset.visualContract = 'full-viewport-volumetric-field|irregular-dark-mass|layered-depth-flow|mobile-composed';
     canvas.dataset.debugModes = Object.keys(DEBUG_MODES).join('|');
     canvas.dataset.frameBudgetMs = compact ? '24' : '17';
+    canvas.dataset.parallaxMode = 'differential-volume|chromatic-image-depth';
     document.documentElement.classList.add('portal-field-ready');
     requestAnimationFrame(render);
   };
@@ -435,6 +476,7 @@
       document.body.classList.remove('portal-study-loading');
       document.documentElement.classList.add('portal-study-ready');
 
+      installImageDepth();
       installPortal();
       await loadScript(`../commune-organism.js?v=commune-${SOURCE_VERSION}`);
       await loadScript(`../commune-realtime.js?v=commune-${SOURCE_VERSION}`);
