@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = 'portal-study-1.5.0';
+  const VERSION = 'portal-study-1.5.1';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
   const DEBUG_MODES = Object.freeze({ final: 0, density: 1, volume: 2, depth: 3, 'no-post': 4, liquid: 5 });
@@ -585,6 +585,9 @@
       [...source.body.children].forEach((child) => fragment.append(document.importNode(child, true)));
       document.body.querySelector('.portal-study-loader')?.remove();
       document.body.append(fragment);
+      const eventDescription = document.querySelector('.event-description');
+      if (!eventDescription) throw new Error('Portal event description missing');
+      eventDescription.textContent = 'For two hours, the hall comes alive with an eclectic mix of electronic and acoustic music from around the world, with space to listen, move and follow your own rhythm.';
       document.body.dataset.siteVersion = VERSION;
       document.body.classList.remove('portal-study-loading');
       document.documentElement.classList.add('portal-study-ready');
