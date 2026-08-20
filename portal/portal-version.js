@@ -1,8 +1,8 @@
 (() => {
-  const VERSION = 'portal-study-1.3.0';
+  const VERSION = 'portal-study-1.4.0';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
-  const DEBUG_MODES = Object.freeze({ final: 0, density: 1, volume: 2, depth: 3, 'no-post': 4 });
+  const DEBUG_MODES = Object.freeze({ final: 0, density: 1, volume: 2, depth: 3, 'no-post': 4, liquid: 5 });
   const debugName = DEBUG_MODES[params.get('debug')] === undefined ? 'final' : params.get('debug');
   const debugMode = DEBUG_MODES[debugName];
   const fixedTime = Number.parseFloat(params.get('time'));
@@ -106,7 +106,7 @@
     canvas.dataset.seed = seed.toFixed(2);
     canvas.dataset.debugMode = debugName;
     canvas.dataset.backend = 'webgl-fragment-plane';
-    canvas.dataset.referenceMechanism = 'layered-volumetric-field-with-projected-particle-depth';
+    canvas.dataset.referenceMechanism = 'layered-volume|projected-particle-depth|prismatic-liquid-glass-shells';
     canvas.setAttribute('aria-hidden', 'true');
     realtimeVignette.after(canvas);
 
@@ -197,6 +197,44 @@
         return broad * 0.68 + detail * 0.32;
       }
 
+      float sd_round_box(vec2 p, vec2 half_size, float radius) {
+        vec2 q = abs(p) - half_size + radius;
+        return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - radius;
+      }
+
+      vec4 liquid_lens(vec2 p, vec2 centre, vec2 half_size, float radius, float rotation, float phase) {
+        vec2 q = rotate2d(p - centre, rotation);
+        q.x += sin(q.y * 2.4 + u_time * 0.085 + phase) * 0.022;
+        q.y += sin(q.x * 2.1 - u_time * 0.065 + phase * 1.7) * 0.015;
+
+        float sdf = sd_round_box(q, half_size, radius);
+        float inside = 1.0 - smoothstep(-0.015, 0.026, sdf);
+        float red_edge = exp(-abs(sd_round_box(q + vec2(0.018, 0.004), half_size, radius)) * 43.0);
+        float green_edge = exp(-abs(sd_round_box(q, half_size, radius)) * 48.0);
+        float blue_edge = exp(-abs(sd_round_box(q - vec2(0.018, 0.004), half_size, radius)) * 43.0);
+        vec3 spectral_edge = vec3(red_edge, green_edge, blue_edge);
+
+        float inner_rim = exp(-abs(sdf + 0.055) * 34.0) * inside;
+        float top_glint = exp(-abs(sdf + 0.022) * 74.0)
+          * smoothstep(-0.18, half_size.y, q.y) * inside;
+        float bowed = q.y + q.x * q.x * 1.62 + sin(q.x * 3.1 + phase) * 0.026;
+        float caustic_a = exp(-abs(bowed + half_size.y * 0.31) * 33.0) * inside;
+        float caustic_b = exp(-abs(bowed - half_size.y * 0.18) * 42.0) * inside;
+        float caustic_c = exp(-abs(q.y + q.x * q.x * 0.88 - half_size.y * 0.48) * 38.0) * inside;
+
+        vec3 rainbow_a = vec3(1.0, 0.055, 0.14) * caustic_a;
+        rainbow_a += vec3(1.0, 0.72, 0.02) * exp(-abs(bowed + half_size.y * 0.24) * 38.0) * inside;
+        rainbow_a += vec3(0.08, 1.0, 0.38) * exp(-abs(bowed + half_size.y * 0.17) * 40.0) * inside;
+        vec3 rainbow_b = vec3(0.05, 0.28, 1.0) * caustic_b;
+        rainbow_b += vec3(0.66, 0.08, 1.0) * caustic_c;
+
+        vec3 contribution = spectral_edge * 0.78;
+        contribution += vec3(0.98, 0.95, 0.9) * (inner_rim * 0.2 + top_glint * 0.58);
+        contribution += rainbow_a * 0.38 + rainbow_b * 0.34;
+        float optical_mask = inside * 0.15 + max(max(red_edge, green_edge), blue_edge) * 0.3;
+        return vec4(contribution, optical_mask);
+      }
+
       void main() {
         vec2 p = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / min(u_resolution.x, u_resolution.y);
         float aspect = u_resolution.x / u_resolution.y;
@@ -273,6 +311,26 @@
         raw_colour += far_colour * 1.14;
         raw_colour += near_colour * 1.28;
 
+        vec2 liquid_p = p + parallax * 0.075;
+        vec2 lens_a_centre = mix(vec2(-0.72, 0.03), vec2(-0.45, 0.18), portrait);
+        vec2 lens_b_centre = mix(vec2(0.76, 0.08), vec2(0.47, -0.28), portrait);
+        vec2 lens_c_centre = mix(vec2(0.14, -0.68), vec2(0.02, 0.92), portrait);
+        vec2 lens_side_size = mix(vec2(0.29, 0.6), vec2(0.23, 0.54), portrait);
+        vec4 liquid_a = liquid_lens(liquid_p, lens_a_centre, lens_side_size, 0.25, -0.18, 0.4);
+        vec4 liquid_b = liquid_lens(liquid_p, lens_b_centre, lens_side_size * vec2(0.92, 1.08), 0.24, 0.16, 2.1);
+        vec4 liquid_c = liquid_lens(
+          liquid_p,
+          lens_c_centre,
+          mix(vec2(0.5, 0.24), vec2(0.3, 0.46), portrait),
+          mix(0.2, 0.26, portrait),
+          mix(-0.06, 0.03, portrait),
+          4.2
+        );
+        vec3 liquid_colour = liquid_a.rgb + liquid_b.rgb + liquid_c.rgb;
+        float liquid_mask = clamp(liquid_a.a + liquid_b.a + liquid_c.a, 0.0, 0.62);
+        raw_colour *= 1.0 - liquid_mask * 0.16;
+        raw_colour += liquid_colour * mix(0.62, 0.48, portrait);
+
         vec3 final_colour = raw_colour;
         final_colour += near_colour * near_alpha * 0.28;
         final_colour += far_colour * far_alpha * 0.08;
@@ -282,7 +340,8 @@
         if (u_debug == 1) final_colour = vec3(clamp(density_sum * 0.7, 0.0, 1.0));
         if (u_debug == 2) final_colour = vec3(far_alpha, ambient_alpha, near_alpha);
         if (u_debug == 3) final_colour = vec3(far_alpha, near_alpha, depth_sum / max(density_sum, 0.001));
-        if (u_debug == 4) final_colour = raw_colour;
+        if (u_debug == 4) final_colour = ambient_colour + far_colour * 1.14 + near_colour * 1.28;
+        if (u_debug == 5) final_colour = liquid_colour;
 
         float volume_alpha = clamp(far_alpha * 0.72 + near_alpha + ambient_alpha, 0.0, 0.97);
         float alpha = reveal * volume_alpha;
@@ -521,7 +580,9 @@
     resize();
     updateProgress();
     canvas.dataset.webglStatus = 'rendering';
-    canvas.dataset.visualContract = 'full-viewport-volumetric-field|no-central-void|projected-3d-particle-depth|mobile-composed';
+    canvas.dataset.visualContract = 'full-viewport-volume|no-central-void|projected-3d-particles|prismatic-liquid-lenses|mobile-composed';
+    canvas.dataset.liquidMechanism = 'rounded-sdf-shells|rgb-dispersion|internal-caustic-bands|pointer-parallax';
+    canvas.dataset.liquidDivergence = 'stylised-screen-space-optics-not-physical-raytraced-transmission';
     canvas.dataset.debugModes = Object.keys(DEBUG_MODES).join('|');
     canvas.dataset.frameBudgetMs = compact ? '24' : '17';
     canvas.dataset.parallaxMode = 'differential-volume|projected-particle-depth|chromatic-image-depth';
