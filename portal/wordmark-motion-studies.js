@@ -7,7 +7,10 @@
     'chromatic-refraction': { index: 5, label: 'Chromatic Refraction', period: 22 }
   };
 
-  const slug = new URLSearchParams(location.search).get('motion-study');
+  const requestedStudy = new URLSearchParams(location.search).get('motion-study');
+  const slug = requestedStudy === 'off'
+    ? null
+    : (STUDIES[requestedStudy] ? requestedStudy : 'liquid-ripple');
   const study = STUDIES[slug];
   if (!study) return;
 
