@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = 'portal-study-2.7.0';
+  const VERSION = 'portal-study-2.8.0';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
   const BACKGROUNDS = Object.freeze([
@@ -441,8 +441,9 @@
       const start = scrollY + heroRect.top + heroRect.height * 0.08;
       const end = scrollY + eventRect.top + eventRect.height * 0.34;
       progressTarget = Math.max(0, Math.min(1, (scrollY - start) / Math.max(1, end - start)));
-      active = eventRect.bottom > -innerHeight * 0.35 && heroRect.top < innerHeight * 1.2;
-      canvas.dataset.active = String(active);
+      active = true;
+      canvas.dataset.active = 'true';
+      canvas.dataset.animationScope = 'full-page';
     };
 
     const move = (event) => {
@@ -564,7 +565,7 @@
     resize();
     updateProgress();
     canvas.dataset.webglStatus = 'rendering';
-    canvas.dataset.visualContract = 'daily-three-background-rotation|distributed-black-negative-space|no-central-void|transparent-folded-wordmark|pointer-responsive-depth|mobile-composed';
+    canvas.dataset.visualContract = 'daily-three-background-rotation|distributed-black-negative-space|no-central-void|transparent-folded-wordmark|pointer-responsive-depth|full-page-continuous-motion|mobile-composed';
     canvas.dataset.backgroundMechanism = 'shared-low-frequency-warp|woven-interference-or-marble-or-chromatic-grain|pointer-parallax';
     canvas.dataset.contrastMechanism = 'shared-low-frequency-shadow-field|off-centre-black-pockets|centre-guard';
     canvas.dataset.liquidDivergence = 'stylised-screen-space-optics-not-physical-raytraced-transmission';
