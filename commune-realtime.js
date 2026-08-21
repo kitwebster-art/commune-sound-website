@@ -50,6 +50,9 @@
   let soundscapeStarting = false;
   let soundscapeAutoStartPending = true;
   let toneTimer = 0;
+  let sequenceTimer = 0;
+  let sequenceStep = 0;
+  let sequenceNextTime = 0;
   let suspendTimer = 0;
   let soundSignalFrame = 0;
   let soundPointerX = window.innerWidth * 0.5;
@@ -99,6 +102,16 @@
     return buffer;
   }
 
+  function createPercussionBuffer(audio, duration = 0.18) {
+    const length = Math.floor(audio.sampleRate * duration);
+    const buffer = audio.createBuffer(1, length, audio.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let index = 0; index < length; index += 1) {
+      data[index] = Math.random() * 2 - 1;
+    }
+    return buffer;
+  }
+
   function createSoundscape() {
     if (soundscape || !AudioContextConstructor) return soundscape;
     const audio = new AudioContextConstructor({ latencyHint: 'interactive' });
@@ -113,6 +126,12 @@
     const droneGain = audio.createGain();
     const airFilter = audio.createBiquadFilter();
     const airGain = audio.createGain();
+    const beatBus = audio.createGain();
+    const synthBus = audio.createGain();
+    const synthDelay = audio.createDelay(1.4);
+    const synthDelayFilter = audio.createBiquadFilter();
+    const synthDelayFeedback = audio.createGain();
+    const synthDelayWet = audio.createGain();
 
     master.gain.value = 0;
     compressor.threshold.value = -30;
@@ -192,6 +211,23 @@
     const airPanner = connectWithPan(airGain, bus, 0);
     airSource.start();
 
+    beatBus.gain.value = 0.72;
+    synthBus.gain.value = 0.62;
+    synthDelay.delayTime.value = 60 / 82 * 0.75;
+    synthDelayFilter.type = 'lowpass';
+    synthDelayFilter.frequency.value = 2800;
+    synthDelayFilter.Q.value = 0.72;
+    synthDelayFeedback.gain.value = 0.34;
+    synthDelayWet.gain.value = 0.42;
+    beatBus.connect(bus);
+    synthBus.connect(bus);
+    synthBus.connect(synthDelay);
+    synthDelay.connect(synthDelayFilter);
+    synthDelayFilter.connect(synthDelayWet);
+    synthDelayWet.connect(bus);
+    synthDelayFilter.connect(synthDelayFeedback);
+    synthDelayFeedback.connect(synthDelay);
+
     soundscape = {
       audio,
       master,
@@ -205,12 +241,21 @@
       airFilter,
       airGain,
       airPanner,
+      beatBus,
+      synthBus,
+      synthDelay,
+      synthDelayFilter,
+      percussionBuffer: createPercussionBuffer(audio),
       droneOscillators,
       breathLfo,
       driftLfo,
       airSource,
     };
-    if (soundToggle) soundToggle.dataset.context = audio.state;
+    if (soundToggle) {
+      soundToggle.dataset.context = audio.state;
+      soundToggle.dataset.soundscape = 'psychedelic-generative-beat';
+      soundToggle.dataset.tempo = '82-bpm';
+    }
     return soundscape;
   }
 
@@ -297,6 +342,126 @@
     }, delay);
   }
 
+  function playKick(when, accent = 1) {
+    if (!soundscapeEnabled || !soundscape) return;
+    const { audio, beatBus } = soundscape;
+    const oscillator = audio.createOscillator();
+    const envelope = audio.createGain();
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(92, when);
+    oscillator.frequency.exponentialRampToValueAtTime(44, when + 0.16);
+    envelope.gain.setValueAtTime(0.0001, when);
+    envelope.gain.exponentialRampToValueAtTime(0.16 * accent, when + 0.008);
+    envelope.gain.exponentialRampToValueAtTime(0.0001, when + 0.3);
+    oscillator.connect(envelope);
+    envelope.connect(beatBus);
+    oscillator.start(when);
+    oscillator.stop(when + 0.34);
+  }
+
+  function playHat(when, open = false) {
+    if (!soundscapeEnabled || !soundscape) return;
+    const { audio, beatBus, percussionBuffer } = soundscape;
+    const source = audio.createBufferSource();
+    const highpass = audio.createBiquadFilter();
+    const envelope = audio.createGain();
+    const duration = open ? 0.22 : 0.075;
+    source.buffer = percussionBuffer;
+    highpass.type = 'highpass';
+    highpass.frequency.value = open ? 5200 : 6800;
+    highpass.Q.value = 0.7;
+    envelope.gain.setValueAtTime(0.0001, when);
+    envelope.gain.exponentialRampToValueAtTime(open ? 0.022 : 0.014, when + 0.003);
+    envelope.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+    source.connect(highpass);
+    highpass.connect(envelope);
+    envelope.connect(beatBus);
+    source.start(when);
+    source.stop(when + duration + 0.02);
+  }
+
+  function playPsychedelicStep(when, step) {
+    if (!soundscapeEnabled || !soundscape) return;
+    const { audio, synthBus } = soundscape;
+    const pattern = [110, 164.81, 146.83, 220, 130.81, 196, 174.61, 261.63];
+    const frequency = pattern[step % pattern.length];
+    const duration = step % 4 === 3 ? 0.58 : 0.34;
+    const envelope = audio.createGain();
+    const filter = audio.createBiquadFilter();
+    const primary = audio.createOscillator();
+    const shimmer = audio.createOscillator();
+    const shimmerGain = audio.createGain();
+    const pan = audio.createStereoPanner ? audio.createStereoPanner() : null;
+
+    primary.type = step % 2 ? 'sawtooth' : 'triangle';
+    primary.frequency.setValueAtTime(frequency * 1.5, when);
+    primary.frequency.exponentialRampToValueAtTime(frequency, when + 0.07);
+    primary.detune.setValueAtTime(step % 3 === 0 ? -8 : 5, when);
+    shimmer.type = 'sine';
+    shimmer.frequency.setValueAtTime(frequency * 2.01, when);
+    shimmer.frequency.exponentialRampToValueAtTime(frequency * 2, when + duration);
+    shimmerGain.gain.value = 0.16;
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(420 + (step % 4) * 180, when);
+    filter.frequency.exponentialRampToValueAtTime(2300 + (step % 3) * 680, when + duration * 0.42);
+    filter.frequency.exponentialRampToValueAtTime(560, when + duration);
+    filter.Q.value = 7.5;
+    envelope.gain.setValueAtTime(0.0001, when);
+    envelope.gain.exponentialRampToValueAtTime(step % 4 === 0 ? 0.036 : 0.026, when + 0.018);
+    envelope.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+
+    primary.connect(envelope);
+    shimmer.connect(shimmerGain);
+    shimmerGain.connect(envelope);
+    envelope.connect(filter);
+    if (pan) {
+      pan.pan.value = Math.sin(step * 1.7) * 0.68;
+      filter.connect(pan);
+      pan.connect(synthBus);
+    } else {
+      filter.connect(synthBus);
+    }
+    primary.start(when);
+    shimmer.start(when);
+    primary.stop(when + duration + 0.04);
+    shimmer.stop(when + duration + 0.04);
+  }
+
+  function scheduleSequenceStep(when, step) {
+    const beat = step % 8;
+    const kick = beat === 0 || beat === 4 || beat === 6;
+    const synth = beat % 2 === 0 || beat === 3 || beat === 7;
+    if (kick) playKick(when, beat === 0 ? 1 : 0.74);
+    if (beat % 2 === 1) playHat(when, beat === 7);
+    if (synth) playPsychedelicStep(when, step);
+    document.dispatchEvent(new CustomEvent('commune:soundscape-beat', {
+      detail: { bpm: 82, step, kick, synth },
+    }));
+  }
+
+  function runSequencer() {
+    window.clearTimeout(sequenceTimer);
+    if (!soundscapeEnabled || !soundscape || soundscape.audio.state !== 'running') {
+      sequenceTimer = 0;
+      return;
+    }
+    const stepDuration = 60 / 82 / 2;
+    while (sequenceNextTime < soundscape.audio.currentTime + 0.12) {
+      scheduleSequenceStep(sequenceNextTime, sequenceStep);
+      sequenceStep += 1;
+      sequenceNextTime += stepDuration;
+    }
+    sequenceTimer = window.setTimeout(runSequencer, 42);
+  }
+
+  function startSequencer() {
+    if (!soundscape) return;
+    window.clearTimeout(sequenceTimer);
+    sequenceStep = 0;
+    sequenceNextTime = soundscape.audio.currentTime + 0.08;
+    runSequencer();
+  }
+
   function updateSoundscape(horizontal, vertical, speed = 0, isDown = false, scroll = 0) {
     if (!soundscapeEnabled || !soundscape || soundscape.audio.state !== 'running') return;
     const { audio, droneFilter, droneGain, airFilter, airGain, airPanner } = soundscape;
@@ -372,7 +537,7 @@
       const now = engine.audio.currentTime;
       engine.master.gain.cancelScheduledValues(now);
       engine.master.gain.setValueAtTime(engine.master.gain.value, now);
-      engine.master.gain.linearRampToValueAtTime(0.34, now + 1.35);
+      engine.master.gain.linearRampToValueAtTime(0.3, now + 1.35);
       if (soundToggle) {
         soundToggle.dataset.state = 'on';
         soundToggle.dataset.context = engine.audio.state;
@@ -382,6 +547,7 @@
       if (soundLabel) soundLabel.textContent = 'Sound on';
       playTone(0.38, 0.5);
       scheduleTone();
+      startSequencer();
     } catch {
       soundscapeEnabled = false;
       soundToggle.dataset.state = 'unavailable';
@@ -402,6 +568,8 @@
     soundSignalFrame = 0;
     emitSoundscapeState(false);
     window.clearTimeout(toneTimer);
+    window.clearTimeout(sequenceTimer);
+    sequenceTimer = 0;
     const now = soundscape.audio.currentTime;
     soundscape.master.gain.cancelScheduledValues(now);
     soundscape.master.gain.setValueAtTime(soundscape.master.gain.value, now);
@@ -477,9 +645,12 @@
     document.addEventListener('visibilitychange', async () => {
       if (!soundscape) return;
       if (document.hidden && soundscape.audio.state === 'running') {
+        window.clearTimeout(sequenceTimer);
+        sequenceTimer = 0;
         await soundscape.audio.suspend();
       } else if (!document.hidden && soundscapeEnabled) {
         await soundscape.audio.resume();
+        startSequencer();
       }
       soundToggle.dataset.context = soundscape.audio.state;
     });
