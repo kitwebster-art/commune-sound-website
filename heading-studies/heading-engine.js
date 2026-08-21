@@ -16,7 +16,15 @@
     { id: 'lattice-relay', number: '13', family: 'Constructed lattice alphabet', title: 'Lattice Relay', description: 'Triangulated strokes and cross-braced joints make each letter feel engineered in space.' },
     { id: 'aperture-sequence', number: '14', family: 'Radial aperture alphabet', title: 'Aperture Sequence', description: 'Broken rings, rotating sectors and open counters turn the wordmark into a sequence of lenses.' },
     { id: 'split-monoliths', number: '15', family: 'Cut-volume alphabet', title: 'Split Monoliths', description: 'Massive geometric letter bodies are sliced into offset slabs with luminous internal edges.' },
-    { id: 'kinetic-notation', number: '16', family: 'Movement-score alphabet', title: 'Kinetic Notation', description: 'Directional strokes, beat marks and small waveforms draw the title like a choreographic score.' }
+    { id: 'kinetic-notation', number: '16', family: 'Movement-score alphabet', title: 'Kinetic Notation', description: 'Directional strokes, beat marks and small waveforms draw the title like a choreographic score.' },
+    { id: 'labyrinth-spine', number: '17', family: 'Maze-line alphabet', title: 'Labyrinth Spine', description: 'Each letter is routed as a continuous architectural maze with deliberate returns and dead ends.' },
+    { id: 'boolean-chambers', number: '18', family: 'Boolean module alphabet', title: 'Boolean Chambers', description: 'Circular and rectangular chambers combine through hard unions, overlaps and negative cuts.' },
+    { id: 'axial-fragments', number: '19', family: 'Fragment alphabet', title: 'Axial Fragments', description: 'Detached strokes imply each glyph through balance, interruption and carefully controlled absence.' },
+    { id: 'pixel-relay', number: '20', family: 'Segment-display alphabet', title: 'Pixel Relay', description: 'Octagonal display segments lock together as a rhythmic digital construction system.' },
+    { id: 'circle-grammar', number: '21', family: 'Circle-and-chord alphabet', title: 'Circle Grammar', description: 'Every letter begins with a circle, then becomes legible through a minimal set of chords and openings.' },
+    { id: 'cubic-rhythm', number: '22', family: 'Isometric block alphabet', title: 'Cubic Rhythm', description: 'Interlocking isometric bars build a dense spatial wordmark with shifting internal depth.' },
+    { id: 'counterweight', number: '23', family: 'Counterweighted alphabet', title: 'Counterweight', description: 'Heavy curved masses are balanced by sharp triangular voids and offset internal pivots.' },
+    { id: 'bauhaus-hinges', number: '24', family: 'Hinged module alphabet', title: 'Bauhaus Hinges', description: 'Quarter circles, straight beams and visible pivots assemble the letters like moving furniture.' }
   ]);
 
   const WORDS = Object.freeze([
@@ -200,6 +208,94 @@
     D: 'M9 12V132H43A47 60 0 0 0 43 12ZM43 30V48M43 96V114M72 45L86 33M72 99L86 111'
   });
 
+  const MAZE = Object.freeze({
+    C: 'M92 20H34L10 44V108L34 132H92M72 42H44L32 54V98L44 110H72M55 42V70H80',
+    O: 'M34 12H66L92 38V106L66 132H34L8 106V38ZM35 36H65L70 42V102L64 108H36L30 102V42ZM50 36V72H76',
+    M: 'M8 132V12H30L50 52L70 12H92V132M30 132V56L50 92L70 56V132M8 72H30M70 72H92',
+    U: 'M8 12V105L35 132H65L92 105V12M30 12V96L42 108H58L70 96V12M30 72H8M70 72H92',
+    N: 'M8 132V12H30L70 82V12H92V132H70L30 62V132M8 72H30M70 72H92',
+    E: 'M92 12H8V132H92M8 72H76M30 36H76M30 108H76M52 36V72H30',
+    S: 'M92 12H32L8 36V72H68L92 96V108L68 132H8M30 36H72M30 58H76M70 96H30M30 110H68M50 72V96',
+    D: 'M8 12V132H64L92 104V40L64 12ZM30 36H56L70 50V94L56 108H30ZM30 72H70'
+  });
+
+  const BOOLEAN = Object.freeze({
+    C: 'M91 23A46 62 0 1 0 91 121M71 45A24 40 0 1 0 71 99M50 8V32M50 112V136',
+    O: 'M50 7A43 65 0 1 0 50 137A43 65 0 1 0 50 7M50 34A20 38 0 1 1 50 110A20 38 0 1 1 50 34M7 72H31M69 72H93',
+    M: 'M7 132V12H34L50 52L66 12H93V132M30 132V64L50 107L70 64V132M7 72H30M70 72H93',
+    U: 'M7 12V102L35 132H65L93 102V12M31 12V91L42 104H58L69 91V12M7 72H31M69 72H93',
+    N: 'M7 132V12H31L69 82V12H93V132H69L31 62V132M7 72H31M69 72H93',
+    E: 'M93 12H7V132H93M7 72H78M31 37H82M31 107H82M31 37V107',
+    S: 'M91 25A45 31 0 0 0 8 45C8 67 30 70 53 74C80 78 95 92 91 111A45 31 0 0 1 8 117M50 53A20 19 0 1 0 50 91',
+    D: 'M7 12V132H43A43 60 0 0 0 43 12ZM31 37V107H42A20 35 0 0 0 42 37ZM43 52A20 20 0 1 1 43 92'
+  });
+
+  const FRAGMENT = Object.freeze({
+    C: 'M88 26L74 14H37M20 27L9 45V99M18 116L34 132H76M88 118L94 104',
+    O: 'M34 12H66M82 25L92 42V101M80 119L66 132H34M18 119L8 102V43M20 25L34 12M50 34V54M50 90V110',
+    M: 'M8 132V12M18 26L48 75M52 75L82 26M92 12V132M36 55L50 80L64 55',
+    U: 'M8 12V92M18 113L34 130M44 134H58M68 130L84 113M92 92V12M30 94L43 107M57 107L70 94',
+    N: 'M8 132V12M18 28L43 63M57 81L82 116M92 132V12M40 58L60 86',
+    E: 'M92 12H46M30 12H8V58M8 86V132H34M52 132H92M8 72H42M60 72H78',
+    S: 'M88 24L72 12H36M20 23L8 40V58M20 68L43 72M60 76L80 83M92 96V111M80 125L68 132H22',
+    D: 'M8 12V55M8 87V132H57M73 124L92 103M92 87V49M82 34L65 12H26M36 36V56M36 88V108'
+  });
+
+  const PIXEL = Object.freeze({
+    C: 'M88 14H30L8 36V108L30 130H88M30 36H70M30 108H70',
+    O: 'M30 14H70L92 36V108L70 130H30L8 108V36ZM34 40H66V104H34Z',
+    M: 'M8 130V14H34L50 42L66 14H92V130H68V62L50 92L32 62V130Z',
+    U: 'M8 14V106L30 130H70L92 106V14M32 14V98L40 106H60L68 98V14',
+    N: 'M8 130V14H32L68 82V14H92V130H68L32 62V130Z',
+    E: 'M92 14H8V130H92M8 72H74M32 38H82M32 106H82',
+    S: 'M90 14H28L8 34V72H68L90 94V110L70 130H8M30 38H74M30 106H68',
+    D: 'M8 14V130H68L92 106V38L68 14ZM32 38H60L68 46V98L60 106H32Z'
+  });
+
+  const CIRCLE = Object.freeze({
+    C: 'M90 25A45 60 0 1 0 90 119M50 8V34M50 110V136',
+    O: 'M50 7A43 65 0 1 0 50 137A43 65 0 1 0 50 7M7 72H93M50 7V137',
+    M: 'M7 132V12M93 132V12M7 12L50 82L93 12M29 49A25 25 0 0 0 71 49',
+    U: 'M7 12V91A43 43 0 0 0 93 91V12M7 72H93M50 111V137',
+    N: 'M7 132V12L93 132V12M7 72H93M50 72V106',
+    E: 'M93 12H7V132H93M7 72H78M50 12V40M50 104V132',
+    S: 'M90 26A44 31 0 0 0 8 45C8 66 30 70 53 74C80 78 95 92 90 111A44 31 0 0 1 8 117M8 72H92',
+    D: 'M7 12V132H42A43 60 0 0 0 42 12ZM7 72H92M42 12V132'
+  });
+
+  const CUBIC = Object.freeze({
+    C: 'M88 14H32L8 38V106L32 130H88L68 110H42L30 98V46L42 34H68ZM8 38L30 52M8 106L30 92',
+    O: 'M32 12H68L94 38V106L68 132H32L6 106V38ZM43 38H57L68 50V94L57 106H43L32 94V50ZM6 38L32 52M94 38L68 52',
+    M: 'M6 132V12L50 70L94 12V132L72 110V66L50 97L28 66V110ZM6 12L28 32M94 12L72 32',
+    U: 'M6 12L30 36V94L43 108H57L70 94V36L94 12V106L67 134H33L6 106ZM30 36L42 24M70 36L58 24',
+    N: 'M6 132V12L72 98V12H94V132L28 46V132ZM6 12L28 32M72 98L94 80',
+    E: 'M94 12H6V132H94L72 110H32V86H72L52 66H32V36H72ZM6 12L32 36M6 132L32 110',
+    S: 'M94 12H31L6 39V70H67L72 76V98L62 108H6L31 132H70L94 106V64H35L30 59V42L37 36H72ZM6 39L30 52M94 106L72 94',
+    D: 'M6 12V132H64L94 102V42L64 12ZM32 38H55L68 52V92L55 106H32ZM6 12L32 38M94 42L68 56'
+  });
+
+  const COUNTER = Object.freeze({
+    C: 'M94 20C75 5 36 3 15 30C-2 52 1 111 25 130C44 145 78 136 94 117M68 48C58 39 42 39 34 51C26 64 28 93 38 103C47 112 60 109 68 101',
+    O: 'M50 6C18 6 6 33 8 73C10 115 24 136 50 136C76 136 90 115 92 73C94 33 82 6 50 6ZM50 42C39 42 36 53 36 73C36 93 39 102 50 102C61 102 64 93 64 73C64 53 61 42 50 42Z',
+    M: 'M6 132V12H35L50 53L65 12H94V132H69V70L50 111L31 70V132Z',
+    U: 'M6 12H34V96C34 106 40 111 50 111C60 111 66 106 66 96V12H94V105C94 125 76 136 50 136C24 136 6 125 6 105Z',
+    N: 'M6 132V12H34L68 78V12H94V132H66L32 66V132Z',
+    E: 'M94 12H6V132H94V103H37V85H79V57H37V41H94Z',
+    S: 'M94 12H24L6 31V78H65V104H6V132H78L94 115V51H35V40H94Z',
+    D: 'M6 12V132H70L94 108V36L70 12ZM37 41H58L65 48V96L58 103H37Z'
+  });
+
+  const HINGE = Object.freeze({
+    C: 'M91 28A45 58 0 1 0 91 116M52 14V43M52 101V130M70 43H91',
+    O: 'M50 8A42 64 0 1 0 50 136A42 64 0 1 0 50 8M8 72H92M50 8V136',
+    M: 'M8 132V12L50 72L92 12V132M8 72H33M67 72H92M50 72V110',
+    U: 'M8 12V92A42 42 0 0 0 92 92V12M8 72H34M66 72H92M50 112V138',
+    N: 'M8 132V12L92 132V12M8 72H34M66 72H92M50 72V98',
+    E: 'M92 12H8V132H92M8 72H78M52 12V39M52 105V132',
+    S: 'M90 26A44 30 0 0 0 8 45C8 66 30 70 52 74C80 78 95 92 90 111A44 30 0 0 1 8 117M8 72H92M50 51V95',
+    D: 'M8 12V132H43A44 60 0 0 0 43 12ZM8 72H92M43 12V132'
+  });
+
   const optionById = (id) => OPTIONS.find((option) => option.id === id) || OPTIONS[0];
   const glyphInstances = (alphabet, className, extra = '') => WORDS.map((word, row) => word.letters.map((letter, index) => {
     const x = word.x + index * word.step;
@@ -253,6 +349,14 @@
   const buildAperture = () => `<g class="aperture-sequence">${glyphInstances(APERTURE, 'aperture-halo')}${glyphInstances(APERTURE, 'aperture-ring')}${glyphInstances(APERTURE, 'aperture-index')}${deterministicNodes(32, 113)}</g>`;
   const buildSplit = () => `<g class="split-monoliths">${glyphInstances(SPLIT, 'split-shadow')}${glyphInstances(SPLIT, 'split-body')}${glyphInstances(SPLIT, 'split-cut')}</g>`;
   const buildNotation = () => `<g class="kinetic-notation"><path class="score-line" d="M48 278H1152M48 290H1152"/>${glyphInstances(NOTATION, 'notation-stroke')}${glyphInstances(NOTATION, 'notation-beat')}${deterministicNodes(38, 167)}</g>`;
+  const buildMaze = () => `<g class="labyrinth-spine">${glyphInstances(MAZE, 'maze-shadow')}${glyphInstances(MAZE, 'maze-route')}${glyphInstances(MAZE, 'maze-pulse')}</g>`;
+  const buildBoolean = () => `<g class="boolean-chambers">${glyphInstances(BOOLEAN, 'boolean-mass')}${glyphInstances(BOOLEAN, 'boolean-cut')}${deterministicNodes(26, 191)}</g>`;
+  const buildFragments = () => `<g class="axial-fragments">${glyphInstances(FRAGMENT, 'fragment-axis')}${glyphInstances(FRAGMENT, 'fragment-spark')}${deterministicNodes(20, 211)}</g>`;
+  const buildPixel = () => `<g class="pixel-relay"><path class="pixel-grid" d="M50 48H1150M50 280H1150M50 512H1150"/>${glyphInstances(PIXEL, 'pixel-segment')}${glyphInstances(PIXEL, 'pixel-gap')}</g>`;
+  const buildCircle = () => `<g class="circle-grammar">${glyphInstances(CIRCLE, 'circle-ghost')}${glyphInstances(CIRCLE, 'circle-body')}${glyphInstances(CIRCLE, 'circle-chord')}</g>`;
+  const buildCubic = () => `<g class="cubic-rhythm" filter="url(#shadow)">${repeatGlyphs(CUBIC, 'cubic-depth', 5, 4.2, 3.1)}${glyphInstances(CUBIC, 'cubic-face')}${glyphInstances(CUBIC, 'cubic-edge')}</g>`;
+  const buildCounter = () => `<g class="counterweight">${glyphInstances(COUNTER, 'counter-shadow')}${glyphInstances(COUNTER, 'counter-mass')}${glyphInstances(COUNTER, 'counter-void')}</g>`;
+  const buildHinge = () => `<g class="bauhaus-hinges">${glyphInstances(HINGE, 'hinge-rail')}${glyphInstances(HINGE, 'hinge-index')}${deterministicNodes(30, 239)}</g>`;
 
   const composition = (id) => ({
     'parallel-ritual': buildParallel,
@@ -270,7 +374,15 @@
     'lattice-relay': buildLattice,
     'aperture-sequence': buildAperture,
     'split-monoliths': buildSplit,
-    'kinetic-notation': buildNotation
+    'kinetic-notation': buildNotation,
+    'labyrinth-spine': buildMaze,
+    'boolean-chambers': buildBoolean,
+    'axial-fragments': buildFragments,
+    'pixel-relay': buildPixel,
+    'circle-grammar': buildCircle,
+    'cubic-rhythm': buildCubic,
+    'counterweight': buildCounter,
+    'bauhaus-hinges': buildHinge
   }[id] || buildParallel)();
 
   const alphabetForOption = (id) => ({
@@ -289,7 +401,15 @@
     'lattice-relay': LATTICE,
     'aperture-sequence': APERTURE,
     'split-monoliths': SPLIT,
-    'kinetic-notation': NOTATION
+    'kinetic-notation': NOTATION,
+    'labyrinth-spine': MAZE,
+    'boolean-chambers': BOOLEAN,
+    'axial-fragments': FRAGMENT,
+    'pixel-relay': PIXEL,
+    'circle-grammar': CIRCLE,
+    'cubic-rhythm': CUBIC,
+    'counterweight': COUNTER,
+    'bauhaus-hinges': HINGE
   }[id] || ROUND);
 
   const create = ({ container, optionId }) => {

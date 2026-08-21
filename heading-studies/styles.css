@@ -105,6 +105,43 @@ a { color:inherit; }
 .notation-stroke { stroke:#f7efff; stroke-width:8; stroke-linecap:round; stroke-linejoin:round; }
 .notation-beat { stroke:#d3ff7d; stroke-width:2; stroke-dasharray:2 9; animation:dash 6s linear infinite; }
 
+/* 17 custom maze-line alphabet */
+.maze-shadow { stroke:#160a2c; stroke-width:22; stroke-linecap:square; stroke-linejoin:miter; }
+.maze-route { stroke:#72ffd0; stroke-width:12; stroke-linecap:square; stroke-linejoin:miter; }
+.maze-pulse { stroke:#d3ff7d; stroke-width:2; stroke-dasharray:18 7 2 7; animation:dash 8s linear infinite; }
+
+/* 18 custom Boolean module alphabet */
+.boolean-mass { stroke:#f7efff; stroke-width:30; stroke-linecap:butt; stroke-linejoin:round; }
+.boolean-cut { stroke:#030207; stroke-width:10; stroke-linecap:butt; stroke-linejoin:round; stroke-dasharray:34 15; }
+
+/* 19 custom detached fragment alphabet */
+.fragment-axis { stroke:#f7efff; stroke-width:7; stroke-linecap:square; stroke-linejoin:miter; }
+.fragment-spark { stroke:#bb3dff; stroke-width:2; stroke-dasharray:1 7; filter:url(#glow); }
+
+/* 20 custom segment-display alphabet */
+.pixel-grid { fill:none; stroke:rgba(114,255,208,.16); stroke-width:1; stroke-dasharray:2 8; }
+.pixel-segment { stroke:#d3ff7d; stroke-width:25; stroke-linecap:square; stroke-linejoin:bevel; }
+.pixel-gap { stroke:#030207; stroke-width:8; stroke-dasharray:25 10; }
+
+/* 21 custom circle-and-chord alphabet */
+.circle-ghost { stroke:#694cff; stroke-width:28; stroke-linecap:butt; stroke-linejoin:round; opacity:.18; }
+.circle-body { stroke:#72ffd0; stroke-width:8; stroke-linecap:butt; stroke-linejoin:round; }
+.circle-chord { stroke:#f7efff; stroke-width:1.8; stroke-dasharray:5 8; }
+
+/* 22 custom isometric block alphabet */
+.cubic-depth { stroke:rgba(105,76,255,.45); stroke-width:25; stroke-linecap:square; stroke-linejoin:bevel; }
+.cubic-face { stroke:url(#fold); stroke-width:27; stroke-linecap:square; stroke-linejoin:bevel; }
+.cubic-edge { stroke:#d3ff7d; stroke-width:1.8; stroke-linecap:square; stroke-linejoin:bevel; }
+
+/* 23 custom counterweighted alphabet */
+.counter-shadow { stroke:#000; stroke-width:55; stroke-linecap:square; stroke-linejoin:bevel; transform:translate(8px,10px); }
+.counter-mass { stroke:#bb3dff; stroke-width:40; stroke-linecap:square; stroke-linejoin:bevel; }
+.counter-void { stroke:#030207; stroke-width:14; stroke-linecap:square; stroke-linejoin:bevel; stroke-dasharray:41 16; }
+
+/* 24 custom hinged Bauhaus alphabet */
+.hinge-rail { stroke:#f7efff; stroke-width:13; stroke-linecap:butt; stroke-linejoin:round; }
+.hinge-index { stroke:#d3ff7d; stroke-width:2; stroke-dasharray:2 10; animation:dash 9s linear infinite; }
+
 .diagnostic-skeleton { display:none; }.skeleton-path { fill:none; stroke:#d3ff7d; stroke-width:4; stroke-linecap:round; stroke-linejoin:round; }
 .heading-art[data-debug-mode="skeleton"] > g:not(.diagnostic-skeleton) { display:none; }.heading-art[data-debug-mode="skeleton"] .diagnostic-skeleton { display:block; }
 .heading-art[data-motion-mode="off"] * { animation:none!important; }
