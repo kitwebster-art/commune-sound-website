@@ -95,6 +95,96 @@
     transparent;
 }
 
+.portal-folded-stage {
+  --fold-x: 0;
+  --fold-y: 0;
+  --fold-shine: 50%;
+  position: relative;
+  z-index: 5;
+  width: min(92vw, 1080px);
+  perspective: 1200px;
+  touch-action: pan-y pinch-zoom;
+  transform:
+    rotateX(calc(var(--fold-y) * -4.5deg))
+    rotateY(calc(var(--fold-x) * 6deg))
+    translate3d(calc(var(--fold-x) * 7px), calc(var(--fold-y) * 5px), 0);
+  transform-style: preserve-3d;
+  transition: filter 220ms ease;
+  will-change: transform;
+}
+
+.portal-folded-float {
+  position: relative;
+  animation: folded-float 7s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
+
+.portal-folded-wordmark,
+.portal-folded-layer {
+  display: block;
+  width: 100% !important;
+  height: auto;
+  margin: 0 !important;
+  pointer-events: none;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+
+.portal-folded-wordmark {
+  position: relative;
+  z-index: 3 !important;
+  opacity: 1 !important;
+  filter:
+    saturate(1.08)
+    contrast(1.06)
+    drop-shadow(0 20px 32px rgba(0, 0, 0, 0.34)) !important;
+  transform: translateZ(36px) scale(1.002) !important;
+}
+
+.portal-folded-layer {
+  position: absolute !important;
+  inset: 0;
+}
+
+.portal-folded-glow {
+  z-index: 1 !important;
+  opacity: 0.42 !important;
+  filter: blur(24px) saturate(1.55) brightness(1.08) !important;
+  mix-blend-mode: screen;
+  transform:
+    translate3d(calc(var(--fold-x) * -10px), calc(var(--fold-y) * -7px), -22px)
+    scale(1.018) !important;
+}
+
+.portal-folded-sheen {
+  z-index: 4 !important;
+  opacity: 0.3 !important;
+  clip-path: polygon(
+    calc(var(--fold-shine) - 13%) 0,
+    calc(var(--fold-shine) + 2%) 0,
+    calc(var(--fold-shine) + 13%) 100%,
+    calc(var(--fold-shine) - 2%) 100%
+  );
+  filter: grayscale(0.7) brightness(1.8) contrast(1.15) !important;
+  mix-blend-mode: screen;
+  transform: translateZ(44px) scale(1.004) !important;
+}
+
+.portal-folded-stage.is-pressed {
+  animation: folded-pulse 620ms cubic-bezier(0.2, 0.85, 0.25, 1);
+}
+
+@keyframes folded-float {
+  0%, 100% { transform: translate3d(0, -3px, 0); }
+  50% { transform: translate3d(0, 5px, 0); }
+}
+
+@keyframes folded-pulse {
+  0% { filter: brightness(1); }
+  35% { filter: brightness(1.28) saturate(1.25); }
+  100% { filter: brightness(1); }
+}
+
 .portal-study-ready .wordmark-banner img.portal-wordmark-placeholder {
   visibility: hidden;
   opacity: 0 !important;
@@ -127,7 +217,7 @@
   display: none;
 }
 
-.portal-image-depth-ready .wordmark-banner img[data-particle-logo] {
+.portal-image-depth-ready .wordmark-banner img[data-particle-logo].portal-wordmark-placeholder {
   z-index: 3;
   opacity: max(0.66, var(--logo-image-opacity));
   -webkit-mask-image: radial-gradient(ellipse 68% 70% at 50% 50%, #000 42%, rgba(0, 0, 0, 0.9) 56%, rgba(0, 0, 0, 0.18) 70%, transparent 78%);
@@ -438,7 +528,7 @@ html[data-portal-background="holographic-grain"] .portal-static-field {
     background: rgba(1, 1, 4, 0.14);
   }
 
-  .portal-image-depth-ready .wordmark-banner img[data-particle-logo] {
+  .portal-image-depth-ready .wordmark-banner img[data-particle-logo].portal-wordmark-placeholder {
     opacity: max(0.7, var(--logo-image-opacity));
     filter:
       grayscale(0.94)
@@ -502,6 +592,18 @@ html[data-portal-background="holographic-grain"] .portal-static-field {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .portal-folded-stage {
+    transform: none !important;
+  }
+
+  .portal-folded-float {
+    animation: none !important;
+  }
+
+  .portal-folded-sheen {
+    display: none;
+  }
+
   .portal-wordmark-echo,
   .portal-venue-echo {
     transform: translate(-50%, -50%) scale(1.04) !important;

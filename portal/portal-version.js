@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = 'portal-study-1.9.0';
+  const VERSION = 'portal-study-2.0.0';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
   const BACKGROUNDS = Object.freeze([
@@ -131,7 +131,7 @@
     canvas.dataset.seed = fieldSeed.toFixed(2);
     canvas.dataset.debugMode = debugName;
     canvas.dataset.backend = 'webgl-fragment-plane';
-    canvas.dataset.referenceMechanism = 'shared-low-frequency-warp|daily-material-mode|distributed-black-negative-space|particle-wordmark';
+    canvas.dataset.referenceMechanism = 'shared-low-frequency-warp|daily-material-mode|distributed-black-negative-space|interactive-folded-wordmark';
     canvas.setAttribute('aria-hidden', 'true');
     realtimeVignette.after(canvas);
 
@@ -564,13 +564,13 @@
     resize();
     updateProgress();
     canvas.dataset.webglStatus = 'rendering';
-    canvas.dataset.visualContract = 'daily-three-background-rotation|distributed-black-negative-space|no-central-void|original-banner-exact-letter-mask|purple-green-particle-wordmark|mobile-composed';
+    canvas.dataset.visualContract = 'daily-three-background-rotation|distributed-black-negative-space|no-central-void|transparent-folded-wordmark|pointer-responsive-depth|mobile-composed';
     canvas.dataset.backgroundMechanism = 'shared-low-frequency-warp|woven-interference-or-marble-or-chromatic-grain|pointer-parallax';
     canvas.dataset.contrastMechanism = 'shared-low-frequency-shadow-field|off-centre-black-pockets|centre-guard';
     canvas.dataset.liquidDivergence = 'stylised-screen-space-optics-not-physical-raytraced-transmission';
     canvas.dataset.debugModes = Object.keys(DEBUG_MODES).join('|');
     canvas.dataset.frameBudgetMs = compact ? '24' : '17';
-    canvas.dataset.parallaxMode = 'rotating-material-field|projected-particle-depth|particle-wordmark-depth';
+    canvas.dataset.parallaxMode = 'rotating-material-field|projected-particle-depth|folded-wordmark-tilt';
     document.documentElement.classList.add('portal-field-ready');
     requestAnimationFrame(render);
   };
@@ -585,8 +585,8 @@
       const sourceLogo = source.querySelector('[data-particle-logo]');
       if (!(sourceLogo instanceof HTMLImageElement)) throw new Error('Portal source wordmark missing');
       sourceLogo.removeAttribute('srcset');
-      sourceLogo.setAttribute('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1204" height="488" viewBox="0 0 1204 488"/%3E');
-      sourceLogo.classList.add('portal-wordmark-placeholder');
+      sourceLogo.setAttribute('src', '../assets/commune-sound-folded-banner-v1.png?v=folded-banner-1.0.0');
+      sourceLogo.classList.add('portal-folded-wordmark');
 
       const fragment = document.createDocumentFragment();
       [...source.body.children].forEach((child) => fragment.append(document.importNode(child, true)));
@@ -601,10 +601,10 @@
       document.body.classList.remove('portal-study-loading');
       document.documentElement.classList.add('portal-study-ready');
 
-      if (typeof window.installPortalParticleWordmark !== 'function') {
-        throw new Error('Particle wordmark renderer missing');
+      if (typeof window.installPortalFoldedWordmark !== 'function') {
+        throw new Error('Folded wordmark renderer missing');
       }
-      await window.installPortalParticleWordmark({ seed: wordmarkSeed });
+      await window.installPortalFoldedWordmark();
       installImageDepth();
       installPortal();
       await loadScript(`../commune-realtime.js?v=commune-${SOURCE_VERSION}`);
