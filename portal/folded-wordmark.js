@@ -1,5 +1,45 @@
 (() => {
-  const ASSET = '../assets/commune-sound-folded-banner-v1.png?v=folded-banner-1.0.0';
+  const WORDMARKS = [
+    { slug: 'gradient-monoliths', label: 'Gradient Monoliths', file: '02-gradient-monoliths.png', treatment: 'dark-field' },
+    { slug: 'perspective-extrusion', label: 'Perspective Extrusion', file: '04-perspective-extrusion.png', treatment: 'screen' },
+    { slug: 'folded-ribbons', label: 'Folded Ribbons', file: '06-folded-ribbons.png', treatment: 'dark-field' },
+    { slug: 'isometric-lattice', label: 'Isometric Lattice', file: '05-isometric-lattice.png', treatment: 'screen' },
+    { slug: 'technical-instruments', label: 'Technical Instruments', file: '07-technical-instruments.png', treatment: 'screen' },
+    { slug: 'kinetic-fragments', label: 'Kinetic Fragments', file: '09-kinetic-fragments.png', treatment: 'dark-field' },
+    { slug: 'liquid-chrome', label: 'Liquid Chrome', file: '10-liquid-chrome.png', treatment: 'dark-field' }
+  ];
+  const LAST_WORDMARK_KEY = 'commune-sound:last-wordmark';
+
+  const randomIndex = (length) => {
+    if (globalThis.crypto?.getRandomValues) {
+      const values = new Uint32Array(1);
+      globalThis.crypto.getRandomValues(values);
+      return values[0] % length;
+    }
+    return Math.floor(Math.random() * length);
+  };
+
+  const selectWordmark = () => {
+    const requested = new URLSearchParams(location.search).get('wordmark');
+    const forced = WORDMARKS.find(({ slug }) => slug === requested);
+    if (forced) return forced;
+
+    let previous = '';
+    try {
+      previous = localStorage.getItem(LAST_WORDMARK_KEY) || '';
+    } catch (_) {
+      // The rotation still works when browser storage is unavailable.
+    }
+
+    const choices = WORDMARKS.filter(({ slug }) => slug !== previous);
+    const selected = choices[randomIndex(choices.length)];
+    try {
+      localStorage.setItem(LAST_WORDMARK_KEY, selected.slug);
+    } catch (_) {
+      // Storage is only used to prevent an immediate repeat.
+    }
+    return selected;
+  };
 
   window.installPortalFoldedWordmark = async () => {
     const image = document.querySelector('[data-particle-logo]');
@@ -8,17 +48,22 @@
       throw new Error('Portal folded wordmark anchor missing');
     }
 
-    image.src = ASSET;
+    const wordmark = selectWordmark();
+    image.src = `../assets/gpt-wordmark-studies/${wordmark.file}?v=wordmark-rotation-1.0.0`;
     image.removeAttribute('srcset');
     image.className = 'portal-folded-wordmark';
     image.alt = 'Commune Sound';
     image.draggable = false;
+    image.decoding = 'async';
 
     const stage = document.createElement('div');
     stage.className = 'portal-folded-stage';
     stage.dataset.interaction = 'pointer-tilt|touch-tilt|spectral-sheen|press-pulse|audio-reactive-depth';
     stage.dataset.audioReactive = 'ready';
     stage.dataset.audioState = 'off';
+    stage.dataset.wordmarkVariant = wordmark.slug;
+    stage.dataset.wordmarkTreatment = wordmark.treatment;
+    stage.setAttribute('aria-label', `Commune Sound wordmark, ${wordmark.label} edition`);
     const float = document.createElement('div');
     float.className = 'portal-folded-float';
 
@@ -105,7 +150,9 @@
       stage.dataset.audioReactive = 'reduced-motion-static';
     }
 
-    section.dataset.wordmarkSource = 'commune-sound-folded-banner-v1.png';
+    section.dataset.wordmarkSource = wordmark.file;
+    section.dataset.wordmarkVariant = wordmark.slug;
+    section.dataset.wordmarkRotation = 'random-every-visit-without-immediate-repeat';
     section.dataset.wordmarkPalette = 'violet|ultraviolet|hot-magenta|cyan-mint|pearl';
     section.dataset.wordmarkInteraction = stage.dataset.interaction;
     document.documentElement.classList.add('portal-folded-wordmark-ready');
