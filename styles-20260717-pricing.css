@@ -1278,6 +1278,7 @@ h1 {
     outline-offset: 3px;
   }
 
+  .mobile-join-dock[data-visible="false"],
   .mobile-join-dock[data-form-visible="true"] {
     visibility: hidden;
     pointer-events: none;
