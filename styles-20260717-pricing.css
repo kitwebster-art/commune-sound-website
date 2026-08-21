@@ -525,14 +525,14 @@ a {
   left: 50%;
   width: min(84vw, 1040px);
   height: 1px;
-  background: linear-gradient(to right, transparent, var(--banner-orange), var(--banner-blue), transparent);
+  background: linear-gradient(to right, transparent, #7750ff, #ff3ec6, #9ef7df, transparent);
   content: "";
   transform: translateX(-50%);
 }
 
 .philosophy-kicker {
   margin: 0;
-  color: var(--banner-amber);
+  color: #d9c7ff;
   font-size: 9px;
   font-weight: 850;
   letter-spacing: 0.26em;
@@ -547,7 +547,12 @@ a {
 .philosophy-copy p {
   max-width: 34ch;
   margin: 0 auto;
-  color: rgba(245, 222, 194, 0.76);
+  color: rgba(241, 231, 255, 0.94);
+  background: linear-gradient(112deg, #f8efff 0%, #d7c4ff 28%, #ffb7dc 60%, #aef5e5 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 20px rgba(0, 0, 0, 0.48));
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(25px, 3vw, 42px);
   font-weight: 300;
