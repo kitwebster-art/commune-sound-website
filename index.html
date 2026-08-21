@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="commune-site-version" content="4.7.6">
+    <meta name="commune-site-version" content="4.7.7">
     <meta name="commune-signup-endpoint" content="https://commune-sound-signup.commune-sound-signup-worker.workers.dev/subscribe">
     <meta name="commune-turnstile-sitekey" content="0x4AAAAAAEMwO4bk4jEHgDVY">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -34,7 +34,7 @@
     <link rel="stylesheet" href="styles-20260717-pricing.css?v=commune-4.7.6">
     <script src="commune-organism.js?v=commune-4.7.0" defer></script>
     <script src="commune-realtime.js?v=commune-4.7.0" defer></script>
-    <script src="commune-offer.js?v=commune-4.7.2" defer></script>
+    <script src="commune-offer.js?v=commune-4.7.3" defer></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
     <script src="commune-signup.js?v=commune-4.2.1" defer></script>
     <script type="application/ld+json">
@@ -78,11 +78,12 @@
             "offers": [
               {
                 "@type": "Offer",
-                "name": "General Admission",
+                "name": "Early Bird",
                 "url": "https://events.humanitix.com/commune-sound-16-july/tickets?dateId=6a5efc4cdf00fb34b14e7c1d",
-                "price": "25",
+                "price": "20",
                 "priceCurrency": "AUD",
                 "validFrom": "2026-08-17T00:00:00+10:00",
+                "priceValidUntil": "2026-08-23",
                 "availability": "https://schema.org/InStock"
               },
               {
@@ -134,7 +135,7 @@
       }
     </script>
   </head>
-  <body data-site-version="4.7.6">
+  <body data-site-version="4.7.7">
     <canvas
       class="commune-organism-field"
       data-commune-organism
@@ -192,9 +193,9 @@
           For two hours, the hall becomes an immersive environment for sound and movement.
         </p>
         <div class="event-offer" aria-label="Current ticket offer">
-          <p class="event-offer-label" data-offer-label>General admission</p>
-          <p class="event-offer-price"><span>$</span><b data-offer-price>25</b></p>
-          <p class="event-offer-countdown" data-offer-countdown>Tickets on sale now</p>
+          <p class="event-offer-label" data-offer-label>Early bird tickets</p>
+          <p class="event-offer-price"><span>$</span><b data-offer-price>20</b></p>
+          <p class="event-offer-countdown" data-offer-countdown>Only until Sunday</p>
           <p class="event-offer-detail">Limited tickets · 7:30pm to 9:30pm</p>
         </div>
         <a
@@ -204,7 +205,7 @@
           <span data-ticket-button-label>Get tickets</span>
           <span class="event-ticket-arrow" aria-hidden="true">&#8599;</span>
         </a>
-        <p class="event-pricing" data-event-pricing>$25 general admission · $40 for two dancers</p>
+        <p class="event-pricing" data-event-pricing>$20 early bird until Sunday · $40 for two dancers</p>
       </section>
 
       <section class="philosophy" aria-label="Our philosophy">

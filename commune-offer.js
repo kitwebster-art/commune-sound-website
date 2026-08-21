@@ -6,15 +6,15 @@
   };
 
   const update = () => {
-    setText("[data-offer-label]", "General admission");
-    setText("[data-offer-price]", "25");
-    setText("[data-offer-countdown]", "Tickets on sale now");
+    setText("[data-offer-label]", "Early bird tickets");
+    setText("[data-offer-price]", "20");
+    setText("[data-offer-countdown]", "Only until Sunday");
     setText("[data-ticket-button-label]", "Get tickets");
     setText(
       "[data-event-pricing]",
-      "$25 general admission · $40 for two dancers"
+      "$20 early bird until Sunday · $40 for two dancers"
     );
-    document.body.dataset.offerState = "general-admission";
+    document.body.dataset.offerState = "early-bird";
   };
 
   const installMobileTicketDock = () => {
