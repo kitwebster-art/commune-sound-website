@@ -1,6 +1,6 @@
 (() => {
-  const VERSION = 'portal-study-2.13.1';
-  const SOURCE_VERSION = '4.7.6';
+  const VERSION = 'portal-study-2.14.0';
+  const SOURCE_VERSION = '4.7.7';
   const params = new URLSearchParams(location.search);
   const BACKGROUNDS = Object.freeze([
     Object.freeze({ name: 'velvet-interference', label: 'Velvet Interference', mode: 0, seed: 17 }),
@@ -608,7 +608,7 @@
       installImageDepth();
       installPortal();
       await loadScript(`../commune-realtime.js?v=commune-${SOURCE_VERSION}-audio-signal-1`);
-      await loadScript('../commune-offer.js?v=commune-4.7.2');
+      await loadScript('../commune-offer.js?v=commune-4.7.3');
       await loadScript('https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit');
       await loadScript('../commune-signup.js?v=commune-4.2.1');
       scheduleDailyBackgroundRefresh();
