@@ -122,8 +122,6 @@
   position: relative;
   animation: folded-float 7s ease-in-out infinite;
   transform-style: preserve-3d;
-  -webkit-mask-image: radial-gradient(ellipse 76% 80% at 50% 50%, #000 52%, rgba(0, 0, 0, 0.96) 70%, transparent 100%);
-  mask-image: radial-gradient(ellipse 76% 80% at 50% 50%, #000 52%, rgba(0, 0, 0, 0.96) 70%, transparent 100%);
 }
 
 .portal-folded-wordmark,
@@ -141,7 +139,6 @@
   position: relative;
   z-index: 3 !important;
   opacity: 1 !important;
-  mix-blend-mode: screen;
   filter:
     saturate(calc(1.08 + var(--fold-mid) * 0.24))
     contrast(calc(1.06 + var(--fold-audio) * 0.09))
