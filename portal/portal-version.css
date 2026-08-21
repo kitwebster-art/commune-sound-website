@@ -99,6 +99,10 @@
   --fold-x: 0;
   --fold-y: 0;
   --fold-shine: 50%;
+  --fold-audio: 0;
+  --fold-bass: 0;
+  --fold-mid: 0;
+  --fold-air: 0;
   position: relative;
   z-index: 5;
   width: min(92vw, 1080px);
@@ -107,7 +111,8 @@
   transform:
     rotateX(calc(var(--fold-y) * -4.5deg))
     rotateY(calc(var(--fold-x) * 6deg))
-    translate3d(calc(var(--fold-x) * 7px), calc(var(--fold-y) * 5px), 0);
+    translate3d(calc(var(--fold-x) * 7px), calc(var(--fold-y) * 5px), 0)
+    scale(calc(1 + var(--fold-audio) * 0.018));
   transform-style: preserve-3d;
   transition: filter 220ms ease;
   will-change: transform;
@@ -135,10 +140,13 @@
   z-index: 3 !important;
   opacity: 1 !important;
   filter:
-    saturate(1.08)
-    contrast(1.06)
+    saturate(calc(1.08 + var(--fold-mid) * 0.24))
+    contrast(calc(1.06 + var(--fold-audio) * 0.09))
+    brightness(calc(1 + var(--fold-audio) * 0.14))
     drop-shadow(0 20px 32px rgba(0, 0, 0, 0.34)) !important;
-  transform: translateZ(36px) scale(1.002) !important;
+  transform:
+    translateZ(calc(36px + var(--fold-bass) * 24px))
+    scale(calc(1.002 + var(--fold-bass) * 0.012)) !important;
 }
 
 .portal-folded-layer {
@@ -148,24 +156,30 @@
 
 .portal-folded-glow {
   z-index: 1 !important;
-  opacity: 0.42 !important;
-  filter: blur(24px) saturate(1.55) brightness(1.08) !important;
+  opacity: calc(0.4 + var(--fold-audio) * 0.34) !important;
+  filter:
+    blur(calc(22px + var(--fold-bass) * 14px))
+    saturate(calc(1.5 + var(--fold-mid) * 0.7))
+    brightness(calc(1.06 + var(--fold-audio) * 0.35)) !important;
   mix-blend-mode: screen;
   transform:
     translate3d(calc(var(--fold-x) * -10px), calc(var(--fold-y) * -7px), -22px)
-    scale(1.018) !important;
+    scale(calc(1.018 + var(--fold-bass) * 0.03)) !important;
 }
 
 .portal-folded-sheen {
   z-index: 4 !important;
-  opacity: 0.3 !important;
+  opacity: calc(0.28 + var(--fold-air) * 0.48) !important;
   clip-path: polygon(
     calc(var(--fold-shine) - 13%) 0,
     calc(var(--fold-shine) + 2%) 0,
     calc(var(--fold-shine) + 13%) 100%,
     calc(var(--fold-shine) - 2%) 100%
   );
-  filter: grayscale(0.7) brightness(1.8) contrast(1.15) !important;
+  filter:
+    grayscale(calc(0.7 - var(--fold-mid) * 0.26))
+    brightness(calc(1.8 + var(--fold-air) * 0.9))
+    contrast(calc(1.15 + var(--fold-air) * 0.24)) !important;
   mix-blend-mode: screen;
   transform: translateZ(44px) scale(1.004) !important;
 }

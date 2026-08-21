@@ -16,7 +16,9 @@
 
     const stage = document.createElement('div');
     stage.className = 'portal-folded-stage';
-    stage.dataset.interaction = 'pointer-tilt|touch-tilt|spectral-sheen|press-pulse';
+    stage.dataset.interaction = 'pointer-tilt|touch-tilt|spectral-sheen|press-pulse|audio-reactive-depth';
+    stage.dataset.audioReactive = 'ready';
+    stage.dataset.audioState = 'off';
     const float = document.createElement('div');
     float.className = 'portal-folded-float';
 
@@ -79,6 +81,28 @@
         requestAnimationFrame(() => stage.classList.add('is-pressed'));
         setTimeout(() => stage.classList.remove('is-pressed'), 620);
       }, { passive: true });
+
+      document.addEventListener('commune:soundscape-frame', (event) => {
+        const { bass = 0, mid = 0, air = 0, energy = 0 } = event.detail || {};
+        stage.style.setProperty('--fold-audio', Math.max(0, Math.min(1, energy)).toFixed(3));
+        stage.style.setProperty('--fold-bass', Math.max(0, Math.min(1, bass)).toFixed(3));
+        stage.style.setProperty('--fold-mid', Math.max(0, Math.min(1, mid)).toFixed(3));
+        stage.style.setProperty('--fold-air', Math.max(0, Math.min(1, air)).toFixed(3));
+        stage.dataset.audioState = 'on';
+      });
+
+      document.addEventListener('commune:soundscape-state', (event) => {
+        const enabled = Boolean(event.detail?.enabled);
+        stage.dataset.audioState = enabled ? 'on' : 'off';
+        if (!enabled) {
+          stage.style.setProperty('--fold-audio', '0');
+          stage.style.setProperty('--fold-bass', '0');
+          stage.style.setProperty('--fold-mid', '0');
+          stage.style.setProperty('--fold-air', '0');
+        }
+      });
+    } else {
+      stage.dataset.audioReactive = 'reduced-motion-static';
     }
 
     section.dataset.wordmarkSource = 'commune-sound-folded-banner-v1.png';

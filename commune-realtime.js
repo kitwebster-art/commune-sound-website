@@ -49,6 +49,7 @@
   let soundscapeEnabled = false;
   let toneTimer = 0;
   let suspendTimer = 0;
+  let soundSignalFrame = 0;
   let soundPointerX = window.innerWidth * 0.5;
   let soundPointerY = window.innerHeight * 0.5;
   let soundPointerTime = performance.now();
@@ -101,6 +102,7 @@
     const audio = new AudioContextConstructor({ latencyHint: 'interactive' });
     const master = audio.createGain();
     const compressor = audio.createDynamicsCompressor();
+    const analyser = audio.createAnalyser();
     const bus = audio.createGain();
     const dry = audio.createGain();
     const wet = audio.createGain();
@@ -116,6 +118,10 @@
     compressor.ratio.value = 3;
     compressor.attack.value = 0.025;
     compressor.release.value = 0.7;
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.84;
+    analyser.minDecibels = -92;
+    analyser.maxDecibels = -24;
     dry.gain.value = 0.58;
     wet.gain.value = 0.72;
     reverb.buffer = createReverbImpulse(audio);
@@ -126,7 +132,8 @@
     reverb.connect(wet);
     wet.connect(master);
     master.connect(compressor);
-    compressor.connect(audio.destination);
+    compressor.connect(analyser);
+    analyser.connect(audio.destination);
 
     droneFilter.type = 'lowpass';
     droneFilter.frequency.value = 440;
@@ -186,6 +193,8 @@
     soundscape = {
       audio,
       master,
+      analyser,
+      spectrum: new Uint8Array(analyser.frequencyBinCount),
       bus,
       dry,
       wet,
@@ -201,6 +210,37 @@
     };
     if (soundToggle) soundToggle.dataset.context = audio.state;
     return soundscape;
+  }
+
+  function emitSoundscapeState(enabled) {
+    document.dispatchEvent(new CustomEvent('commune:soundscape-state', {
+      detail: { enabled },
+    }));
+  }
+
+  function sampleSoundscape() {
+    if (!soundscapeEnabled || !soundscape || soundscape.audio.state !== 'running') {
+      soundSignalFrame = 0;
+      return;
+    }
+    const { audio, analyser, spectrum } = soundscape;
+    analyser.getByteFrequencyData(spectrum);
+    const hzPerBin = audio.sampleRate / analyser.fftSize;
+    const averageBand = (minimumHz, maximumHz) => {
+      const start = Math.max(0, Math.floor(minimumHz / hzPerBin));
+      const end = Math.min(spectrum.length - 1, Math.ceil(maximumHz / hzPerBin));
+      let total = 0;
+      for (let index = start; index <= end; index += 1) total += spectrum[index];
+      return total / Math.max(1, end - start + 1) / 255;
+    };
+    const bass = averageBand(48, 220);
+    const mid = averageBand(220, 1450);
+    const air = averageBand(1450, 6200);
+    const energy = soundClamp(bass * 0.82 + mid * 0.52 + air * 0.24, 0, 1);
+    document.dispatchEvent(new CustomEvent('commune:soundscape-frame', {
+      detail: { bass, mid, air, energy },
+    }));
+    soundSignalFrame = requestAnimationFrame(sampleSoundscape);
   }
 
   function playTone(intensity = 0.5, horizontal = 0.5, bright = false) {
@@ -311,6 +351,8 @@
       window.clearTimeout(suspendTimer);
       await engine.audio.resume();
       soundscapeEnabled = true;
+      emitSoundscapeState(true);
+      if (!soundSignalFrame) soundSignalFrame = requestAnimationFrame(sampleSoundscape);
       const now = engine.audio.currentTime;
       engine.master.gain.cancelScheduledValues(now);
       engine.master.gain.setValueAtTime(engine.master.gain.value, now);
@@ -337,6 +379,9 @@
   function disableSoundscape() {
     if (!soundscape) return;
     soundscapeEnabled = false;
+    cancelAnimationFrame(soundSignalFrame);
+    soundSignalFrame = 0;
+    emitSoundscapeState(false);
     window.clearTimeout(toneTimer);
     const now = soundscape.audio.currentTime;
     soundscape.master.gain.cancelScheduledValues(now);

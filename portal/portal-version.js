@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = 'portal-study-2.0.0';
+  const VERSION = 'portal-study-2.1.0';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
   const BACKGROUNDS = Object.freeze([
@@ -607,7 +607,7 @@
       await window.installPortalFoldedWordmark();
       installImageDepth();
       installPortal();
-      await loadScript(`../commune-realtime.js?v=commune-${SOURCE_VERSION}`);
+      await loadScript(`../commune-realtime.js?v=commune-${SOURCE_VERSION}-audio-signal-1`);
       await loadScript('../commune-offer.js?v=commune-4.6.2');
       await loadScript('https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit');
       await loadScript('../commune-signup.js?v=commune-4.2.1');
