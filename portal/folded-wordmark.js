@@ -1,12 +1,12 @@
 (() => {
   const WORDMARKS = [
-    { slug: 'gradient-monoliths', label: 'Gradient Monoliths', file: '02-gradient-monoliths-alpha-v1.png' },
-    { slug: 'perspective-extrusion', label: 'Perspective Extrusion', file: '04-perspective-extrusion-alpha-v1.png' },
-    { slug: 'folded-ribbons', label: 'Folded Ribbons', file: '06-folded-ribbons-alpha-v1.png' },
-    { slug: 'isometric-lattice', label: 'Isometric Lattice', file: '05-isometric-lattice-alpha-v1.png' },
-    { slug: 'technical-instruments', label: 'Technical Instruments', file: '07-technical-instruments-alpha-v1.png' },
-    { slug: 'kinetic-fragments', label: 'Kinetic Fragments', file: '09-kinetic-fragments-alpha-v1.png' },
-    { slug: 'liquid-chrome', label: 'Liquid Chrome', file: '10-liquid-chrome-alpha-v1.png' }
+    { slug: 'gradient-monoliths', label: 'Gradient Monoliths', file: '02-gradient-monoliths-alpha-v1.webp' },
+    { slug: 'perspective-extrusion', label: 'Perspective Extrusion', file: '04-perspective-extrusion-alpha-v1.webp' },
+    { slug: 'folded-ribbons', label: 'Folded Ribbons', file: '06-folded-ribbons-alpha-v1.webp' },
+    { slug: 'isometric-lattice', label: 'Isometric Lattice', file: '05-isometric-lattice-alpha-v1.webp' },
+    { slug: 'technical-instruments', label: 'Technical Instruments', file: '07-technical-instruments-alpha-v1.webp' },
+    { slug: 'kinetic-fragments', label: 'Kinetic Fragments', file: '09-kinetic-fragments-alpha-v1.webp' },
+    { slug: 'liquid-chrome', label: 'Liquid Chrome', file: '10-liquid-chrome-alpha-v1.webp' }
   ];
   const LAST_WORDMARK_KEY = 'commune-sound:last-wordmark';
 
@@ -49,7 +49,7 @@
     }
 
     const wordmark = selectWordmark();
-    image.src = `../assets/gpt-wordmark-studies/${wordmark.file}?v=wordmark-alpha-1.0.0`;
+    image.src = `../assets/gpt-wordmark-studies/${wordmark.file}?v=wordmark-webp-1.0.0`;
     image.removeAttribute('srcset');
     image.className = 'portal-folded-wordmark';
     image.alt = 'Commune Sound';
@@ -63,6 +63,7 @@
     stage.dataset.audioState = 'off';
     stage.dataset.wordmarkVariant = wordmark.slug;
     stage.dataset.wordmarkBackground = 'transparent-alpha';
+    stage.dataset.wordmarkFormat = 'lossless-webp';
     stage.setAttribute('aria-label', `Commune Sound wordmark, ${wordmark.label} edition`);
     const float = document.createElement('div');
     float.className = 'portal-folded-float';
@@ -153,6 +154,7 @@
     section.dataset.wordmarkSource = wordmark.file;
     section.dataset.wordmarkVariant = wordmark.slug;
     section.dataset.wordmarkBackground = 'transparent-alpha';
+    section.dataset.wordmarkFormat = 'lossless-webp';
     section.dataset.wordmarkRotation = 'random-every-visit-without-immediate-repeat';
     section.dataset.wordmarkPalette = 'violet|ultraviolet|hot-magenta|cyan-mint|pearl';
     section.dataset.wordmarkInteraction = stage.dataset.interaction;
