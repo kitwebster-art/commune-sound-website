@@ -170,6 +170,9 @@
     section.dataset.wordmarkPalette = 'violet|ultraviolet|hot-magenta|cyan-mint|pearl';
     section.dataset.wordmarkInteraction = stage.dataset.interaction;
     document.documentElement.classList.add('portal-folded-wordmark-ready');
+    document.dispatchEvent(new CustomEvent('commune:wordmark-ready', {
+      detail: { stage, float, image, wordmark }
+    }));
     return stage;
   };
 })();

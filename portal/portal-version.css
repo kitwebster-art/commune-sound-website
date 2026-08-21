@@ -184,6 +184,35 @@
   transform: translateZ(44px) scale(1.004) !important;
 }
 
+.portal-wordmark-motion-canvas {
+  position: relative;
+  z-index: 3;
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  pointer-events: none;
+  filter:
+    saturate(calc(1.08 + var(--fold-mid) * 0.24))
+    contrast(calc(1.06 + var(--fold-audio) * 0.09))
+    brightness(calc(1 + var(--fold-audio) * 0.14))
+    drop-shadow(0 20px 32px rgba(0, 0, 0, 0.34));
+  transform:
+    translateZ(calc(36px + var(--fold-bass) * 24px))
+    scale(calc(1.002 + var(--fold-bass) * 0.012));
+}
+
+.portal-wordmark-motion-ready .portal-folded-wordmark,
+.portal-wordmark-motion-ready .portal-folded-sheen {
+  position: absolute !important;
+  inset: 0;
+  opacity: 0 !important;
+}
+
+.portal-wordmark-motion-ready .portal-folded-glow {
+  opacity: calc(0.24 + var(--fold-audio) * 0.24) !important;
+}
+
 .portal-folded-stage.is-pressed {
   animation: folded-pulse 620ms cubic-bezier(0.2, 0.85, 0.25, 1);
 }
