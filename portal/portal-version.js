@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = 'portal-study-2.11.0';
+  const VERSION = 'portal-study-2.12.0';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
   const BACKGROUNDS = Object.freeze([
@@ -565,7 +565,7 @@
     resize();
     updateProgress();
     canvas.dataset.webglStatus = 'rendering';
-    canvas.dataset.visualContract = 'daily-three-background-rotation|distributed-black-negative-space|no-central-void|seven-lossless-transparent-wordmark-visit-rotation|pointer-responsive-depth|full-page-continuous-motion|mobile-composed';
+    canvas.dataset.visualContract = 'daily-three-background-rotation|distributed-black-negative-space|no-central-void|liquid-chrome-weighted-transparent-wordmark-rotation|pointer-responsive-depth|full-page-continuous-motion|mobile-composed';
     canvas.dataset.backgroundMechanism = 'shared-low-frequency-warp|woven-interference-or-marble-or-chromatic-grain|pointer-parallax';
     canvas.dataset.contrastMechanism = 'shared-low-frequency-shadow-field|off-centre-black-pockets|centre-guard';
     canvas.dataset.liquidDivergence = 'stylised-screen-space-optics-not-physical-raytraced-transmission';

@@ -6,9 +6,11 @@
     { slug: 'isometric-lattice', label: 'Isometric Lattice', file: '05-isometric-lattice-alpha-v1.webp' },
     { slug: 'technical-instruments', label: 'Technical Instruments', file: '07-technical-instruments-alpha-v1.webp' },
     { slug: 'kinetic-fragments', label: 'Kinetic Fragments', file: '09-kinetic-fragments-alpha-v1.webp' },
-    { slug: 'liquid-chrome', label: 'Liquid Chrome', file: '10-liquid-chrome-alpha-v1.webp' }
+    { slug: 'liquid-chrome', label: 'Liquid Chrome', file: '10-liquid-chrome-alpha-v2.webp' }
   ];
   const LAST_WORDMARK_KEY = 'commune-sound:last-wordmark';
+  const FAVOURITE_SLUG = 'liquid-chrome';
+  const FAVOURITE_CHANCE = 0.9;
 
   const randomIndex = (length) => {
     if (globalThis.crypto?.getRandomValues) {
@@ -31,8 +33,16 @@
       // The rotation still works when browser storage is unavailable.
     }
 
-    const choices = WORDMARKS.filter(({ slug }) => slug !== previous);
-    const selected = choices[randomIndex(choices.length)];
+    const favourite = WORDMARKS.find(({ slug }) => slug === FAVOURITE_SLUG);
+    let selected;
+    if (previous !== FAVOURITE_SLUG && randomIndex(100) < FAVOURITE_CHANCE * 100) {
+      selected = favourite;
+    } else {
+      const choices = WORDMARKS.filter(({ slug }) => (
+        slug !== previous && slug !== FAVOURITE_SLUG
+      ));
+      selected = choices[randomIndex(choices.length)];
+    }
     try {
       localStorage.setItem(LAST_WORDMARK_KEY, selected.slug);
     } catch (_) {
@@ -49,7 +59,7 @@
     }
 
     const wordmark = selectWordmark();
-    image.src = `../assets/gpt-wordmark-studies/${wordmark.file}?v=wordmark-webp-1.0.0`;
+    image.src = `../assets/gpt-wordmark-studies/${wordmark.file}?v=wordmark-webp-2.0.0`;
     image.removeAttribute('srcset');
     image.className = 'portal-folded-wordmark';
     image.alt = 'Commune Sound';
@@ -156,6 +166,7 @@
     section.dataset.wordmarkBackground = 'transparent-alpha';
     section.dataset.wordmarkFormat = 'lossless-webp';
     section.dataset.wordmarkRotation = 'random-every-visit-without-immediate-repeat';
+    section.dataset.wordmarkFavourite = 'liquid-chrome-nearly-every-other-visit';
     section.dataset.wordmarkPalette = 'violet|ultraviolet|hot-magenta|cyan-mint|pearl';
     section.dataset.wordmarkInteraction = stage.dataset.interaction;
     document.documentElement.classList.add('portal-folded-wordmark-ready');
