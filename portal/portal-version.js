@@ -1,6 +1,6 @@
 (() => {
-  const VERSION = 'portal-study-2.14.0';
-  const SOURCE_VERSION = '4.7.7';
+  const VERSION = 'portal-study-2.15.0';
+  const SOURCE_VERSION = '4.8.0';
   const params = new URLSearchParams(location.search);
   const BACKGROUNDS = Object.freeze([
     Object.freeze({ name: 'velvet-interference', label: 'Velvet Interference', mode: 0, seed: 17 }),
@@ -590,8 +590,7 @@
 
       const fragment = document.createDocumentFragment();
       [...source.body.children].forEach((child) => fragment.append(document.importNode(child, true)));
-      document.body.querySelector('.portal-study-loader')?.remove();
-      document.body.append(fragment);
+      document.body.replaceChildren(fragment);
       const eventDescription = document.querySelector('.event-description');
       if (!eventDescription) throw new Error('Portal event description missing');
       eventDescription.textContent = 'For two hours, the hall comes alive with an eclectic mix of electronic and acoustic music from around the world, with space to listen, move and follow your own rhythm.';
@@ -615,7 +614,8 @@
     } catch (error) {
       document.body.dataset.portalStudyError = error.message;
       const loader = document.querySelector('.portal-study-loader');
-      if (loader) loader.textContent = 'Portal study could not load';
+      if (loader) loader.remove();
+      document.body.classList.remove('portal-study-loading');
     }
   };
 
