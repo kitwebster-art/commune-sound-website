@@ -188,42 +188,6 @@
   animation: folded-pulse 620ms cubic-bezier(0.2, 0.85, 0.25, 1);
 }
 
-.portal-folded-cue {
-  position: relative;
-  z-index: 6;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: clamp(16px, 2vw, 24px) 0 0;
-  color: rgba(226, 255, 243, 0.78);
-  font: 760 clamp(8px, 0.72vw, 10px)/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(8px);
-  transition: opacity 700ms ease, transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.portal-folded-cue.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.portal-folded-cue.is-hidden {
-  opacity: 0;
-  transform: translateY(-5px);
-}
-
-.portal-folded-cue-signal {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #86ffd0;
-  box-shadow: 0 0 0 0 rgba(134, 255, 208, 0.5), 0 0 12px rgba(134, 255, 208, 0.9);
-  animation: folded-cue-signal 1.8s ease-out infinite;
-}
-
 @keyframes folded-float {
   0%, 100% { transform: translate3d(0, -3px, 0); }
   50% { transform: translate3d(0, 5px, 0); }
@@ -233,11 +197,6 @@
   0% { filter: brightness(1); }
   35% { filter: brightness(1.28) saturate(1.25); }
   100% { filter: brightness(1); }
-}
-
-@keyframes folded-cue-signal {
-  0%, 30% { box-shadow: 0 0 0 0 rgba(134, 255, 208, 0.5), 0 0 12px rgba(134, 255, 208, 0.9); }
-  75%, 100% { box-shadow: 0 0 0 7px rgba(134, 255, 208, 0), 0 0 16px rgba(134, 255, 208, 0.5); }
 }
 
 .portal-study-ready .wordmark-banner img.portal-wordmark-placeholder {
@@ -657,14 +616,6 @@ html[data-portal-background="holographic-grain"] .portal-static-field {
 
   .portal-folded-sheen {
     display: none;
-  }
-
-  .portal-folded-cue {
-    transition: none;
-  }
-
-  .portal-folded-cue-signal {
-    animation: none;
   }
 
   .portal-wordmark-echo,

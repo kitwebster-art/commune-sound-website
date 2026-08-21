@@ -38,35 +38,6 @@
     stage.append(float);
     float.append(glow, image, sheen);
 
-    const cue = document.createElement('p');
-    cue.className = 'portal-folded-cue';
-    cue.innerHTML = '<span class="portal-folded-cue-signal" aria-hidden="true"></span><span>Sound on · move to shape it</span>';
-    stage.after(cue);
-
-    let cueSeen = false;
-    try {
-      cueSeen = sessionStorage.getItem('commune-portal-interaction-cue') === 'seen';
-    } catch {
-      cueSeen = false;
-    }
-
-    const hideCue = () => {
-      cue.classList.remove('is-visible');
-      cue.classList.add('is-hidden');
-      try {
-        sessionStorage.setItem('commune-portal-interaction-cue', 'seen');
-      } catch {
-        // The cue remains non-essential when storage is unavailable.
-      }
-    };
-
-    if (!cueSeen) {
-      requestAnimationFrame(() => cue.classList.add('is-visible'));
-      setTimeout(hideCue, 9000);
-    } else {
-      cue.classList.add('is-hidden');
-    }
-
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!reducedMotion) {
       let targetX = 0;
@@ -123,7 +94,6 @@
       document.addEventListener('commune:soundscape-state', (event) => {
         const enabled = Boolean(event.detail?.enabled);
         stage.dataset.audioState = enabled ? 'on' : 'off';
-        if (enabled) hideCue();
         if (!enabled) {
           stage.style.setProperty('--fold-audio', '0');
           stage.style.setProperty('--fold-bass', '0');
@@ -138,7 +108,6 @@
     section.dataset.wordmarkSource = 'commune-sound-folded-banner-v1.png';
     section.dataset.wordmarkPalette = 'violet|ultraviolet|hot-magenta|cyan-mint|pearl';
     section.dataset.wordmarkInteraction = stage.dataset.interaction;
-    section.dataset.interactionCue = cueSeen ? 'session-dismissed' : 'shown-once';
     document.documentElement.classList.add('portal-folded-wordmark-ready');
     return stage;
   };
