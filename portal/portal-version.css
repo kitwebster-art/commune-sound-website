@@ -88,11 +88,44 @@
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  padding-top: clamp(42px, 7vw, 86px);
   background:
     radial-gradient(ellipse 38% 64% at 42% 45%, rgba(119, 79, 255, 0.16), transparent 76%),
     radial-gradient(ellipse 34% 56% at 64% 52%, rgba(255, 62, 198, 0.12), transparent 78%),
     linear-gradient(to bottom, rgba(1, 1, 4, 0.04) 45%, rgba(1, 1, 4, 0.2) 100%),
     transparent;
+}
+
+.soundscape-floating-toggle {
+  position: fixed;
+  z-index: 20;
+  top: max(18px, env(safe-area-inset-top));
+  right: max(18px, env(safe-area-inset-right));
+  min-height: 42px;
+  padding: 0 13px;
+  border: 1px solid rgba(232, 222, 255, 0.22);
+  border-radius: 5px;
+  color: rgba(245, 238, 255, 0.78);
+  background: rgba(4, 2, 12, 0.38);
+  box-shadow: 0 12px 38px rgba(0, 0, 0, 0.24);
+  -webkit-backdrop-filter: blur(12px) saturate(1.25);
+  backdrop-filter: blur(12px) saturate(1.25);
+}
+
+.soundscape-floating-toggle:hover,
+.soundscape-floating-toggle[data-state="on"] {
+  color: #fff;
+  border-color: rgba(214, 130, 255, 0.48);
+  background: rgba(20, 5, 38, 0.5);
+}
+
+.soundscape-floating-toggle[data-state="armed"] .soundscape-icon {
+  animation: portal-sound-ready 2.8s ease-in-out infinite;
+}
+
+@keyframes portal-sound-ready {
+  0%, 100% { opacity: 0.48; transform: scale(0.94); }
+  50% { opacity: 1; transform: scale(1.04); }
 }
 
 .portal-folded-stage {
@@ -551,6 +584,22 @@ html[data-portal-background="holographic-grain"] .portal-static-field {
 }
 
 @media (max-width: 700px) {
+  .portal-study-ready .wordmark-banner {
+    padding-top: calc(18px + env(safe-area-inset-top));
+  }
+
+  .soundscape-floating-toggle {
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    width: 42px;
+    min-height: 42px;
+    padding: 0;
+  }
+
+  .soundscape-floating-toggle [data-soundscape-label] {
+    display: none;
+  }
+
   .portal-field {
     mix-blend-mode: normal;
   }

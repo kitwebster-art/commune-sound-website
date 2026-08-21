@@ -47,6 +47,8 @@
   const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
   let soundscape = null;
   let soundscapeEnabled = false;
+  let soundscapeStarting = false;
+  let soundscapeAutoStartPending = true;
   let toneTimer = 0;
   let suspendTimer = 0;
   let soundSignalFrame = 0;
@@ -345,12 +347,26 @@
   }
 
   async function enableSoundscape() {
+    if (soundscapeEnabled || soundscapeStarting) return;
+    soundscapeStarting = true;
     const engine = createSoundscape();
-    if (!engine) return;
+    if (!engine) {
+      soundscapeStarting = false;
+      return;
+    }
     try {
       window.clearTimeout(suspendTimer);
       await engine.audio.resume();
+      if (engine.audio.state !== 'running') {
+        if (soundToggle) {
+          soundToggle.dataset.state = 'armed';
+          soundToggle.dataset.context = engine.audio.state;
+        }
+        if (soundLabel) soundLabel.textContent = 'Sound ready';
+        return;
+      }
       soundscapeEnabled = true;
+      soundscapeAutoStartPending = false;
       emitSoundscapeState(true);
       if (!soundSignalFrame) soundSignalFrame = requestAnimationFrame(sampleSoundscape);
       const now = engine.audio.currentTime;
@@ -373,12 +389,15 @@
       soundToggle.setAttribute('aria-pressed', 'false');
       soundToggle.setAttribute('aria-label', 'Soundscape could not start');
       if (soundLabel) soundLabel.textContent = 'Sound unavailable';
+    } finally {
+      soundscapeStarting = false;
     }
   }
 
   function disableSoundscape() {
     if (!soundscape) return;
     soundscapeEnabled = false;
+    soundscapeAutoStartPending = false;
     cancelAnimationFrame(soundSignalFrame);
     soundSignalFrame = 0;
     emitSoundscapeState(false);
@@ -413,6 +432,19 @@
       if (soundscapeEnabled) disableSoundscape();
       else enableSoundscape();
     });
+
+    const startDefaultSoundscape = (event) => {
+      if (
+        !soundscapeAutoStartPending
+        || soundscapeEnabled
+        || soundscapeStarting
+        || soundToggle.contains(event.target)
+      ) return;
+      enableSoundscape();
+    };
+
+    window.addEventListener('pointerdown', startDefaultSoundscape, { passive: true });
+    window.addEventListener('keydown', startDefaultSoundscape, { passive: true });
 
     window.addEventListener('pointermove', (event) => {
       if (event.pointerType === 'touch') return;
