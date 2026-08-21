@@ -1,0 +1,21 @@
+:root{color-scheme:dark;--ink:#030207;--paper:#f7efff;--muted:rgba(247,239,255,.58);--acid:#d3ff7d;--violet:#694cff;--purple:#bb3dff}
+*{box-sizing:border-box}
+html{min-height:100%;background:var(--ink)}
+body{min-height:100vh;margin:0;overflow-x:hidden;color:var(--paper);background:radial-gradient(ellipse 70% 48% at 12% 18%,rgba(105,76,255,.2),transparent 72%),radial-gradient(ellipse 54% 48% at 88% 56%,rgba(187,61,255,.12),transparent 76%),#030207;font-family:Inter,"Helvetica Neue",Arial,sans-serif}
+a{color:inherit}
+.study-header{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;min-height:70px;padding:18px clamp(18px,4vw,58px);border-bottom:1px solid rgba(211,255,125,.16);background:rgba(3,2,7,.84);backdrop-filter:blur(18px)}
+.study-brand,.study-back{font-size:10px;font-weight:900;letter-spacing:.16em;text-decoration:none;text-transform:uppercase}
+.study-brand{line-height:.86}.study-back{color:var(--acid)}
+main{width:min(1540px,100%);margin:0 auto;padding:clamp(40px,7vw,96px) clamp(18px,4vw,58px) 80px}
+.intro{max-width:1040px;margin-bottom:clamp(42px,6vw,78px)}
+.intro span{display:block;margin-bottom:14px;color:var(--acid);font-size:10px;font-weight:900;letter-spacing:.2em}
+.intro h1{margin:0;font-size:clamp(46px,7vw,106px);font-weight:500;letter-spacing:-.065em;line-height:.88}
+.intro p{max-width:870px;margin:28px 0 0;color:var(--muted);font-size:clamp(15px,1.5vw,20px);line-height:1.55}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{min-width:0;overflow:hidden;border:1px solid rgba(247,239,255,.13);background:rgba(3,2,7,.86);text-decoration:none;transition:transform 180ms ease,border-color 180ms ease}
+.card:hover{transform:translateY(-3px);border-color:rgba(211,255,125,.72)}
+.card img{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#000}
+.card>div{display:grid;grid-template-columns:46px minmax(0,1fr);padding:18px;border-top:1px solid rgba(247,239,255,.1)}
+.card span{grid-row:1/3;color:var(--acid);font-size:9px;font-weight:900}
+.card h2{margin:0 0 6px;font-size:19px}.card p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}
+@media(max-width:700px){.study-header{min-height:62px}.grid{grid-template-columns:1fr}.intro h1{font-size:clamp(44px,16vw,72px)}.card{margin-inline:-18px;border-inline:0}.card>div{padding-inline:18px}}
