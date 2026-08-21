@@ -362,6 +362,18 @@
     transparent;
 }
 
+html[data-portal-background="velvet-interference"].portal-study-ready .philosophy {
+  background:
+    radial-gradient(
+      ellipse at 50% 48%,
+      rgba(1, 1, 4, 0.62) 0%,
+      rgba(1, 1, 4, 0.46) 42%,
+      rgba(1, 1, 4, 0.16) 72%,
+      transparent 100%
+    ),
+    transparent;
+}
+
 .portal-study-ready .venue-photo {
   background:
     radial-gradient(ellipse at 18% 38%, rgba(72, 41, 202, 0.25), transparent 46%),
