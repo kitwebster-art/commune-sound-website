@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = 'portal-study-2.6.0';
+  const VERSION = 'portal-study-2.7.0';
   const SOURCE_VERSION = '4.7.0';
   const params = new URLSearchParams(location.search);
   const BACKGROUNDS = Object.freeze([
