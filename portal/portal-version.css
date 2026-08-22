@@ -35,7 +35,7 @@
   text-transform: uppercase;
 }
 
-.portal-study-ready .portal-study-loader {
+body:not(.portal-study-loading) > .portal-study-loader {
   display: none;
 }
 

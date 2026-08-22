@@ -1,6 +1,6 @@
 (() => {
-  const VERSION = 'portal-study-2.19.3';
-  const SOURCE_VERSION = '4.9.3';
+  const VERSION = 'portal-study-2.19.4';
+  const SOURCE_VERSION = '4.9.4';
   const params = new URLSearchParams(location.search);
   const BACKGROUNDS = Object.freeze([
     Object.freeze({ name: 'velvet-interference', label: 'Velvet Interference', mode: 0, seed: 17 }),
@@ -599,7 +599,6 @@
       document.body.dataset.portalBackgroundDate = localDateKey;
       document.documentElement.classList.add('portal-study-ready');
       await loadScript(`../commune-realtime.js?v=commune-${SOURCE_VERSION}-audio-signal-1`);
-      document.body.classList.remove('portal-study-loading');
 
       if (typeof window.installPortalFoldedWordmark !== 'function') {
         throw new Error('Folded wordmark renderer missing');
@@ -607,6 +606,8 @@
       await window.installPortalFoldedWordmark();
       installImageDepth();
       installPortal();
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      document.body.classList.remove('portal-study-loading');
       await loadScript('../commune-offer.js?v=commune-4.7.3');
       await loadScript('https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit');
       await loadScript('../commune-signup.js?v=commune-4.2.1');

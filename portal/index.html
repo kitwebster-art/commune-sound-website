@@ -28,11 +28,21 @@
     >
     <meta name="twitter:image" content="https://communesound.com.au/assets/hall-photo-cleaned.jpg">
     <link rel="icon" href="../assets/commune-logo.png" type="image/png">
+    <style id="portal-critical-loading">
+      html { background: #010104; }
+      body.portal-study-loading { margin: 0; min-height: 100vh; overflow: hidden; background: #010104; }
+      body.portal-study-loading > :not(.portal-study-loader) { visibility: hidden !important; }
+      .portal-study-loader {
+        position: fixed; inset: 0; z-index: 2147483647; display: grid; place-items: center;
+        color: rgba(235, 245, 255, 0.7); background: #010104;
+        font: 800 10px/1.2 Arial, sans-serif; letter-spacing: 0.24em; text-transform: uppercase;
+      }
+    </style>
     <link rel="stylesheet" href="../styles-20260717-pricing.css?v=commune-4.7.6">
-    <link rel="stylesheet" href="portal-version.css?v=portal-2.19.3">
-    <script src="wordmark-motion-studies.js?v=portal-2.19.3" defer></script>
-    <script src="folded-wordmark.js?v=portal-2.19.3" defer></script>
-    <script src="portal-version.js?v=portal-2.19.3" defer></script>
+    <link rel="stylesheet" href="portal-version.css?v=portal-2.19.4">
+    <script src="wordmark-motion-studies.js?v=portal-2.19.4" defer></script>
+    <script src="folded-wordmark.js?v=portal-2.19.4" defer></script>
+    <script src="portal-version.js?v=portal-2.19.4" defer></script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -99,7 +109,7 @@
       }
     </script>
   </head>
-  <body class="portal-study-loading" data-site-version="portal-study-2.19.3">
+  <body class="portal-study-loading" data-site-version="portal-study-2.19.4">
     <div class="portal-study-loader" role="status">Opening portal study</div>
   </body>
 </html>
