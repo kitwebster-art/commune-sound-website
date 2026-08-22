@@ -239,6 +239,43 @@ body:not(.portal-study-loading) > .portal-study-loader {
     scale(calc(1.002 + var(--fold-bass) * 0.012));
 }
 
+.portal-wordmark-particle-canvas {
+  position: absolute;
+  z-index: 8;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  opacity: clamp(0, calc(var(--particle-breakup, 0) * 1.18), 1);
+  transform: translateZ(58px) scale(1.004);
+  filter: saturate(1.18) contrast(1.06) drop-shadow(0 0 7px rgba(166, 85, 255, 0.28));
+}
+
+.portal-wordmark-particle-active .portal-wordmark-motion-canvas {
+  opacity: clamp(0.04, calc(1 - var(--particle-breakup, 0) * 0.96), 1);
+}
+
+.portal-wordmark-particle-active:not(.portal-wordmark-motion-ready) .portal-folded-wordmark {
+  opacity: clamp(0.04, calc(1 - var(--particle-breakup, 0) * 0.96), 1) !important;
+}
+
+.portal-wordmark-particle-active .portal-folded-glow {
+  opacity: calc((0.4 + var(--fold-audio) * 0.34) * (1 - var(--particle-breakup, 0) * 0.58)) !important;
+}
+
+.portal-wordmark-particle-active[data-particle-study="prismatic-shatter"] .portal-wordmark-particle-canvas {
+  filter: saturate(1.34) contrast(1.12) drop-shadow(0 0 9px rgba(73, 224, 255, 0.34));
+}
+
+.portal-wordmark-particle-active[data-particle-study="sonic-wave"] .portal-wordmark-particle-canvas {
+  filter: saturate(1.24) brightness(1.08) drop-shadow(0 0 10px rgba(255, 57, 205, 0.32));
+}
+
+.portal-wordmark-particle-active[data-particle-debug="no-post"] .portal-wordmark-particle-canvas {
+  filter: none;
+}
+
 .portal-wordmark-motion-ready .portal-folded-wordmark,
 .portal-wordmark-motion-ready .portal-folded-sheen {
   position: absolute !important;

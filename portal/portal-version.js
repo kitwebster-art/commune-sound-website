@@ -1,6 +1,6 @@
 (() => {
-  const VERSION = 'portal-study-2.19.5';
-  const SOURCE_VERSION = '4.9.5';
+  const VERSION = 'portal-study-2.20.0';
+  const SOURCE_VERSION = '4.10.0';
   const params = new URLSearchParams(location.search);
   const BACKGROUNDS = Object.freeze([
     Object.freeze({ name: 'velvet-interference', label: 'Velvet Interference', mode: 0, seed: 17 }),

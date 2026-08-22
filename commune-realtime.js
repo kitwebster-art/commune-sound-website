@@ -55,6 +55,7 @@
   let sequenceNextTime = 0;
   let suspendTimer = 0;
   let soundSignalFrame = 0;
+  let particleMusicTimer = 0;
   let soundPointerX = window.innerWidth * 0.5;
   let soundPointerY = window.innerHeight * 0.5;
   let soundPointerTime = performance.now();
@@ -427,6 +428,94 @@
     shimmer.stop(when + duration + 0.04);
   }
 
+  function playParticlePluck(when, frequency, duration, panAmount, brightness = 1) {
+    if (!soundscapeEnabled || !soundscape) return;
+    const { audio, synthBus } = soundscape;
+    const oscillator = audio.createOscillator();
+    const overtone = audio.createOscillator();
+    const overtoneGain = audio.createGain();
+    const filter = audio.createBiquadFilter();
+    const envelope = audio.createGain();
+    const panner = audio.createStereoPanner ? audio.createStereoPanner() : null;
+    oscillator.type = brightness > 1.08 ? 'sawtooth' : 'triangle';
+    oscillator.frequency.setValueAtTime(frequency, when);
+    oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.008, when + duration);
+    overtone.type = 'sine';
+    overtone.frequency.setValueAtTime(frequency * 2.005, when);
+    overtoneGain.gain.value = 0.12 * brightness;
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(900 * brightness, when);
+    filter.frequency.exponentialRampToValueAtTime(3800 * brightness, when + duration * 0.3);
+    filter.frequency.exponentialRampToValueAtTime(680, when + duration);
+    filter.Q.value = 6.2;
+    envelope.gain.setValueAtTime(0.0001, when);
+    envelope.gain.exponentialRampToValueAtTime(0.027 * brightness, when + 0.012);
+    envelope.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+    oscillator.connect(envelope);
+    overtone.connect(overtoneGain);
+    overtoneGain.connect(envelope);
+    envelope.connect(filter);
+    if (panner) {
+      panner.pan.value = soundClamp(panAmount, -0.86, 0.86);
+      filter.connect(panner);
+      panner.connect(synthBus);
+    } else {
+      filter.connect(synthBus);
+    }
+    oscillator.start(when);
+    overtone.start(when);
+    oscillator.stop(when + duration + 0.04);
+    overtone.stop(when + duration + 0.04);
+  }
+
+  function playParticleAccent(detail = {}) {
+    if (!soundscapeEnabled || !soundscape || soundscape.audio.state !== 'running') return;
+    const profiles = {
+      'magnetic-dust': { notes: [220, 293.66, 392, 587.33], spacing: 0.075, brightness: 1.18 },
+      'neon-swarm': { notes: [196, 261.63, 329.63, 493.88, 392], spacing: 0.09, brightness: 1.08 },
+      'prismatic-shatter': { notes: [146.83, 293.66, 233.08, 466.16], spacing: 0.052, brightness: 1.3 },
+      'sonic-wave': { notes: [110, 220, 440, 220], spacing: 0.12, brightness: 1.14 },
+      'vortex-portal': { notes: [392, 293.66, 220, 164.81, 329.63], spacing: 0.082, brightness: 1.2 }
+    };
+    const profile = profiles[detail.study] || profiles['magnetic-dust'];
+    const click = detail.kind === 'click';
+    const now = soundscape.audio.currentTime;
+    const amount = soundClamp(Number(detail.intensity) || 0.4, 0.2, 1);
+    const panCentre = soundClamp((Number(detail.x) || 0.5) * 1.6 - 0.8, -0.8, 0.8);
+    const notes = click ? profile.notes : profile.notes.slice(0, 2);
+    notes.forEach((frequency, index) => {
+      const pan = soundClamp(panCentre + (index - (notes.length - 1) / 2) * 0.24, -0.86, 0.86);
+      playParticlePluck(
+        now + index * profile.spacing,
+        frequency,
+        (click ? 0.34 : 0.24) + index * 0.025,
+        pan,
+        profile.brightness * (0.72 + amount * 0.28),
+      );
+    });
+    if (click) {
+      playKick(now, 0.88);
+      playHat(now + profile.spacing * 1.5, false);
+      playHat(now + profile.spacing * 3.5, true);
+      if (detail.study === 'sonic-wave') playKick(now + 0.24, 0.68);
+    }
+    soundscape.beatBus.gain.cancelScheduledValues(now);
+    soundscape.synthBus.gain.cancelScheduledValues(now);
+    soundscape.beatBus.gain.setTargetAtTime(click ? 0.94 : 0.8, now, 0.045);
+    soundscape.synthBus.gain.setTargetAtTime(click ? 0.82 : 0.7, now, 0.055);
+    window.clearTimeout(particleMusicTimer);
+    particleMusicTimer = window.setTimeout(() => {
+      if (!soundscape || soundscape.audio.state !== 'running') return;
+      const resetTime = soundscape.audio.currentTime;
+      soundscape.beatBus.gain.setTargetAtTime(0.72, resetTime, 0.5);
+      soundscape.synthBus.gain.setTargetAtTime(0.62, resetTime, 0.6);
+    }, click ? 2600 : 1100);
+    if (soundToggle) {
+      soundToggle.dataset.particleMusicStudy = detail.study || 'unknown';
+      soundToggle.dataset.particleMusicResponse = click ? 'upbeat-click-accent' : 'hover-lift';
+    }
+  }
+
   function scheduleSequenceStep(when, step) {
     const beat = step % 8;
     const kick = beat === 0 || beat === 4 || beat === 6;
@@ -613,6 +702,12 @@
 
     window.addEventListener('pointerdown', startDefaultSoundscape, { passive: true });
     window.addEventListener('keydown', startDefaultSoundscape, { passive: true });
+
+    document.addEventListener('commune:wordmark-particle', async (event) => {
+      const detail = event.detail || {};
+      if (detail.kind === 'click' && !soundscapeEnabled) await enableSoundscape();
+      playParticleAccent(detail);
+    });
 
     window.addEventListener('pointermove', (event) => {
       if (event.pointerType === 'touch') return;
