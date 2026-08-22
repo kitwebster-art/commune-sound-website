@@ -1,7 +1,6 @@
 (() => {
   const WORDMARKS = [
     { slug: 'gradient-monoliths', label: 'Gradient Monoliths', file: '02-gradient-monoliths-alpha-v2.webp' },
-    { slug: 'perspective-extrusion', label: 'Perspective Extrusion', file: '04-perspective-extrusion-alpha-v2.webp' },
     { slug: 'folded-ribbons', label: 'Folded Ribbons', file: '06-folded-ribbons-alpha-v2.webp' },
     { slug: 'isometric-lattice', label: 'Isometric Lattice', file: '05-isometric-lattice-alpha-v2.webp' },
     { slug: 'technical-instruments', label: 'Technical Instruments', file: '07-technical-instruments-alpha-v2.webp' },
