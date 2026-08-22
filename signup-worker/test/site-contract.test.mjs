@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const index = await readFile(new URL('../../index.html', import.meta.url), 'utf8');
 const client = await readFile(new URL('../../commune-signup.js', import.meta.url), 'utf8');
+const blackViolet = await readFile(new URL('../../black-violet.js', import.meta.url), 'utf8');
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 const pilotCheck = await readFile(new URL('../scripts/check-pilot.mjs', import.meta.url), 'utf8');
 
@@ -39,4 +40,10 @@ test('the deployment has a no-contact pilot verification path', () => {
   assert.match(pilotCheck, /missing consent fails before provider use/);
   assert.match(pilotCheck, /No contact was submitted\./);
   assert.doesNotMatch(pilotCheck, /person@example\.com|buyer@example\.com/);
+});
+
+test('the Black Violet wordmark cannot flash the retired banner while loading', () => {
+  assert.doesNotMatch(index, /src="assets\/commune-wordmark-cropped\.jpeg"/);
+  assert.match(index, /src="assets\/gpt-wordmark-studies\/02-gradient-monoliths-alpha-v2\.webp\?v=black-violet-2"/);
+  assert.ok(blackViolet.indexOf('await image.decode()') < blackViolet.indexOf("classList.remove('portal-study-loading')"));
 });
