@@ -1,0 +1,236 @@
+:root {
+  --deep-page: #040507;
+  --deep-surface: #08090d;
+  --deep-raised: #0e0f16;
+  --deep-ink: #e5e4e8;
+  --deep-muted: #85838f;
+  --deep-accent: #a18bc9;
+  --deep-accent-soft: rgba(161, 139, 201, 0.18);
+  --deep-line: rgba(220, 217, 229, 0.14);
+  --ink: var(--deep-page);
+  --cream: var(--deep-ink);
+  --muted: var(--deep-muted);
+  --line: var(--deep-line);
+  --panel: var(--deep-accent-soft);
+  --orange: var(--deep-accent);
+  --pink: var(--deep-muted);
+  --cyan: var(--deep-accent);
+  color-scheme: dark;
+  background: var(--deep-page);
+}
+
+body {
+  color: var(--deep-ink);
+  background: var(--deep-page);
+}
+
+body::before,
+body::after {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+}
+
+body::before {
+  background:
+    radial-gradient(ellipse 76% 58% at 18% 10%, rgba(111, 75, 170, 0.24), transparent 66%),
+    radial-gradient(ellipse 64% 58% at 86% 28%, rgba(75, 125, 147, 0.18), transparent 68%),
+    radial-gradient(ellipse 70% 54% at 64% 78%, rgba(143, 73, 108, 0.15), transparent 72%),
+    radial-gradient(ellipse 52% 42% at 30% 88%, rgba(98, 132, 124, 0.11), transparent 70%),
+    linear-gradient(128deg, #040407 0%, #07060d 43%, #030508 100%);
+}
+
+body::after {
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.72'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(112deg, transparent 0 7px, rgba(226, 220, 236, 0.018) 8px, transparent 9px 17px);
+  background-size: 180px 180px, auto;
+  opacity: 0.16;
+  mix-blend-mode: soft-light;
+}
+
+main {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+main::before,
+.commune-organism-field,
+.commune-realtime-field,
+.commune-realtime-vignette {
+  display: none !important;
+}
+
+.portal-study-loader {
+  color: var(--deep-muted);
+  background: var(--deep-page);
+}
+
+.wordmark-banner {
+  min-height: clamp(430px, 68svh, 740px);
+  background:
+    radial-gradient(ellipse 54% 46% at 36% 44%, rgba(111, 75, 170, 0.19), transparent 70%),
+    radial-gradient(ellipse 46% 42% at 70% 50%, rgba(75, 125, 147, 0.12), transparent 72%),
+    linear-gradient(to bottom, rgba(4, 5, 7, 0.54) 4%, transparent 58%, rgba(4, 5, 7, 0.7) 100%);
+}
+
+.wordmark-banner::before {
+  width: min(66vw, 850px);
+  border-color: var(--deep-line);
+  background: radial-gradient(circle, transparent 49.7%, var(--deep-line) 50%, transparent 50.3%);
+  opacity: 0.52;
+}
+
+.wordmark-banner::after {
+  background: linear-gradient(to bottom, transparent, var(--deep-accent), transparent);
+  opacity: 0.5;
+}
+
+.wordmark-banner img.black-violet-wordmark {
+  width: min(90vw, 1080px);
+  max-height: 62svh;
+  object-fit: contain;
+  opacity: 0.96;
+  filter:
+    saturate(0.68)
+    contrast(1.06)
+    brightness(0.94)
+    drop-shadow(-14px 6px 34px rgba(111, 75, 170, 0.18))
+    drop-shadow(14px -5px 32px rgba(75, 125, 147, 0.12))
+    drop-shadow(0 24px 54px rgba(0, 0, 0, 0.5));
+  -webkit-mask-image: none;
+  mask-image: none;
+  transform: none;
+  will-change: auto;
+}
+
+.current-event {
+  background:
+    radial-gradient(circle at 14% 18%, rgba(111, 75, 170, 0.15), transparent 36%),
+    radial-gradient(circle at 86% 78%, rgba(75, 125, 147, 0.11), transparent 40%),
+    rgba(8, 9, 13, 0.88);
+}
+
+.current-event::before { border-color: var(--deep-line); }
+.event-kicker,
+.event-offer-label { color: var(--deep-accent); }
+.event-description,
+.event-offer-detail,
+.event-pricing { color: var(--deep-muted); }
+.event-offer {
+  border-top-color: var(--deep-accent);
+  border-bottom-color: var(--deep-line);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.button.primary.event-ticket-button,
+.signup-hero .button.primary {
+  color: var(--deep-page);
+  border-color: var(--deep-ink);
+  background: var(--deep-ink);
+}
+
+.button.primary.event-ticket-button:hover,
+.button.primary.event-ticket-button:focus-visible { background: var(--deep-accent); }
+
+.philosophy {
+  border-color: var(--deep-line);
+  background:
+    radial-gradient(ellipse at 34% 44%, rgba(111, 75, 170, 0.14), transparent 58%),
+    radial-gradient(ellipse at 76% 62%, rgba(143, 73, 108, 0.09), transparent 62%),
+    rgba(4, 5, 7, 0.72);
+}
+
+.philosophy::before {
+  background: linear-gradient(to right, transparent, var(--deep-accent), transparent);
+  opacity: 0.5;
+}
+
+.philosophy-kicker { color: var(--deep-accent); }
+.philosophy-copy p {
+  color: var(--deep-ink);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  filter: none;
+}
+
+.venue-photo {
+  background:
+    radial-gradient(ellipse at 24% 30%, rgba(111, 75, 170, 0.12), transparent 52%),
+    radial-gradient(ellipse at 76% 72%, rgba(75, 125, 147, 0.1), transparent 54%),
+    rgba(8, 9, 13, 0.82);
+}
+
+.venue-photo::before { background: radial-gradient(ellipse, var(--deep-accent-soft), transparent 72%); }
+.venue-photo::after { opacity: 0.22; }
+.venue-photo img {
+  opacity: 0.88;
+  filter: grayscale(0.54) saturate(0.76) hue-rotate(212deg) contrast(1.08) brightness(0.78);
+  box-shadow:
+    -22px 14px 52px rgba(111, 75, 170, 0.1),
+    22px -12px 48px rgba(75, 125, 147, 0.08);
+  transform: none;
+  will-change: auto;
+}
+
+.venue-signal { color: var(--deep-muted); }
+.site-faq {
+  border-color: var(--deep-line);
+  background: rgba(4, 5, 7, 0.8);
+}
+.site-faq-shell,
+.site-faq-list,
+.site-faq-item { border-color: var(--deep-line); }
+.site-faq-trigger,
+.site-faq-item h3 { color: var(--deep-ink); }
+.site-faq-item > span,
+.site-faq-toggle::before,
+.site-faq-toggle::after {
+  color: var(--deep-accent);
+  background-color: var(--deep-accent);
+}
+.site-faq-item p { color: var(--deep-muted); }
+
+.signup-hero {
+  background:
+    radial-gradient(ellipse at 42% 34%, rgba(111, 75, 170, 0.13), transparent 58%),
+    radial-gradient(ellipse at 66% 72%, rgba(143, 73, 108, 0.08), transparent 62%),
+    rgba(14, 15, 22, 0.84);
+}
+.signup-form {
+  border-color: var(--deep-line);
+  background: rgba(0, 0, 0, 0.22);
+}
+.signup-form input {
+  color: var(--deep-ink);
+  border-color: var(--deep-line);
+  background: var(--deep-page);
+}
+.site-footer {
+  color: var(--deep-muted);
+  background: var(--deep-page);
+}
+
+.soundscape-floating-toggle {
+  border-color: rgba(161, 139, 201, 0.28);
+  color: rgba(229, 228, 232, 0.78);
+  background: rgba(7, 6, 13, 0.72);
+}
+
+@media (max-width: 700px) {
+  .wordmark-banner {
+    min-height: 54svh;
+    padding-top: 72px;
+  }
+  .wordmark-banner img.black-violet-wordmark {
+    width: min(96vw, 720px);
+    max-height: 43svh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+}

@@ -751,8 +751,9 @@
     });
   }
 
-  if (reducedMotion.matches) {
+  if (document.body.dataset.visuals === 'static' || reducedMotion.matches) {
     document.documentElement.classList.add('realtime-ready');
+    canvas.dataset.visualState = 'disabled-static-theme';
     return;
   }
 
