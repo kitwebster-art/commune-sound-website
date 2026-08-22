@@ -39,6 +39,10 @@ body:not(.portal-study-loading) > .portal-study-loader {
   display: none;
 }
 
+.site-faq-item p + p {
+  margin-top: 1em;
+}
+
 .portal-field {
   position: fixed;
   z-index: 0;
