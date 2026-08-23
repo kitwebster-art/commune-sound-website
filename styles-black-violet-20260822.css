@@ -15,6 +15,8 @@
   --orange: var(--deep-accent);
   --pink: var(--deep-muted);
   --cyan: var(--deep-accent);
+  --horizon-drift-scroll-factor: 1;
+  --horizon-drift-mobile-factor: 1;
   color-scheme: dark;
   background: var(--deep-page);
 }
@@ -40,6 +42,7 @@ body::before {
     radial-gradient(ellipse 70% 54% at 64% 78%, rgba(143, 73, 108, 0.15), transparent 72%),
     radial-gradient(ellipse 52% 42% at 30% 88%, rgba(98, 132, 124, 0.11), transparent 70%),
     linear-gradient(128deg, #040407 0%, #07060d 43%, #030508 100%);
+  opacity: 0.16;
 }
 
 body::after {
@@ -55,6 +58,22 @@ main {
   position: relative;
   z-index: 1;
   background: transparent;
+}
+
+.horizon-drift-background {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: calc(0.62 * var(--horizon-drift-scroll-factor) * var(--horizon-drift-mobile-factor));
+  filter: saturate(0.68) contrast(0.9) brightness(0.82);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 34%, rgba(0, 0, 0, 0.52) 55%, transparent 82%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 34%, rgba(0, 0, 0, 0.52) 55%, transparent 82%);
+  transform: translateZ(0);
 }
 
 main::before,
@@ -141,7 +160,7 @@ main::before,
   background:
     radial-gradient(ellipse at 34% 44%, rgba(111, 75, 170, 0.14), transparent 58%),
     radial-gradient(ellipse at 76% 62%, rgba(143, 73, 108, 0.09), transparent 62%),
-    rgba(4, 5, 7, 0.72);
+    rgba(4, 5, 7, 0.96);
 }
 
 .philosophy::before {
@@ -161,7 +180,7 @@ main::before,
   background:
     radial-gradient(ellipse at 24% 30%, rgba(111, 75, 170, 0.12), transparent 52%),
     radial-gradient(ellipse at 76% 72%, rgba(75, 125, 147, 0.1), transparent 54%),
-    rgba(8, 9, 13, 0.82);
+    rgba(4, 5, 7, 0.96);
 }
 
 .venue-photo::before { background: radial-gradient(ellipse, var(--deep-accent-soft), transparent 72%); }
@@ -179,7 +198,7 @@ main::before,
 .venue-signal { color: var(--deep-muted); }
 .site-faq {
   border-color: var(--deep-line);
-  background: rgba(4, 5, 7, 0.8);
+  background: rgba(4, 5, 7, 0.96);
 }
 .site-faq-shell,
 .site-faq-list,
@@ -198,7 +217,7 @@ main::before,
   background:
     radial-gradient(ellipse at 42% 34%, rgba(111, 75, 170, 0.13), transparent 58%),
     radial-gradient(ellipse at 66% 72%, rgba(143, 73, 108, 0.08), transparent 62%),
-    rgba(14, 15, 22, 0.84);
+    rgba(4, 5, 7, 0.96);
 }
 .signup-form {
   border-color: var(--deep-line);
@@ -221,6 +240,8 @@ main::before,
 }
 
 @media (max-width: 700px) {
+  :root { --horizon-drift-mobile-factor: 0.86; }
+
   .wordmark-banner {
     min-height: 54svh;
     padding-top: 72px;
