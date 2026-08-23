@@ -6,6 +6,7 @@ const index = await readFile(new URL('../../index.html', import.meta.url), 'utf8
 const client = await readFile(new URL('../../commune-signup.js', import.meta.url), 'utf8');
 const blackViolet = await readFile(new URL('../../black-violet.js', import.meta.url), 'utf8');
 const horizonDrift = await readFile(new URL('../../horizon-drift.js', import.meta.url), 'utf8');
+const blackVioletStyles = await readFile(new URL('../../styles-black-violet-20260822.css', import.meta.url), 'utf8');
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 const pilotCheck = await readFile(new URL('../scripts/check-pilot.mjs', import.meta.url), 'utf8');
 
@@ -51,12 +52,17 @@ test('the Black Violet wordmark cannot flash the retired banner while loading', 
 
 test('Horizon Drift is the restrained production background', () => {
   assert.match(index, /data-horizon-drift/);
-  assert.match(index, /horizon-drift\.js\?v=commune-4\.12\.0/);
+  assert.match(index, /horizon-drift\.js\?v=commune-4\.12\.1/);
   assert.match(horizonDrift, /fragcoord-ribbons-lnbg0175-adaptation/);
   assert.match(horizonDrift, /const SPEED = 0\.042/);
   assert.match(horizonDrift, /const FRAME_RATE_CAP = 22/);
   assert.match(horizonDrift, /prefers-reduced-motion: reduce/);
-  assert.match(horizonDrift, /--horizon-drift-scroll-factor/);
+  assert.doesNotMatch(horizonDrift, /scrollY|updateScrollFade|--horizon-drift-scroll-factor/);
+  assert.match(blackVioletStyles, /\.horizon-drift-background\s*\{[\s\S]*?opacity: 0\.72;/);
+  assert.match(blackVioletStyles, /-webkit-mask-image: none;/);
+  for (const selector of ['wordmark-banner', 'current-event', 'philosophy', 'venue-photo', 'site-faq', 'signup-hero']) {
+    assert.match(blackVioletStyles, new RegExp(`\\.${selector}\\s*\\{[\\s\\S]*?background: transparent;`));
+  }
 });
 
 test('the production page does not restore retired particle or liquid effects', () => {

@@ -102,11 +102,6 @@
     canvas.dataset.renderScale = scale.toFixed(2);
   };
 
-  const updateScrollFade = () => {
-    const factor = Math.max(0, Math.min(1, 1 - scrollY / Math.max(innerHeight * 1.15, 1)));
-    document.documentElement.style.setProperty('--horizon-drift-scroll-factor', factor.toFixed(3));
-  };
-
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const frameInterval = 1000 / FRAME_RATE_CAP;
   const startedAt = performance.now();
@@ -122,9 +117,7 @@
   };
 
   addEventListener('resize', resize, { passive: true });
-  addEventListener('scroll', updateScrollFade, { passive: true });
   resize();
-  updateScrollFade();
   canvas.dataset.shaderStatus = 'rendering';
   canvas.dataset.shaderSource = 'fragcoord-ribbons-lnbg0175-adaptation';
   canvas.dataset.motion = `ambient-${SPEED}`;

@@ -15,8 +15,6 @@
   --orange: var(--deep-accent);
   --pink: var(--deep-muted);
   --cyan: var(--deep-accent);
-  --horizon-drift-scroll-factor: 1;
-  --horizon-drift-mobile-factor: 1;
   color-scheme: dark;
   background: var(--deep-page);
 }
@@ -67,12 +65,12 @@ main {
   display: block;
   width: 100%;
   height: 100%;
-  opacity: calc(0.62 * var(--horizon-drift-scroll-factor) * var(--horizon-drift-mobile-factor));
-  filter: saturate(0.68) contrast(0.9) brightness(0.82);
+  opacity: 0.72;
+  filter: saturate(0.8) contrast(0.95) brightness(0.96);
   mix-blend-mode: screen;
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 34%, rgba(0, 0, 0, 0.52) 55%, transparent 82%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 34%, rgba(0, 0, 0, 0.52) 55%, transparent 82%);
+  -webkit-mask-image: none;
+  mask-image: none;
   transform: translateZ(0);
 }
 
@@ -90,10 +88,7 @@ main::before,
 
 .wordmark-banner {
   min-height: clamp(430px, 68svh, 740px);
-  background:
-    radial-gradient(ellipse 54% 46% at 36% 44%, rgba(111, 75, 170, 0.19), transparent 70%),
-    radial-gradient(ellipse 46% 42% at 70% 50%, rgba(75, 125, 147, 0.12), transparent 72%),
-    linear-gradient(to bottom, rgba(4, 5, 7, 0.54) 4%, transparent 58%, rgba(4, 5, 7, 0.7) 100%);
+  background: transparent;
 }
 
 .wordmark-banner::before {
@@ -127,10 +122,7 @@ main::before,
 }
 
 .current-event {
-  background:
-    radial-gradient(circle at 14% 18%, rgba(111, 75, 170, 0.15), transparent 36%),
-    radial-gradient(circle at 86% 78%, rgba(75, 125, 147, 0.11), transparent 40%),
-    rgba(8, 9, 13, 0.88);
+  background: transparent;
 }
 
 .current-event::before { border-color: var(--deep-line); }
@@ -142,7 +134,7 @@ main::before,
 .event-offer {
   border-top-color: var(--deep-accent);
   border-bottom-color: var(--deep-line);
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.18);
 }
 
 .button.primary.event-ticket-button,
@@ -157,10 +149,7 @@ main::before,
 
 .philosophy {
   border-color: var(--deep-line);
-  background:
-    radial-gradient(ellipse at 34% 44%, rgba(111, 75, 170, 0.14), transparent 58%),
-    radial-gradient(ellipse at 76% 62%, rgba(143, 73, 108, 0.09), transparent 62%),
-    rgba(4, 5, 7, 0.96);
+  background: transparent;
 }
 
 .philosophy::before {
@@ -177,10 +166,7 @@ main::before,
 }
 
 .venue-photo {
-  background:
-    radial-gradient(ellipse at 24% 30%, rgba(111, 75, 170, 0.12), transparent 52%),
-    radial-gradient(ellipse at 76% 72%, rgba(75, 125, 147, 0.1), transparent 54%),
-    rgba(4, 5, 7, 0.96);
+  background: transparent;
 }
 
 .venue-photo::before { background: radial-gradient(ellipse, var(--deep-accent-soft), transparent 72%); }
@@ -198,7 +184,7 @@ main::before,
 .venue-signal { color: var(--deep-muted); }
 .site-faq {
   border-color: var(--deep-line);
-  background: rgba(4, 5, 7, 0.96);
+  background: transparent;
 }
 .site-faq-shell,
 .site-faq-list,
@@ -214,14 +200,11 @@ main::before,
 .site-faq-item p { color: var(--deep-muted); }
 
 .signup-hero {
-  background:
-    radial-gradient(ellipse at 42% 34%, rgba(111, 75, 170, 0.13), transparent 58%),
-    radial-gradient(ellipse at 66% 72%, rgba(143, 73, 108, 0.08), transparent 62%),
-    rgba(4, 5, 7, 0.96);
+  background: transparent;
 }
 .signup-form {
   border-color: var(--deep-line);
-  background: rgba(0, 0, 0, 0.22);
+  background: rgba(0, 0, 0, 0.16);
 }
 .signup-form input {
   color: var(--deep-ink);
@@ -230,7 +213,7 @@ main::before,
 }
 .site-footer {
   color: var(--deep-muted);
-  background: var(--deep-page);
+  background: transparent;
 }
 
 .soundscape-floating-toggle {
@@ -240,7 +223,7 @@ main::before,
 }
 
 @media (max-width: 700px) {
-  :root { --horizon-drift-mobile-factor: 0.86; }
+  .horizon-drift-background { opacity: 0.64; }
 
   .wordmark-banner {
     min-height: 54svh;
