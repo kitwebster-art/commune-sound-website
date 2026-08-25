@@ -121,18 +121,6 @@ main::before,
   will-change: auto;
 }
 
-.wordmark-banner[data-wordmark-series="selected-20260825"] img.black-violet-wordmark {
-  mix-blend-mode: normal;
-  -webkit-mask-image:
-    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%),
-    linear-gradient(to bottom, transparent 0, #000 5%, #000 95%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%),
-    linear-gradient(to bottom, transparent 0, #000 5%, #000 95%, transparent 100%);
-  mask-composite: intersect;
-}
-
 .current-event {
   background: transparent;
 }

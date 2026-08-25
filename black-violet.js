@@ -1,8 +1,10 @@
 (async () => {
   const WORDMARKS = [
-    { slug: '40', file: 'commune-wordmark-40-20260825.webp' },
-    { slug: '24', file: 'commune-wordmark-24-20260825.webp' },
-    { slug: '35', file: 'commune-wordmark-35-20260825.webp' },
+    { slug: 'gradient-monoliths', file: '02-gradient-monoliths-alpha-v2.webp' },
+    { slug: 'folded-ribbons', file: '06-folded-ribbons-alpha-v2.webp' },
+    { slug: 'isometric-lattice', file: '05-isometric-lattice-alpha-v2.webp' },
+    { slug: 'technical-instruments', file: '07-technical-instruments-alpha-v2.webp' },
+    { slug: 'kinetic-fragments', file: '09-kinetic-fragments-alpha-v2.webp' },
   ];
   const LAST_WORDMARK_KEY = 'commune-sound:black-violet-wordmark';
 
@@ -24,23 +26,18 @@
   if (image instanceof HTMLImageElement && section instanceof HTMLElement) {
     let previous = '';
     try { previous = localStorage.getItem(LAST_WORDMARK_KEY) || ''; } catch (_) {}
-    const requested = new URLSearchParams(window.location.search).get('wordmark');
-    const forced = WORDMARKS.find(({ slug }) => slug === requested);
     const choices = WORDMARKS.filter(({ slug }) => slug !== previous);
-    const selected = forced || choices[randomIndex(choices.length)];
-    if (!forced) {
-      try { localStorage.setItem(LAST_WORDMARK_KEY, selected.slug); } catch (_) {}
-    }
+    const selected = choices[randomIndex(choices.length)];
+    try { localStorage.setItem(LAST_WORDMARK_KEY, selected.slug); } catch (_) {}
 
-    image.src = `assets/selected-wordmarks/${selected.file}`;
+    image.src = `assets/gpt-wordmark-studies/${selected.file}?v=black-violet-2`;
     image.removeAttribute('srcset');
     image.className = 'black-violet-wordmark';
     image.alt = 'Commune Sound';
     image.decoding = 'async';
     section.dataset.wordmarkVariant = selected.slug;
     section.dataset.wordmarkSource = selected.file;
-    section.dataset.wordmarkSeries = 'selected-20260825';
-    section.dataset.wordmarkRotation = 'three-selected-variants-without-immediate-repeat';
+    section.dataset.wordmarkRotation = 'five-non-liquid-variants-without-immediate-repeat';
     try {
       await image.decode();
     } catch (_) {
