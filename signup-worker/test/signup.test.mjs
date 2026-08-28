@@ -32,6 +32,10 @@ const request = (body, overrides = {}) => new Request('https://signup.communesou
     first_name: 'Person',
     consent: true,
     source: 'commune_sound_website',
+    signup_source: 'instagram',
+    signup_medium: 'social',
+    signup_campaign: 'august_dance',
+    signup_referrer: 'l.instagram.com',
     website: '',
     turnstile_token: 'valid-token',
     ...body,
@@ -130,6 +134,10 @@ test('creates a new subscribed contact directly in the Commune segment', async t
   assert.equal(payload.properties.consent_source, 'commune_sound_website');
   assert.equal(payload.properties.consent_version, 'commune-website-v1-2026-08-11');
   assert.match(payload.properties.consent_at, /^\d{4}-\d{2}-\d{2}T/);
+  assert.equal(payload.properties.signup_source, 'instagram');
+  assert.equal(payload.properties.signup_medium, 'social');
+  assert.equal(payload.properties.signup_campaign, 'august_dance');
+  assert.equal(payload.properties.signup_referrer, 'l.instagram.com');
   const welcome = calls.find(call => call.url.endsWith('/emails') && call.options.method === 'POST');
   assert.ok(welcome);
   assert.match(welcome.options.headers['Idempotency-Key'], /^commune-welcome\/contact-1\/\d{4}-\d{2}-\d{2}$/);

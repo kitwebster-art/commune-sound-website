@@ -42,6 +42,15 @@ test('the signup form states the mailing purpose and withdrawal right', () => {
   assert.match(blackVioletStyles, /\.signup-form\[data-state="success"\]/);
 });
 
+test('the signup client records privacy-bounded source attribution', () => {
+  assert.match(client, /utm_source/);
+  assert.match(client, /utm_medium/);
+  assert.match(client, /utm_campaign/);
+  assert.match(client, /signup_referrer: referringHostname/);
+  assert.match(client, /hostname !== window\.location\.hostname/);
+  assert.doesNotMatch(client, /signup_referrer:\s*document\.referrer/);
+});
+
 test('the deployment has a no-contact pilot verification path', () => {
   assert.equal(packageJson.scripts['check:pilot'], 'node scripts/check-pilot.mjs');
   assert.match(pilotCheck, /missing consent fails before provider use/);

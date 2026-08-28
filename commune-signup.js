@@ -11,6 +11,31 @@
   let turnstileWidgetId = null;
   let turnstileToken = '';
 
+  const trackingParams = new URLSearchParams(window.location.search);
+  const trackingValue = (name, maxLength = 120) => String(trackingParams.get(name) || '').trim().slice(0, maxLength);
+  const referringHostname = (() => {
+    try {
+      const hostname = new URL(document.referrer).hostname.toLowerCase();
+      return hostname && hostname !== window.location.hostname.toLowerCase() ? hostname : '';
+    } catch {
+      return '';
+    }
+  })();
+  const sourceFromHostname = hostname => {
+    if (!hostname) return 'direct';
+    if (hostname === 'instagram.com' || hostname.endsWith('.instagram.com')) return 'instagram';
+    if (hostname === 'facebook.com' || hostname.endsWith('.facebook.com')) return 'facebook';
+    if (hostname === 'humanitix.com' || hostname.endsWith('.humanitix.com')) return 'humanitix';
+    if (hostname === 'eventbrite.com' || hostname.endsWith('.eventbrite.com')) return 'eventbrite';
+    return hostname;
+  };
+  const signupAttribution = {
+    signup_source: trackingValue('utm_source', 80).toLowerCase() || sourceFromHostname(referringHostname),
+    signup_medium: trackingValue('utm_medium', 80).toLowerCase(),
+    signup_campaign: trackingValue('utm_campaign'),
+    signup_referrer: referringHostname,
+  };
+
   const setStatus = (message, state = '') => {
     status.textContent = message;
     status.dataset.state = state;
@@ -89,6 +114,7 @@
           website: String(data.get('website') || ''),
           consent: true,
           source: 'commune_sound_website',
+          ...signupAttribution,
           turnstile_token: turnstileToken,
         }),
       });

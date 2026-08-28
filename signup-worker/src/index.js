@@ -45,6 +45,21 @@ const cleanName = value => String(value || '')
   .trim()
   .slice(0, 80);
 
+const cleanTrackingValue = (value, maxLength, fallback = '') => {
+  const cleaned = String(value || '')
+    .trim()
+    .replace(/[^a-zA-Z0-9._ -]/g, '')
+    .slice(0, maxLength);
+  return cleaned || fallback;
+};
+
+const cleanReferrerHostname = value => {
+  const hostname = String(value || '').trim().toLowerCase().slice(0, 180);
+  return /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(hostname)
+    ? hostname
+    : '';
+};
+
 const escapeHtml = value => String(value || '')
   .replaceAll('&', '&amp;')
   .replaceAll('<', '&lt;')
@@ -437,6 +452,10 @@ export async function handleRequest(request, env) {
   if (!rate.success) return json({ error: 'too_many_requests' }, 429, cors);
 
   try {
+    const signupSource = cleanTrackingValue(body.signup_source, 80, 'direct').toLowerCase();
+    const signupMedium = cleanTrackingValue(body.signup_medium, 80).toLowerCase();
+    const signupCampaign = cleanTrackingValue(body.signup_campaign, 120);
+    const signupReferrer = cleanReferrerHostname(body.signup_referrer);
     const contactId = await upsertResendContact(env, {
       email,
       firstName,
@@ -444,6 +463,10 @@ export async function handleRequest(request, env) {
         consent_source: 'commune_sound_website',
         consent_at: new Date().toISOString(),
         consent_version: WEBSITE_CONSENT_VERSION,
+        signup_source: signupSource,
+        signup_medium: signupMedium,
+        signup_campaign: signupCampaign,
+        signup_referrer: signupReferrer,
       },
     });
     let confirmationSent = false;
