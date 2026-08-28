@@ -251,13 +251,12 @@ async function sendWelcomeEmail(request, env, { email, firstName, contactId }) {
                 <p style="margin:0 0 24px;color:#a18bc9;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Commune Sound</p>
                 <h1 style="margin:0 0 24px;color:#f0edf5;font-size:30px;line-height:1.15;">You're on the list.</h1>
                 <p style="margin:0 0 18px;color:#d8d3df;font-size:16px;line-height:1.6;">${greeting}</p>
-                <p style="margin:0 0 18px;color:#d8d3df;font-size:16px;line-height:1.6;">I'll email you about future dates, ticket links and occasional Commune Sound updates.</p>
+                <p style="margin:0 0 18px;color:#d8d3df;font-size:16px;line-height:1.6;">We'll email you about future dates, ticket links and occasional Commune Sound updates.</p>
                 <p style="margin:0;color:#d8d3df;font-size:16px;line-height:1.6;">See you on the dancefloor.</p>
                 <div style="margin-top:30px;color:#9f9f9f;font-family:'Times New Roman',serif;font-size:13px;font-style:italic;line-height:1.5;">
                   <strong><em>Sincerely,</em></strong><br>
                   Kit Webster<br>
                   <strong><em>STUDIO KIT WEBSTER</em></strong><br>
-                  ph: +61 466 459 456<br>
                   web: <a href="https://kitwebster.com" style="color:#1656e7;">kitwebster.com</a><br>
                   insta: <a href="https://www.instagram.com/iikit/" style="color:#1656e7;">@iikit</a>
                 </div>
@@ -270,7 +269,7 @@ async function sendWelcomeEmail(request, env, { email, firstName, contactId }) {
     </table>
   </body>
 </html>`;
-  const emailText = `${plainGreeting}\n\nYou're on the Commune Sound list. I'll email you about future dates, ticket links and occasional Commune Sound updates.\n\nSee you on the dancefloor.\n\nSincerely,\nKit Webster\nSTUDIO KIT WEBSTER\nph: +61 466 459 456\nweb: kitwebster.com\ninsta: @iikit\n\nUnsubscribe: ${unsubscribeUrl}`;
+  const emailText = `${plainGreeting}\n\nYou're on the Commune Sound list. We'll email you about future dates, ticket links and occasional Commune Sound updates.\n\nSee you on the dancefloor.\n\nSincerely,\nKit Webster\nSTUDIO KIT WEBSTER\nweb: kitwebster.com\ninsta: @iikit\n\nUnsubscribe: ${unsubscribeUrl}`;
   const dateBucket = new Date().toISOString().slice(0, 10);
   const sent = await resendRequest(env, '/emails', {
     method: 'POST',

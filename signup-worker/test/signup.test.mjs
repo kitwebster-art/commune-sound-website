@@ -137,6 +137,12 @@ test('creates a new subscribed contact directly in the Commune segment', async t
   assert.equal(welcomePayload.to[0], 'person@example.com');
   assert.equal(welcomePayload.subject, "You're on the Commune Sound list");
   assert.match(welcomePayload.html, /You're on the list\./);
+  assert.match(welcomePayload.html, /We'll email you about future dates/);
+  assert.match(welcomePayload.text, /We'll email you about future dates/);
+  assert.doesNotMatch(welcomePayload.html, /\+61 466 459 456|ph:/);
+  assert.doesNotMatch(welcomePayload.text, /\+61 466 459 456|ph:/);
+  assert.doesNotMatch(welcomePayload.html, /I'll email you/);
+  assert.doesNotMatch(welcomePayload.text, /I'll email you/);
   assert.match(welcomePayload.text, /Unsubscribe: https:\/\/signup\.communesound\.com\.au\/unsubscribe\?/);
   assert.match(welcomePayload.headers['List-Unsubscribe'], /^<https:\/\/signup\.communesound\.com\.au\/unsubscribe\?/);
   assert.equal(welcomePayload.headers['List-Unsubscribe-Post'], 'List-Unsubscribe=One-Click');
