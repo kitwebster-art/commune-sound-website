@@ -11,6 +11,9 @@ const baseEnv = overrides => ({
   RESEND_API_KEY: 'resend-secret',
   RESEND_SEGMENT_ID: 'segment-123',
   HUMANITIX_SHARED_SECRET: 'humanitix-secret',
+  UNSUBSCRIBE_SECRET: 'unsubscribe-secret',
+  WELCOME_FROM: 'Commune Sound <hello@communesound.com.au>',
+  WELCOME_REPLY_TO: 'studio@kitwebster.com',
   SIGNUP_RATE_LIMITER: { limit: async () => ({ success: true }) },
   HUMANITIX_RATE_LIMITER: { limit: async () => ({ success: true }) },
   ...overrides,
@@ -117,6 +120,7 @@ test('creates a new subscribed contact directly in the Commune segment', async t
   };
   const response = await handleRequest(request({}), baseEnv());
   assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true, confirmation_sent: true });
   const create = calls.find(call => call.url.endsWith('/contacts') && call.options.method === 'POST');
   assert.ok(create);
   const payload = JSON.parse(create.options.body);
@@ -126,6 +130,61 @@ test('creates a new subscribed contact directly in the Commune segment', async t
   assert.equal(payload.properties.consent_source, 'commune_sound_website');
   assert.equal(payload.properties.consent_version, 'commune-website-v1-2026-08-11');
   assert.match(payload.properties.consent_at, /^\d{4}-\d{2}-\d{2}T/);
+  const welcome = calls.find(call => call.url.endsWith('/emails') && call.options.method === 'POST');
+  assert.ok(welcome);
+  assert.match(welcome.options.headers['Idempotency-Key'], /^commune-welcome\/contact-1\/\d{4}-\d{2}-\d{2}$/);
+  const welcomePayload = JSON.parse(welcome.options.body);
+  assert.equal(welcomePayload.to[0], 'person@example.com');
+  assert.equal(welcomePayload.subject, "You're on the Commune Sound list");
+  assert.match(welcomePayload.html, /You're on the list\./);
+  assert.match(welcomePayload.text, /Unsubscribe: https:\/\/signup\.communesound\.com\.au\/unsubscribe\?/);
+  assert.match(welcomePayload.headers['List-Unsubscribe'], /^<https:\/\/signup\.communesound\.com\.au\/unsubscribe\?/);
+  assert.equal(welcomePayload.headers['List-Unsubscribe-Post'], 'List-Unsubscribe=One-Click');
+});
+
+test('keeps a successful signup successful when the welcome email cannot be sent', async t => {
+  const originalFetch = globalThis.fetch;
+  const originalError = console.error;
+  t.after(() => {
+    globalThis.fetch = originalFetch;
+    console.error = originalError;
+  });
+  console.error = () => {};
+  globalThis.fetch = async (url, options = {}) => {
+    if (String(url).includes('turnstile')) return turnstileSuccess();
+    if (options.method === 'GET') return new Response('{}', { status: 404 });
+    if (String(url).endsWith('/emails')) return new Response(JSON.stringify({ message: 'provider error' }), { status: 500 });
+    return new Response(JSON.stringify({ id: 'contact-1' }), { status: 200 });
+  };
+  const response = await handleRequest(request({}), baseEnv());
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true, confirmation_sent: false });
+});
+
+test('serves a signed unsubscribe page and honours its POST', async t => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  const calls = [];
+  globalThis.fetch = async (url, options = {}) => {
+    calls.push({ url: String(url), options });
+    if (String(url).includes('turnstile')) return turnstileSuccess();
+    if (options.method === 'GET') return new Response('{}', { status: 404 });
+    return new Response(JSON.stringify({ id: 'contact-1' }), { status: 200 });
+  };
+  await handleRequest(request({}), baseEnv());
+  const welcome = calls.find(call => call.url.endsWith('/emails'));
+  const unsubscribeUrl = JSON.parse(welcome.options.body).text.match(/Unsubscribe: (https:\/\/\S+)/)[1];
+  const page = await handleRequest(new Request(unsubscribeUrl), baseEnv());
+  assert.equal(page.status, 200);
+  assert.match(await page.text(), /Leave the mailing list\?/);
+
+  calls.length = 0;
+  const posted = await handleRequest(new Request(unsubscribeUrl, { method: 'POST' }), baseEnv());
+  assert.equal(posted.status, 200);
+  assert.match(await posted.text(), /You're unsubscribed\./);
+  const update = calls.find(call => call.options.method === 'PATCH');
+  assert.ok(update.url.endsWith('/contacts/contact-1'));
+  assert.deepEqual(JSON.parse(update.options.body), { unsubscribed: true });
 });
 
 test('fresh explicit signup resubscribes an existing contact and restores segment membership', async t => {

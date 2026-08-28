@@ -3,6 +3,7 @@ const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/sit
 const MAX_BODY_BYTES = 8_192;
 const WEBSITE_CONSENT_VERSION = 'commune-website-v1-2026-08-11';
 const HUMANITIX_CONSENT_VERSION = 'humanitix-default-host-opt-in-2025';
+const CONTACT_ID_PATTERN = /^[A-Za-z0-9_-]{8,100}$/;
 
 const json = (body, status, headers = {}) => new Response(JSON.stringify(body), {
   status,
@@ -43,6 +44,22 @@ const cleanName = value => String(value || '')
   .replace(/[\u0000-\u001f\u007f]/g, '')
   .trim()
   .slice(0, 80);
+
+const escapeHtml = value => String(value || '')
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#39;');
+
+const html = (body, status = 200) => new Response(body, {
+  status,
+  headers: {
+    'Content-Type': 'text/html; charset=utf-8',
+    'Cache-Control': 'no-store',
+    'X-Robots-Tag': 'noindex, nofollow',
+  },
+});
 
 async function readJsonBody(request) {
   const contentLength = Number(request.headers.get('Content-Length') || 0);
@@ -90,6 +107,19 @@ async function secretMatches(provided, expected) {
     difference |= (providedHash.charCodeAt(index) || 0) ^ (expectedHash.charCodeAt(index) || 0);
   }
   return difference === 0;
+}
+
+async function unsubscribeSignature(env, contactId) {
+  if (!env.UNSUBSCRIBE_SECRET || !CONTACT_ID_PATTERN.test(contactId)) return '';
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(env.UNSUBSCRIBE_SECRET),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(contactId));
+  return Array.from(new Uint8Array(signature), byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
 async function verifyTurnstile(request, env, token) {
@@ -161,7 +191,7 @@ async function upsertResendContact(env, { email, firstName, lastName = '', conse
     if (!created.response.ok && created.response.status !== 409) {
       throw new Error('provider_create_failed');
     }
-    if (created.response.ok) return;
+    if (created.response.ok && created.data.id) return String(created.data.id);
   } else if (!current.response.ok) {
     throw new Error('provider_lookup_failed');
   }
@@ -185,6 +215,123 @@ async function upsertResendContact(env, { email, firstName, lastName = '', conse
   if (!segmented.response.ok && segmented.response.status !== 409) {
     throw new Error('provider_segment_failed');
   }
+
+  if (current.data.id) return String(current.data.id);
+  const refreshed = await resendRequest(env, `/contacts/${encodedEmail}`, { method: 'GET' });
+  if (!refreshed.response.ok || !refreshed.data.id) throw new Error('provider_contact_id_failed');
+  return String(refreshed.data.id);
+}
+
+async function sendWelcomeEmail(request, env, { email, firstName, contactId }) {
+  if (
+    !env.WELCOME_FROM
+    || !env.WELCOME_REPLY_TO
+    || !env.UNSUBSCRIBE_SECRET
+    || !CONTACT_ID_PATTERN.test(contactId)
+  ) {
+    throw new Error('welcome_not_configured');
+  }
+
+  const signature = await unsubscribeSignature(env, contactId);
+  const unsubscribeUrl = new URL('/unsubscribe', request.url);
+  unsubscribeUrl.searchParams.set('id', contactId);
+  unsubscribeUrl.searchParams.set('sig', signature);
+  const greeting = firstName ? `Hi ${escapeHtml(firstName)},` : 'Hi,';
+  const plainGreeting = firstName ? `Hi ${firstName},` : 'Hi,';
+  const emailHtml = `<!doctype html>
+<html lang="en">
+  <body style="margin:0;background:#08070d;color:#e5e4e8;font-family:Arial,sans-serif;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Future dates, ticket links and occasional Commune Sound updates.</div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#08070d;">
+      <tr>
+        <td align="center" style="padding:40px 20px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;border:1px solid #2b2638;background:#0d0b14;">
+            <tr>
+              <td style="padding:38px 34px;">
+                <p style="margin:0 0 24px;color:#a18bc9;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Commune Sound</p>
+                <h1 style="margin:0 0 24px;color:#f0edf5;font-size:30px;line-height:1.15;">You're on the list.</h1>
+                <p style="margin:0 0 18px;color:#d8d3df;font-size:16px;line-height:1.6;">${greeting}</p>
+                <p style="margin:0 0 18px;color:#d8d3df;font-size:16px;line-height:1.6;">I'll email you about future dates, ticket links and occasional Commune Sound updates.</p>
+                <p style="margin:0;color:#d8d3df;font-size:16px;line-height:1.6;">See you on the dancefloor.</p>
+                <div style="margin-top:30px;color:#9f9f9f;font-family:'Times New Roman',serif;font-size:13px;font-style:italic;line-height:1.5;">
+                  <strong><em>Sincerely,</em></strong><br>
+                  Kit Webster<br>
+                  <strong><em>STUDIO KIT WEBSTER</em></strong><br>
+                  ph: +61 466 459 456<br>
+                  web: <a href="https://kitwebster.com" style="color:#1656e7;">kitwebster.com</a><br>
+                  insta: <a href="https://www.instagram.com/iikit/" style="color:#1656e7;">@iikit</a>
+                </div>
+                <p style="margin:34px 0 0;color:#77717f;font-size:11px;line-height:1.5;">You received this because you joined the Commune Sound mailing list. <a href="${escapeHtml(unsubscribeUrl.toString())}" style="color:#a18bc9;">Unsubscribe</a>.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+  const emailText = `${plainGreeting}\n\nYou're on the Commune Sound list. I'll email you about future dates, ticket links and occasional Commune Sound updates.\n\nSee you on the dancefloor.\n\nSincerely,\nKit Webster\nSTUDIO KIT WEBSTER\nph: +61 466 459 456\nweb: kitwebster.com\ninsta: @iikit\n\nUnsubscribe: ${unsubscribeUrl}`;
+  const dateBucket = new Date().toISOString().slice(0, 10);
+  const sent = await resendRequest(env, '/emails', {
+    method: 'POST',
+    headers: { 'Idempotency-Key': `commune-welcome/${contactId}/${dateBucket}` },
+    body: JSON.stringify({
+      from: env.WELCOME_FROM,
+      to: [email],
+      reply_to: env.WELCOME_REPLY_TO,
+      subject: "You're on the Commune Sound list",
+      html: emailHtml,
+      text: emailText,
+      headers: {
+        'List-Unsubscribe': `<${unsubscribeUrl}>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
+      tags: [{ name: 'message_type', value: 'commune_signup_welcome' }],
+    }),
+  });
+  if (!sent.response.ok) throw new Error('welcome_send_failed');
+  return String(sent.data.id || '');
+}
+
+async function handleUnsubscribe(request, env, url) {
+  if (request.method !== 'GET' && request.method !== 'POST') {
+    return json({ error: 'not_found' }, 404);
+  }
+  const contactId = String(url.searchParams.get('id') || '');
+  const providedSignature = String(url.searchParams.get('sig') || '');
+  const expectedSignature = await unsubscribeSignature(env, contactId);
+  if (!expectedSignature || !(await secretMatches(providedSignature, expectedSignature))) {
+    return html('<!doctype html><title>Invalid link</title><p>This unsubscribe link is invalid.</p>', 400);
+  }
+
+  if (request.method === 'GET') {
+    const action = escapeHtml(`${url.pathname}${url.search}`);
+    return html(`<!doctype html>
+<html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unsubscribe from Commune Sound</title></head>
+<body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#08070d;color:#e5e4e8;font-family:Arial,sans-serif;">
+  <main style="width:min(520px,calc(100% - 40px));padding:36px;border:1px solid #2b2638;background:#0d0b14;box-sizing:border-box;">
+    <p style="color:#a18bc9;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Commune Sound</p>
+    <h1 style="font-size:28px;">Leave the mailing list?</h1>
+    <p style="color:#d8d3df;line-height:1.6;">You will stop receiving Commune Sound event emails.</p>
+    <form method="post" action="${action}"><button type="submit" style="margin-top:12px;padding:13px 20px;border:0;background:#a18bc9;color:#08070d;font-weight:700;cursor:pointer;">Unsubscribe</button></form>
+  </main>
+</body></html>`);
+  }
+
+  const updated = await resendRequest(env, `/contacts/${encodeURIComponent(contactId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ unsubscribed: true }),
+  });
+  if (!updated.response.ok) return html('<!doctype html><title>Try again</title><p>Unsubscribe failed. Please try again.</p>', 502);
+  return html(`<!doctype html>
+<html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unsubscribed from Commune Sound</title></head>
+<body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#08070d;color:#e5e4e8;font-family:Arial,sans-serif;">
+  <main style="width:min(520px,calc(100% - 40px));padding:36px;border:1px solid #2b2638;background:#0d0b14;box-sizing:border-box;">
+    <p style="color:#a18bc9;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Commune Sound</p>
+    <h1 style="font-size:28px;">You're unsubscribed.</h1>
+    <p style="color:#d8d3df;line-height:1.6;">You will not receive any more Commune Sound mailing-list emails.</p>
+  </main>
+</body></html>`);
 }
 
 async function handleHumanitixOptIn(request, env) {
@@ -248,6 +395,9 @@ export async function handleRequest(request, env) {
   if (request.method === 'GET' && url.pathname === '/health') {
     return json({ ok: true }, 200);
   }
+  if (url.pathname === '/unsubscribe') {
+    return handleUnsubscribe(request, env, url);
+  }
   if (url.pathname === '/humanitix-opt-in') {
     return handleHumanitixOptIn(request, env);
   }
@@ -290,7 +440,7 @@ export async function handleRequest(request, env) {
   if (!rate.success) return json({ error: 'too_many_requests' }, 429, cors);
 
   try {
-    await upsertResendContact(env, {
+    const contactId = await upsertResendContact(env, {
       email,
       firstName,
       consentProperties: {
@@ -299,7 +449,14 @@ export async function handleRequest(request, env) {
         consent_version: WEBSITE_CONSENT_VERSION,
       },
     });
-    return json({ ok: true }, 200, cors);
+    let confirmationSent = false;
+    try {
+      await sendWelcomeEmail(request, env, { email, firstName, contactId });
+      confirmationSent = true;
+    } catch (error) {
+      console.error('Commune welcome email failure', String(error?.message || 'unknown'));
+    }
+    return json({ ok: true, confirmation_sent: confirmationSent }, 200, cors);
   } catch (error) {
     console.error('Commune signup provider failure', String(error?.message || 'unknown'));
     return json({ error: 'temporarily_unavailable' }, 502, cors);

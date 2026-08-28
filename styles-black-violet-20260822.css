@@ -211,6 +211,42 @@ main::before,
   border-color: var(--deep-line);
   background: var(--deep-page);
 }
+.signup-form[data-state="success"] > :not(.signup-success):not(.form-status):not(.privacy-note) {
+  display: none;
+}
+.signup-success {
+  padding: clamp(24px, 5vw, 42px);
+  border: 1px solid rgba(161, 139, 201, 0.42);
+  background: rgba(13, 11, 20, 0.82);
+  text-align: left;
+}
+.signup-success[hidden] {
+  display: none;
+}
+.signup-success:focus {
+  outline: 2px solid rgba(161, 139, 201, 0.72);
+  outline-offset: 4px;
+}
+.signup-success-kicker {
+  margin: 0 0 12px;
+  color: var(--deep-accent);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.signup-success h3 {
+  margin: 0 0 16px;
+  color: var(--deep-ink);
+  font-size: clamp(24px, 4vw, 38px);
+  line-height: 1.08;
+}
+.signup-success p:last-child {
+  margin: 0;
+  color: var(--deep-muted);
+  font-size: clamp(14px, 1.7vw, 17px);
+  line-height: 1.55;
+}
 .site-footer {
   color: var(--deep-muted);
   background: transparent;

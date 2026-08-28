@@ -35,6 +35,11 @@ test('the client retains fail-closed guards for any future missing configuration
 test('the signup form states the mailing purpose and withdrawal right', () => {
   assert.match(index, /Ticket links, future dates and occasional Commune Sound updates\./);
   assert.match(index, /Unsubscribe anytime\./);
+  assert.match(index, /You're on the Commune Sound list\./);
+  assert.match(index, /We sent a confirmation email\./);
+  assert.match(client, /confirmation_sent === true/);
+  assert.match(client, /Your signup worked, but we couldn't send the confirmation email\./);
+  assert.match(blackVioletStyles, /\.signup-form\[data-state="success"\]/);
 });
 
 test('the deployment has a no-contact pilot verification path', () => {

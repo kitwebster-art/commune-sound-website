@@ -7,6 +7,7 @@
   const endpoint = document.querySelector('meta[name="commune-signup-endpoint"]')?.content || '';
   const sitekey = document.querySelector('meta[name="commune-turnstile-sitekey"]')?.content || '';
   const widget = form.querySelector('[data-turnstile-widget]');
+  const successPanel = form.querySelector('[data-signup-success]');
   let turnstileWidgetId = null;
   let turnstileToken = '';
 
@@ -94,13 +95,26 @@
       const result = await response.json().catch(() => ({}));
       if (!response.ok || result.ok !== true) throw new Error('signup_failed');
       form.reset();
-      setStatus("You're on the Commune Sound list.", 'success');
+      form.dataset.state = 'success';
+      if (successPanel) {
+        successPanel.hidden = false;
+        const detail = successPanel.querySelector('[data-signup-success-detail]');
+        if (detail) {
+          detail.textContent = result.confirmation_sent === true
+            ? 'We sent a confirmation email. If it is not in your inbox, check spam or promotions.'
+            : "Your signup worked, but we couldn't send the confirmation email. You are still on the list.";
+        }
+        successPanel.focus();
+      }
+      setStatus(result.confirmation_sent === true ? 'Signup complete.' : 'Signup complete, email not sent.', 'success');
     } catch {
       setStatus('Signup failed. Please try again.', 'error');
     } finally {
       window.clearTimeout(timeout);
-      resetVerification();
-      button.disabled = false;
+      if (form.dataset.state !== 'success') {
+        resetVerification();
+        button.disabled = false;
+      }
     }
   });
 })();

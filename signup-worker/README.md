@@ -2,6 +2,8 @@
 
 This Worker is the server-side bridge between the public Commune Sound signup form and the existing Resend `Commune Sound Community` segment.
 
+New website signups receive one immediate welcome email from `hello@communesound.com.au`. The message uses a daily contact-scoped idempotency key to prevent duplicates, includes a signed unsubscribe link, and returns a separate `confirmation_sent` result so the website never confuses a successful signup with a welcome-email delivery problem.
+
 The approved Free-plan service is deployed at `https://commune-sound-signup.commune-sound-signup-worker.workers.dev`. Commune Sound website version 4.1.0 began using it on 12 August 2026 after Kit approved publication. DNS was not changed. Humanitix remains on Mailchimp until its separate consent tests pass.
 
 ## Security and consent contract
@@ -31,7 +33,7 @@ npm run check
 
 1. Completed: Resend string contact properties `consent_source`, `consent_at`, `consent_version` and `consent_reference` exist.
 2. Completed: the Free-plan Worker and Managed Turnstile widget are deployed for both Commune Sound hostnames.
-3. Completed: `RESEND_API_KEY`, `RESEND_SEGMENT_ID`, `TURNSTILE_SECRET` and `HUMANITIX_SHARED_SECRET` are stored as Worker secrets.
+3. Completed: `RESEND_API_KEY`, `RESEND_SEGMENT_ID`, `TURNSTILE_SECRET`, `HUMANITIX_SHARED_SECRET` and `UNSUBSCRIBE_SECRET` are stored as Worker secrets.
 4. Completed: the no-contact pilot passed health, cache, exact CORS and missing-consent checks.
 5. Completed: the staged site contains the verified Worker endpoint and public Turnstile site key.
 6. Completed: controlled new and duplicate signups passed and their consent properties were verified in Resend and Mission Control.
