@@ -143,6 +143,10 @@ test('creates a new subscribed contact directly in the Commune segment', async t
   assert.doesNotMatch(welcomePayload.text, /\+61 466 459 456|ph:/);
   assert.doesNotMatch(welcomePayload.html, /I'll email you/);
   assert.doesNotMatch(welcomePayload.text, /I'll email you/);
+  assert.match(welcomePayload.html, /Sincerely,[\s\S]*Commune Team[\s\S]*https:\/\/communesound\.com\.au/);
+  assert.match(welcomePayload.text, /Sincerely,\nCommune Team\ncommunesound\.com\.au/);
+  assert.doesNotMatch(welcomePayload.html, /Kit Webster|STUDIO KIT WEBSTER|kitwebster\.com|@iikit/);
+  assert.doesNotMatch(welcomePayload.text, /Kit Webster|STUDIO KIT WEBSTER|kitwebster\.com|@iikit/);
   assert.match(welcomePayload.text, /Unsubscribe: https:\/\/signup\.communesound\.com\.au\/unsubscribe\?/);
   assert.match(welcomePayload.headers['List-Unsubscribe'], /^<https:\/\/signup\.communesound\.com\.au\/unsubscribe\?/);
   assert.equal(welcomePayload.headers['List-Unsubscribe-Post'], 'List-Unsubscribe=One-Click');
