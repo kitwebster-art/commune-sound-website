@@ -8,7 +8,7 @@
   const update = () => {
     setText("[data-offer-label]", "General admission");
     setText("[data-offer-price]", "25");
-    setText("[data-offer-countdown]", "This Thursday");
+    setText("[data-offer-countdown]", "Thursday 24 September");
     setText("[data-ticket-button-label]", "Get tickets");
     setText(
       "[data-event-pricing]",

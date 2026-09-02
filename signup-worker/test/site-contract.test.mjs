@@ -24,6 +24,13 @@ test('the website is configured for only the approved signup bridge', () => {
   assert.match(client, /endpoint\.includes\('REQUIRED'\)/);
 });
 
+test('the live event points only to the 24 September Humanitix occurrence', () => {
+  assert.match(index, /Thursday 24 September/);
+  assert.match(index, /dateId=6a630bd040acdd04c8eb27d7/);
+  assert.match(index, /utm_campaign=commune_sep24/);
+  assert.doesNotMatch(index, /27 August|commune_aug27|6a5efc4cdf00fb34b14e7c1d/);
+});
+
 test('the client retains fail-closed guards for any future missing configuration', () => {
   assert.doesNotMatch(index, /WORKER_ENDPOINT_REQUIRED/);
   assert.doesNotMatch(index, /TURNSTILE_SITE_KEY_REQUIRED/);
