@@ -1,0 +1,5 @@
+@font-face{font-family:CommuneMegrim;src:url("assets/fonts/megrim.ttf") format("truetype");font-display:swap;font-weight:400}
+.geometric-wordmark-picture{display:block;position:relative;z-index:2;width:100%;line-height:0;mix-blend-mode:screen}
+.wordmark-banner img.black-violet-wordmark{height:auto;width:min(90vw,1080px);max-height:none;filter:none;opacity:1}
+.wordmark-tagline{font-family:CommuneMegrim,sans-serif;text-transform:uppercase;font-size:clamp(23px,3vw,38px);letter-spacing:.09em;line-height:1.4;color:#e9e3f2}
+@media(max-width:700px){.wordmark-banner img.black-violet-wordmark{width:min(85vw,560px)}.wordmark-tagline{font-size:clamp(21px,5.9vw,32px);letter-spacing:.035em}}

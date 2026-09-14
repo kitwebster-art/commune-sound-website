@@ -23,7 +23,7 @@
   document.documentElement.dataset.backgroundTexture = 'holographic-grain-static';
   document.body.dataset.visuals = 'static';
 
-  if (image instanceof HTMLImageElement && section instanceof HTMLElement) {
+  if (image instanceof HTMLImageElement && section instanceof HTMLElement && !image.hasAttribute('data-wordmark-fixed')) {
     let previous = '';
     try { previous = localStorage.getItem(LAST_WORDMARK_KEY) || ''; } catch (_) {}
     const choices = WORDMARKS.filter(({ slug }) => slug !== previous);
