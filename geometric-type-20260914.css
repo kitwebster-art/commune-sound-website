@@ -3,3 +3,9 @@
 .wordmark-banner img.black-violet-wordmark{height:auto;width:min(90vw,1080px);max-height:none;filter:none;opacity:1}
 .wordmark-tagline{font-family:CommuneMegrim,sans-serif;text-transform:uppercase;font-size:clamp(23px,3vw,38px);letter-spacing:.09em;line-height:1.4;color:#e9e3f2}
 @media(max-width:700px){.wordmark-banner img.black-violet-wordmark{width:min(85vw,560px)}.wordmark-tagline{font-size:clamp(21px,5.9vw,32px);letter-spacing:.035em}}
+
+/* Custom vector tagline selected by Kit: precision treatment 01. */
+.wordmark-tagline.precision-tagline{width:min(76vw,860px);margin:12px auto 0;line-height:0}
+.precision-tagline picture{display:block}
+.wordmark-tagline.precision-tagline img{display:block;width:100%;height:auto;max-height:none;filter:none;opacity:1;transform:none}
+@media(max-width:700px){.wordmark-tagline.precision-tagline{width:min(76vw,410px);margin-top:16px}.wordmark-tagline.precision-tagline img{aspect-ratio:auto}}
