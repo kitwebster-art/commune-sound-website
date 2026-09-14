@@ -88,7 +88,21 @@ main::before,
 
 .wordmark-banner {
   min-height: clamp(430px, 68svh, 740px);
+  align-content: center;
+  row-gap: 16px;
   background: transparent;
+}
+
+.wordmark-tagline {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  color: var(--deep-ink);
+  font-size: clamp(14px, 1.6vw, 20px);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.14em;
+  text-align: center;
 }
 
 .wordmark-banner::before {
