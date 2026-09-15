@@ -5,7 +5,7 @@
 @media(max-width:700px){.wordmark-banner img.black-violet-wordmark{width:min(85vw,560px)}.wordmark-tagline{font-size:clamp(21px,5.9vw,32px);letter-spacing:.035em}}
 
 /* Custom vector tagline selected by Kit: precision treatment 01. */
-.wordmark-tagline.precision-tagline{width:min(76vw,860px);margin:12px auto 0;line-height:0}
+.wordmark-tagline.precision-tagline{width:min(57vw,645px);margin:12px auto 0;line-height:0}
 .precision-tagline picture{display:block}
 .wordmark-tagline.precision-tagline img{display:block;width:100%;height:auto;max-height:none;filter:none;opacity:1;transform:none}
-@media(max-width:700px){.wordmark-tagline.precision-tagline{width:min(76vw,410px);margin-top:16px}.wordmark-tagline.precision-tagline img{aspect-ratio:auto}}
+@media(max-width:700px){.wordmark-tagline.precision-tagline{width:min(57vw,308px);margin-top:16px}.wordmark-tagline.precision-tagline img{aspect-ratio:auto}}
