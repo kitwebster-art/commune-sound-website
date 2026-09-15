@@ -5,6 +5,7 @@
     { slug: 'isometric-lattice', file: '05-isometric-lattice-alpha-v2.webp' },
     { slug: 'technical-instruments', file: '07-technical-instruments-alpha-v2.webp' },
     { slug: 'kinetic-fragments', file: '09-kinetic-fragments-alpha-v2.webp' },
+    { slug: 'geometric-27', file: '../commune-geometric-27-wide-v2.svg', mobile: 'assets/commune-geometric-27-stacked-v2.svg' },
   ];
   const LAST_WORDMARK_KEY = 'commune-sound:black-violet-wordmark';
 
@@ -30,14 +31,17 @@
     const selected = choices[randomIndex(choices.length)];
     try { localStorage.setItem(LAST_WORDMARK_KEY, selected.slug); } catch (_) {}
 
-    image.src = `assets/gpt-wordmark-studies/${selected.file}?v=black-violet-2`;
+    const desktopSource = `assets/gpt-wordmark-studies/${selected.file}?v=rotation-20260915`;
+    const mobileSource = image.closest('picture')?.querySelector('source');
+    if (mobileSource) mobileSource.srcset = selected.mobile || desktopSource;
+    image.src = desktopSource;
     image.removeAttribute('srcset');
     image.className = 'black-violet-wordmark';
     image.alt = 'Commune Sound';
     image.decoding = 'async';
     section.dataset.wordmarkVariant = selected.slug;
     section.dataset.wordmarkSource = selected.file;
-    section.dataset.wordmarkRotation = 'five-non-liquid-variants-without-immediate-repeat';
+    section.dataset.wordmarkRotation = 'six-variants-without-immediate-repeat';
     try {
       await image.decode();
     } catch (_) {
